@@ -12,6 +12,15 @@
     {
       "topic": 2,
       "date": "2026-11-19",
+      "title": "SKB, 부산~싱가포르 해저케이블에 양자보안 시험망 구축",
+      "publisher": "포인트데일리",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBiZUJRQ0FhdXRrRWhHd2M4aFhTa2xQazZFSjdnd2FkZDByYVU5c1JONGVDRkpnbGNMMjFZc0VzUDFVVS1JdlhqM3NlcjZCRmlsczFlMkZhaG9iSWdndUVkYUE2OTlwN2oyeDZ6RHNPTXLSAXRBVV95cUxNUl9OX0l1WUYxYjVtUWRGZ0ZHMTFveGFDOFp3M0s1MDl1MXBoLUlxYlJGei05QnRQaU9vZkQ4ZGJHdkJxenZRTXJVeUFpM2FVa21zNmlqYWlzdEQxTlhWV1FjbU5kdC15eWxmM0lTd0doTjdrNQ?oc=5",
+      "published_at": "2026-11-19T23:59:40+09:00",
+      "publisher_host": "www.pointdaily.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-19",
       "title": "SKT, AIDC 사업 분할에…SKB 노조 “매각대금 재투자해야”",
       "publisher": "서울경제TV",
       "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9zLURhNzFQRzlWUTVjYjd6azRqTHVCQkxaRlRSejQwd0lDNDVCZm1IeHY2OEFJMGpzaEEzdVdzRWFZLXJkREhuM0cxYlhlemdkMGl1QUc0VVJFWjNweWR2Qlk5REs?oc=5",
@@ -39,6 +48,15 @@
     {
       "topic": 2,
       "date": "2026-11-19",
+      "title": "SK브로드밴드, 부산∼싱가포르 해저케이블에 양자보안 시험망 구축",
+      "publisher": "동아비즈니스리뷰",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE5MZWptdWhhanNPbFNJQ3lRZ05mZ2kwaDVLeW0tTllpemFQcnRFT2JteTJyNkNEeUFBSEQ5b3piWnlXWUY2MXR0YnlOYUpWUFJPbUk5UXhITlZ5WHZMVHc?oc=5",
+      "published_at": "2026-11-19T17:20:00+09:00",
+      "publisher_host": "dbr.donga.com"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-19",
       "title": "SK브로드밴드, 한·싱가포르 해저케이블 양자보안 강화",
       "publisher": "한스경제",
       "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5ZWHhHSUFmdHJGUGlid0JDR25NRmg0cHJVUDVPWktFTzVEN0oycnN2aHplM01DcVlBblRRRWFidHNBWEVYY0d3bTB3LWZRVjAzVkNOT0UwVEdadVlGUDR1WGdPZ2ZzUVRQUEw2VQ?oc=5",
@@ -55,24 +73,6 @@
       "publisher_host": "www.speconomy.com"
     },
     {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SK브로드밴드, 부산-싱가포르 SJC2 해저케이블에 양자보안 시험망 구축",
-      "publisher": "https://www.moneystorm.kr/",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE44MVZnWWwzOF9YSWE0cERuRzBXWjZkT3NZZ3NuMjM1MjFFNmpEcV9nZVEwXzBtblB6TzcwOW5FdjlxcHRCX09qb0xtMWgxWDRKZzMwMWtLN1pRb3loeDM2WVJRTlFqbEFZcXc?oc=5",
-      "published_at": "2026-11-19T14:58:29+09:00",
-      "publisher_host": "www.moneystorm.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SKB, 부산∼싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "매일경제 마켓",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBoVkl6WVJLQjNXWGYtX21USHhpZmI2R1hwcFk2bzV1X1VoZGVlemhnbzNJWTRweTJOeGdCUEZfZjd5eFVNN0ozVGdIREVSMXplbHc?oc=5",
-      "published_at": "2026-11-19T14:55:11+09:00",
-      "publisher_host": "stock.mk.co.kr"
-    },
-    {
       "topic": 3,
       "date": "2026-11-20",
       "title": "SK텔레콤, 디지털헬스학회 추계학술대회서 A.X 모델 발표",
@@ -80,6 +80,15 @@
       "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE9YSWg5UDBlVFZVT1dKbzNTejhPYXhrcTkzLVFCN0xVeHAzT0QyMG1uWExZVWJJdk1KUGdnbnA2Q0dvM01OamZmMnEtdEI0Z3R1TzhWdjVBNA?oc=5",
       "published_at": "2026-11-20T21:41:00+09:00",
       "publisher_host": "www.medigatenews.com"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-20",
+      "title": "인사말하는 정재헌 SK텔레콤 사장",
+      "publisher": "연합뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1mS05fbDhWQWlzNlZyVVkzR2FWOWhwdk41UkNCbUVkX0ZkVlVxRDRXdlBKNU9GQjNlMUt6dW9pSkQ5c0NXQ0x2bkt1ZUpDS010YmZoUWh1WTdqS08zRkdONdIBYEFVX3lxTE1mS05fbDhWQWlzNlZyVVkzR2FWOWhwdk41UkNCbUVkX0ZkVlVxRDRXdlBKNU9GQjNlMUt6dW9pSkQ5c0NXQ0x2bkt1ZUpDS010YmZoUWh1WTdqS08zRkdONQ?oc=5",
+      "published_at": "2026-11-20T17:55:58+09:00",
+      "publisher_host": "www.yna.co.kr"
     },
     {
       "topic": 3,
@@ -134,15 +143,6 @@
       "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE9sR19faFo5Yy1Dc2YwSWpHU2VuTVJzN29EMmVBLVRJVmVYNjVIRzEtdjk4d0dXQ1g4RWRaQ1pZNU5HZXl3ZVdncmc2blNva1BiU25qMnZTbkM2ZWVwREZfMnoydXBCMkQyRnBSOUpMNERVOW1G?oc=5",
       "published_at": "2026-11-20T14:27:29+09:00",
       "publisher_host": "www.globalnewsagency.kr"
-    },
-    {
-      "topic": 3,
-      "date": "2026-11-20",
-      "title": "SK텔레콤, AI로 한 해의 기억 결산…성수서 참여형 유물 트리 선봬",
-      "publisher": "https://www.moneystorm.kr/",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE4xT2U4eFBuck94S1U2TkdvMzRRQ3doeUVlMzREbk9CVWZkRExwMWpvMXdDaGNndVhhV2RXVlNVdGc2S2tyTFk3ZWdOMzQ2SmtZZUFpRmVNb1hZZGZZUVhkOExveUJ3aFk4dmc?oc=5",
-      "published_at": "2026-11-20T14:13:51+09:00",
-      "publisher_host": "www.moneystorm.kr"
     },
     {
       "topic": 4,
@@ -201,6 +201,15 @@
     {
       "topic": 4,
       "date": "2026-11-19",
+      "title": "SK그룹, '디렉터스 서밋'·'거버넌스 데이' 연이어 개최…이사회 중심 경영 고도화",
+      "publisher": "퍼블릭뉴스통신",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBiRTNJTkNfZWpVWkF3VjFHQlV2V2xraXZHN1dVdmFXVTFWYVF3bC1BbkNON1FHVDNIaC1rWGZBNU5jRFVOaDhqcWRicVRrdkJzcjZJamVoVFU0RVJQcHVpdEVoYnNpc3BIdGc?oc=5",
+      "published_at": "2026-11-19T16:44:59+09:00",
+      "publisher_host": "www.ttlnews.com"
+    },
+    {
+      "topic": 4,
+      "date": "2026-11-19",
       "title": "SK그룹, 독립이사와 이사회 중심 경영 성과·발전 방향 논의",
       "publisher": "BBS불교방송",
       "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1EWWQ1cHJXR2JUZkF6YnVPLVozYnJ3OVpnTXBrNURKTmNKQWFTU25saTIwTjR3UFoyZTRYTlRaaXB2Tm9IUlVQeUxzemRKYk50TGRWMkx4Qm85ZzdKaUpZeEhqcU55YUFiVDd3?oc=5",
@@ -208,13 +217,40 @@
       "publisher_host": "news.bbsi.co.kr"
     },
     {
-      "topic": 4,
-      "date": "2026-11-19",
-      "title": "앤트로픽 상장으로 최태원 SK그룹 4조 4천억 원 '잭폿'",
-      "publisher": "SBS 뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE94S3FPTXZTaVVETlo2WFZxb0hYUjM2NzVTZWNhdmVmeTRLR3N4XzVKVTFteS1vRkR4UUZwRm1PalpHdU9MTE9RX01LWldIZ3E4N1JkSlhWclpYWjB6R25HZ1FpQ3RoUDk0ZFE?oc=5",
-      "published_at": "2026-11-19T14:39:44+09:00",
-      "publisher_host": "news.sbs.co.kr"
+      "topic": 5,
+      "date": "2026-11-21",
+      "title": "‘독자노선’ 정체성 부정한 삼성바이오 노조… ‘6.2% 임금 인상’ 선제안에도 한노총 가입",
+      "publisher": "세계일보",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFA4S0M5endmOUwtVEZycGFHbDg2YjRtcThyWWo4V2xLZzNObUtuMGNGLTRaUmtmVXB6eVBseWoyQi1tUUVyYkJBRm1EX1BGWkY4bDBQLXhRN2fSAVRBVV95cUxNN1VPWGhZbWRkV2xhdGZPS0NWOER0eHhGUktXVTZiYkRkbjdQS0NXMnZSSXBJVXRUVm1iUC1ZRGh3dGxZMEUtbFlKaUx4bUdiVlBZYlE?oc=5",
+      "published_at": "2026-11-21T19:21:43+09:00",
+      "publisher_host": "www.segye.com"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-21",
+      "title": "노동자들 사이에서 베트남산 제품 소비 문화를 장려합니다.",
+      "publisher": "Vietnam.vn",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNaHAwdVh2LTRycGN1aG9Hdl8xUFptdFJYWFVvbE5EM1VSLThqUjVVb0NXd01aY01xZ2RiN2ZXSHRkZzI1Uk5URWxWdFhDdXI2ams0WDRZZ01ZLXJmenlLa2FEbHlMN3UyTGxkdDBjVWhndlhBZEYzcmdYVnpPT0xDY0NKa3lhMXBrZElpMjRaYlR4YXV2RlZv?oc=5",
+      "published_at": "2026-11-21T18:27:09+09:00",
+      "publisher_host": "www.vietnam.vn"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-21",
+      "title": "72명의 노동자가 기본 노동조합 설립에 동의한 기업",
+      "publisher": "Laodong.vn",
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNNzlSYjJqR0QtQ2lVZ2R3OXdQUzJwTmdtOFd3aC11dVRRVTNHZHlCXzR0Q0FJYWtuTEd0YzQ0R183RWZleWZEeG1NRzhFa2Y2c3U0UlM1V3ljdDJEU3FUR3VUSTBfMzIyeHBFTXR1Q1psZFlFWE1LdVZBc0YzamNieEpQWlYzX0JMQ0EzUExZQkZzRnNlOGlIUE5GRG85a2gyNVJ6emJ1a3hpR2No?oc=5",
+      "published_at": "2026-11-21T17:27:25+09:00",
+      "publisher_host": "ko.laodong.vn"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-21",
+      "title": "레지스 주식회사에서 활기 넘치는 근로자 문화 축제가 개최되었습니다.",
+      "publisher": "Vietnam.vn",
+      "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPaDhaRnpjSjl2Q0JFN1VVVzlmeU45U3R2TDJGdmttTTlCV2xwZkRMSEVhcWVBak1CemJCajlzcG9ZZFlSdjNiV1V3Ykh4NnpRVXY4S0xsUTlfMjZlWGlhd1AtLWEtR1BkMnJsMFB4d1puMjVQNHNKdzV2Z0xzbENtWFY5b3Uydw?oc=5",
+      "published_at": "2026-11-21T04:19:33+09:00",
+      "publisher_host": "www.vietnam.vn"
     },
     {
       "topic": 5,
@@ -227,6 +263,24 @@
     },
     {
       "topic": 5,
+      "date": "2026-11-21",
+      "title": "콜롬비아 노동조합·야당, 정책 반대 두 번째 전국 시위…생활비 상승 집중",
+      "publisher": "국제뉴스",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE04a1hJczBMX2hGNGl2UHQyR0hoV2wzeVZmTzdxWXUxY25GR3JaME50RGN6VW5jWWVNVV9nU3lTbXZ0TVd5VDUzUFhmeUJHc2phb2xpRVZ3eHBpblVIQ3dLbnZ2bGQ1N1JGN3hEbl9n?oc=5",
+      "published_at": "2026-11-21T01:18:42+09:00",
+      "publisher_host": "www.gukjenews.com"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-20",
+      "title": "푸 노동조합원, 노동자들이 자발적 헌혈에 참여",
+      "publisher": "Laodong.vn",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQSktuZ1FSMkt3OFhyZnRrRF9zNFJsZ3AxZlo2cUFHVnhBVngtS1l5Z05ldldCMGJJOWlsOTJTeEtnc2ZEa1hJTmluTjV5b1hTSmVMOWFKdEpHTFVPWC1qa3BjYzNVYWRJQXJGZWMzQnJnVlowaDZ1emNFX1JDbVVBUUlGaG1YNFJoZ2Mwd09FVklYTDJFbnczWjNYVG9SdTcxWU55NkloT0k2eWc?oc=5",
+      "published_at": "2026-11-20T23:21:47+09:00",
+      "publisher_host": "ko.laodong.vn"
+    },
+    {
+      "topic": 5,
       "date": "2026-11-20",
       "title": "경상남도청공무원노동조합, 거제 해안가 해양쓰레기 수거 봉사활동 펼쳐",
       "publisher": "내외일보",
@@ -235,58 +289,13 @@
       "publisher_host": "www.naewoeilbo.com"
     },
     {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "경상남도청공무원노동조합, 거제시 해안가 해양쓰레기 수거 봉사",
-      "publisher": "이뉴스투데이",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9sMGxPeV8xMHhjRVlMV04xRDhGVXNuay1WSDJfZlZrOWxpRV9xVlNTYmdBNEtwMktzOEMxNHE0U2FLYTBkc1ZVNUEtd3JUbVJnWm4xY0xGVjFUYjR1NnJlNWRGeW5TaXlTNDVFdU93b0TSAXRBVV95cUxQZzZhV3pLb3FndGdyb29vTnlTVVJtZDM2Yk5wMFdYXzVSMnZ4NVF2Y0tYU0FkTjlYYmRUbXJkWjlPMDYtV05JSFdaX094MGlhTXZkS25VRy1sem85NWRYTy1QY0FmMzE1Q1lIMzd4RHpNYjZUaQ?oc=5",
-      "published_at": "2026-11-20T19:40:00+09:00",
-      "publisher_host": "www.enewstoday.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "홈플러스, 8월 월급 겨우 다 줬는데 11월도 체불…노조, 민주당에 정상화 대책 촉구",
-      "publisher": "뉴스필드",
-      "url": "https://news.google.com/rss/articles/CBMirAJBVV95cUxObEhoVzB0YVdadDJCVDVrZ1NZcDRuSmhZdlM0ZjJZc2c2MVAxLWttQkZtdWhSYUQ2NFFpcXFsV1NDUDBEVkRGZW45cjVaTUhKMVJkbFVUd3lEdUZYbXAyOU9kakNLY2E0aU10N2FYd2xEQU4wQV8yR1ZQVDM3OGpPR2xKOEZRaU85WjQ0UUxIbjl2YWFOQm5QeExTMWx2dHNvUkVIWGFmQ0Z5OV9xMEswUkI5V1J5N1dMWC1pUEFyQkV3YUVGVHIzN0hPbU1OVUVnM3JFT25PTmgyTnNUdmhxSHhVMHdaNnlLTk9vdE94STNCT1duRk1aYkJBYWZKRWJqaE9ocGNMN1N5TEJyeGdMNlh2czQxYmdHWENfOVBLZGphSUl1WUl6SkV1Zm0?oc=5",
-      "published_at": "2026-11-20T17:39:51+09:00",
-      "publisher_host": "newsfield.net"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "31년 인국공노조 “공항 이용료 현실화, 제5단계 사업 추진해야“",
-      "publisher": "참여와혁신",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBuWHpLSEtlYVE5UVRrWmFiNkNlTWdqNVUzd1pXVEhDSDIwcGJHYzBXODJjck9UUkJSVGFwQ1F5UUZPTm85MUpOUzV6ZTBzd2xOekhOWE5sekRxUmYzU0FxVVJhWDVTVlZRZzMtSjN3?oc=5",
-      "published_at": "2026-11-20T17:08:24+09:00",
-      "publisher_host": "www.laborplus.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "경기도 택시업계 3천 명 거리로…“택시 지원 예산 전액 복원하라” 삭발·항의 집회",
-      "publisher": "기호일보",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5zN2s1R0NENUlBTUtPVTZKNkpzc0RfS2hGMUNVQUtXVklTXzdmbUVSdU9ZdkRvSlFNWHJDNUY2V3pKZ19aVTdoRWNWbWJ4dFp4T1pmcjN1YTQyNDRVdmFGNG5Wb1F0bW1GMk9QT2JuVQ?oc=5",
-      "published_at": "2026-11-20T16:32:39+09:00",
-      "publisher_host": "www.kihoilbo.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "금융노조 지부 \"농협은 특정 정당·지역의 것 아냐\"",
-      "publisher": "퍼블릭타임스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5qMFNFRm5SdmE5cmpRS0E5YWhSeThwaU5NV0dGUmNZem1KMEg5VXJ3SUluekpsWFl1b2tzNnpyeFZ3ckZaLWF2djdCdGs5Y2xSNVVXMWNNcUpPd0lMeEM5WHdqM1ZIOHNiY0HSAW5BVV95cUxNTGZWTS1NalF1VHozaTRKTklLQmgwUVhnVmpyUkQ4cGZmN2pqd0RwMW5XMVdXTXFaSDlPYmlkVXhoSWlkUXhGZThaUy0tWDA3RkdMQmQ0ajAxd3ZCZFBycmcta2FCemhDOUJFb3kwUQ?oc=5",
-      "published_at": "2026-11-20T16:03:15+09:00",
-      "publisher_host": "www.public25.com"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-20",
-      "title": "장경식 삼우산업 노동조합 위원장, 석남1동에 후원금 기탁",
-      "publisher": "세정포커스",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9tOGFzSktnSEpJeVRKbXotVUtEY3VScGpDNDZfcFFvMElBT0pLblNrREpyeUdUOGJzQmdmWHdZSnVnN05nNzJETm1vano4WTlPclEyN1VETHRHelNDUDJXQzRVSEVBSzhmdVR6RGtn?oc=5",
-      "published_at": "2026-11-20T15:26:31+09:00",
-      "publisher_host": "www.sejungfocus.com"
+      "topic": 6,
+      "date": "2026-11-21",
+      "title": "7월 27일과 11월 24일, 두 개의 공휴일이 노동법에 추가되었습니다.",
+      "publisher": "Vietnam.vn",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNV0dnV2hVWjJ3WUc4VGpXUkV5UFZJLTJOMkt0NV9PcW1xaUdOdEJ4bEtpNFVQWGtiN21BalBIODRRVnA1c0hYVlg5YXEyZ3JzQ05vTWZHS2ZRSVhwT21BNkZDODNrR3dqU2NWSGg4YnUyMER2bk41al9VbHg4dm5qVFpvOWJ0eThSNmwtVA?oc=5",
+      "published_at": "2026-11-21T17:24:37+09:00",
+      "publisher_host": "www.vietnam.vn"
     },
     {
       "topic": 6,
@@ -352,13 +361,22 @@
       "publisher_host": "www.news21tongsin.co.kr"
     },
     {
-      "topic": 6,
-      "date": "2026-11-19",
-      "title": "김포시 노동권익센터, ‘제3차 노동법실무 역량강화 원데이클래스’ 성료",
-      "publisher": "경기평화신문",
-      "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE9SeTZfMXBlSTh3aF9lTHVQWUdvUmxMOFY1MFVTcDJVQnBxRm9TY0NlQUpQWk1STkp6Ri1vMGQ4Q2lsLXFMOEdZNEpB?oc=5",
-      "published_at": "2026-11-19T16:53:00+09:00",
-      "publisher_host": "www.ggpyeonghwa.com"
+      "topic": 7,
+      "date": "2026-11-21",
+      "title": "Labour minister discusses technical support with ILO chief",
+      "publisher": "The Libya Observer",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNRm02R2RDZjBqMEhUQ1JsNWZuZDA3TGhsRTluVEhWdkxpRmNiZG54czBfb0FnakwxOFduWTFTaHVtWUxEZk9wNUZzN1o2NDJURWttU2lWaUtZcmdLZWZWcGlhbm03ekV2cjZwbDZ3WGx5NFYxY1FNRnpkSDl1Wl9QcVRXZmhTT3prTkhJ?oc=5",
+      "published_at": "2026-11-21T20:44:33+09:00",
+      "publisher_host": "libyaobserver.ly"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-21",
+      "title": "Over-reliance on general strikes weakens the trade union’s most important weapon",
+      "publisher": "Il Foglio",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPNEpudHZVTHI4bThCUGhIZVZrTHJnaW9tNzlHREdzaUR2NXZBRmU4RVNVWGNhek5uWVI2OGw5LUdjSEpvQTA4Sy0weldBNUE0OFRqNVhzR2JjNS1Vd2xWR3c1QlF1VHFLQ21DSm9fU3hWRHJVUGtMOXhxU3MwTW9MMlhDQkk1ejdXb1k3NnN4cll2MmRfTEkyRVZLNXBneHQ1VkRWenM5dktROV9BUEVWdzhpdjJMU0l4UncwR2JTaDNFYngteHg4Y1RsUnpwU3FVUHdsbDRR?oc=5",
+      "published_at": "2026-11-21T14:00:00+09:00",
+      "publisher_host": "www.ilfoglio.it"
     },
     {
       "topic": 7,
@@ -413,24 +431,6 @@
       "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOQ1VwX3hZbVFEMmc2V0d0STgtTzRhcHEyUi1iN0xqWmtYOVdVbnZtRzNhMFRTLUhmTlNnbjVsVkg1eHhCMzQ4ejNzcXFnb0VtclRuWUZCWnhneGo2aklVYlR2V2c5TUZRMGJLTWRSVFVuYlNBQUJramlGZlZJaEhOWEFjOTdQbjA5ZFdpVjMtVG5reVk?oc=5",
       "published_at": "2026-11-20T12:13:11+09:00",
       "publisher_host": "www.ilo.org"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "Credhos participates in national strike in Barrancabermeja, Colombia called by the trade union movement and social organizations",
-      "publisher": "Peace Brigades International-Canada",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQaS1FakR4dktqV0dfT3RCdFZiUDBfQmlmZVp3RHpxUGU5SkQ1QzlUWXlXa0d5amFCNldlb1I1YlhwVktxVUZ0OGFJckFsblJDV1Frb2FpRWx4R1VPQm5GeVRicjdGcHdMalpKZEY1SUhFcmlxOHE2TzQ4bUdoTFFZMmJUbXVDZzF6aWZZZ3c2a3RlQ2RfRHQtcGxTUGV6eUpMTUVpSU1FcU5nWmlaR3NLM0VJMWp4UUVEWFJFS1R0R1VLUk5kX25wN3Rud1B1MXJUOFZXU1hPSW9COC1wTThrdXJXaw?oc=5",
-      "published_at": "2026-11-20T11:28:15+09:00",
-      "publisher_host": "pbicanada.org"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "RMG unrest: ILO calls on all parties to de-escalate, reach a solution",
-      "publisher": "https://dailyasianage.com/",
-      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPcjdqVVZaVmxtaktxVlR3X1B2Sm1SNS14eWhuMGJJNDIzVnU0VENDVFRnTWl6enItX25jMzE0N2QzNmZlUTN0VHF6UXJUcTZ5VWt1V3dFR1RKclp1Y0JGVXdjdE5vTFNhTF90cDNOY25YdTNyRzFEYmM5Uk5PZlpKOVRuR1VsZkwyVzkzMTd6NXAwcWxEa0U1WEp4U3hVN3RnYnlpNmJiMUg?oc=5",
-      "published_at": "2026-11-20T08:47:02+09:00",
-      "publisher_host": "dailyasianage.com"
     }
   ]
 }
