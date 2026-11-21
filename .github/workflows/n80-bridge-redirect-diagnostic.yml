@@ -1,0 +1,83 @@
+name: N80 bridge endpoint redirect diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/n80-bridge-redirect-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe existing NOA endpoint without credentials or redirects
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+          import urllib.error
+          import urllib.parse
+
+          # No X-NOA-Action-Key, OAuth token, cookies or other credentials.
+          # Redirects are intentionally NOT followed.
+          origin = 'https://noastudio.ai.kr'
+          cases = [
+              ('GET', '/'),
+              ('GET', '/noa-gpt.php?op=health'),
+              ('POST', '/noa-gpt.php?op=health'),
+              ('POST', '/noa-gpt.php?op=list'),
+              ('GET', '/noa-gpt-setup.php'),
+          ]
+
+          class StopRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          opener = urllib.request.build_opener(StopRedirect)
+          results = []
+          for method, route in cases:
+              url = origin + route
+              req = urllib.request.Request(
+                  url, method=method, data=b'{}' if method == 'POST' else None,
+                  headers={'Accept': 'application/json',
+                           'Content-Type': 'application/json'})
+              try:
+                  with opener.open(req, timeout=10) as response:
+                      status, headers = response.status, response.headers
+              except urllib.error.HTTPError as error:
+                  status, headers = error.code, error.headers
+              except Exception as error:
+                  results.append({'method': method, 'endpoint': route.split('?')[0],
+                                  'errorType': type(error).__name__})
+                  continue
+              location = headers.get('Location')
+              dest = urllib.parse.urlsplit(urllib.parse.urljoin(url, location)) if location else None
+              # Strip query strings, fragments and credentials from public logs.
+              results.append({
+                  'method': method, 'endpoint': route.split('?')[0],
+                  'operation': urllib.parse.parse_qs(urllib.parse.urlsplit(url).query).get('op', [''])[0],
+                  'status': status,
+                  'redirectHostname': dest.hostname if dest and 300 <= status < 400 else None,
+                  'redirectPath': dest.path if dest and 300 <= status < 400 else None,
+                  'redirectScheme': dest.scheme if dest and 300 <= status < 400 else None,
+                  'server': str(headers.get('Server', ''))[:70],
+              })
+          print('NOA_REDIRECT_DIAGNOSTIC=' + json.dumps(results, ensure_ascii=False))
+          if any(item.get('status', 0) in range(300, 400)
+                 for item in results if item['endpoint'] == '/noa-gpt.php'):
+              raise SystemExit('NOA_API_REDIRECT_DETECTED')
+          if not any(item.get('status') in (401, 403, 405)
+                     for item in results if item['endpoint'] == '/noa-gpt.php'):
+              raise SystemExit('NOA_API_REJECTION_NOT_VERIFIED')
+          PY
