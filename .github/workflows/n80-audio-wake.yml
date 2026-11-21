@@ -1,36 +1,12 @@
-name: N80 Audio Wake Signal Only
-
+# Retired: formerly a periodic/unauthenticated HTTP audio wake.
+# Event-triggered optimization now belongs to the private N80 signed GitHub workflow.
+name: N80 legacy audio wake retired
 on:
   workflow_dispatch:
-  # Upload optimization is EVENT-DRIVEN: never await a four-hour cron.
-  push:
-    paths:
-      - '.github/n80-audio-wake.trigger'
-
-permissions:
-  contents: read
-
-concurrency:
-  group: n80-audio-wake-signal
-  cancel-in-progress: true
-
+permissions: {}
 jobs:
-  wake:
-    name: Wake N80 queue (no audio processing on GitHub)
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
+  retired:
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
     steps:
-      - name: HTTP signal to NOA STUDIO N80
-        shell: bash
-        run: |
-          set -euo pipefail
-          # This action does NOT download, transcode, master or upload audio.
-          # The existing N80 site PHP exclusively owns queued jobs and FFmpeg.
-          url="https://noastudio.ai.kr/?n80_audio_wake=$(date -u +%s)"
-          curl --location --fail --silent --show-error \
-            --connect-timeout 10 --max-time 30 \
-            --retry 1 --retry-delay 2 \
-            -H 'Cache-Control: no-cache' \
-            -H 'Pragma: no-cache' \
-            -A 'NOA-N80-Audio-Wake/1.0' \
-            "$url" > /dev/null
+      - run: echo "Legacy audio wake retired; upload-triggered signed N80 workflow is authoritative"
