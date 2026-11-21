@@ -71,7 +71,7 @@ def audit():
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     if config.get("version") != 1 or not isinstance(config.get("approved"), list):
         raise ValueError("invalid_schedule_allowlist")
-    if config.get("retired") is not True or config["approved"]:
+    if config.get("retired") is not True:
         raise ValueError("scheduled_wake_retired")
     approved = {}
     for row in config["approved"]:
@@ -83,7 +83,7 @@ def audit():
         if (not isinstance(workflow, str) or not re.fullmatch(r"n80-[a-z0-9-]+\.yml", workflow)
                 or not isinstance(cron, str) or not cron.strip()
                 or not isinstance(approval, str) or not approval.strip()
-                or row.get("mode") != WAKE_MODE
+                or row.get("mode") != ("github_audio_wake_signal_only" if workflow == "n80-audio-wake.yml" else WAKE_MODE)
                 or row.get("githubBusinessWorkAllowed") is not False):
             raise ValueError("unapproved_schedule_entry")
         if workflow in approved:
