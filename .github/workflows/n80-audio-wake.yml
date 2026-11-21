@@ -2,8 +2,7 @@ name: N80 Audio Wake Signal Only
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '27 3,7,11,15,19,23 * * *' # KST 12/16/20/00/04/08:27, one N80 audio wake every 4 hours
+  # Upload optimization is EVENT-DRIVEN: never await a four-hour cron.
   push:
     paths:
       - '.github/n80-audio-wake.trigger'
