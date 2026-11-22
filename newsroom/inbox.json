@@ -2,75 +2,101 @@
   "items": [
     {
       "topic": 2,
+      "date": "2026-11-23",
+      "title": "CU, SK브로드밴드 인터넷 가입 지원…생활서비스 플랫폼 '확대'",
+      "publisher": "아시아경제",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5CMEE5UFVlWm9sSjd3NEh1SEtkMVRzNmpSU1U2X29feUFzTGFLYWVjSTBjZ0RES002WlBDQ1ZqeFVvekZoSllmY1JQcDdBa3d2dWlWX2JMZFI1SnpwMWZRZQ?oc=5",
+      "published_at": "2026-11-23T08:27:36+09:00",
+      "publisher_host": "www.asiae.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "CU, 편의점서 SK브로드밴드 인터넷·IPTV 가입 서비스 선봬",
+      "publisher": "뉴스1",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9ucFV2SGh1MlpWTGhzWlF3SUxwcTF2TnJkT2Z0a1VJSE14cmRFaWhRNHdaYVBRbHRpSnpKSV9Rc2pKUUZJMHJOcXgtQXVTU3NNYjBKMkM3TXMyTDQ3MkR3?oc=5",
+      "published_at": "2026-11-23T08:27:22+09:00",
+      "publisher_host": "www.news1.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "CU, SK브로드밴드와 맞손...인터넷∙IPTV 가입 서비스 개시",
+      "publisher": "더트래커",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE9pRGMtLTUtNG5HdktjZVMwcndfVTZzYko1enpTbl94U1RjR3JjUTdoa2NVT0VSVkVXTjVnMVRsS21CM2I4WE5LUjg5TjFFZVM1VTdyeDlCTGI?oc=5",
+      "published_at": "2026-11-23T08:24:43+09:00",
+      "publisher_host": "thetracker.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "SK브로드밴드, 데이터센터의 빈자리 무엇으로 채울까?",
+      "publisher": "비즈워치",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE8tNFhWZHU5QXI4SmxJX3RKdHRzWTdZRGJBR0YxZ0Fwb3AycGY1UUlmTHEyT3p2bHN1TG41cEV3bkVjWTgzSENTR2tSUTBBOERrLWZ3UGVWOHRIenU3eExkUXhYWElFaVc0N1E?oc=5",
+      "published_at": "2026-11-23T07:40:02+09:00",
+      "publisher_host": "news.bizwatch.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "“인터넷·IPTV 가입도 편의점에서\"…CU, SK브로드밴드와 제휴 서비스 개시",
+      "publisher": "팝콘뉴스",
+      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9wdDNleU92azF1Snl3S2JWdVQ0emFGS1JYTUpiOGpyVkVpSVZmeGo1Wk1NekF2LW1LVjMtcE13Y2pnenVhR0RqaUY2ZGM0cS1qdG9lbDdzN0lWM1hvb25zUTY3R3ZxWmJSMU9BVTJ4UQ?oc=5",
+      "published_at": "2026-11-23T07:05:42+09:00",
+      "publisher_host": "www.popcornnews.net"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "CU, SK브로드밴드 인터넷·IPTV 가입 서비스 시작",
+      "publisher": "뉴스후플러스",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1YWlVhV2VTRHY0Z1NiVm45R21YekdsM0dYazU1WTFCdEx0VFlTeVQtb2kxUFBRRkRwTWg0MEtfbnBTUW1McnlWUUI3WEhKSU5wUC14T3c3WlZNdHRHeDFLeTBXS2FvZ0IyTVNXXzhB?oc=5",
+      "published_at": "2026-11-23T07:02:31+09:00",
+      "publisher_host": "www.newswhoplus.com"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "CU, 인터넷∙IPTV 가입 서비스 개시....SK브로드밴드 혜택",
+      "publisher": "싱글리스트",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBJbHFOU2FnQ3d1cmthczIwbHR2QjRBQldlci1WWWt4RFF6ektvRGJtU3VycGZGTE9lQW14TGIwY09jMkhUZkFZZ01maW41LUljQzJXTWFaTl96VXJSRFpGUS1YV1RWZw?oc=5",
+      "published_at": "2026-11-23T06:43:58+09:00",
+      "publisher_host": "www.slist.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-23",
+      "title": "AI & Service ‘하루 한 번이던 지역뉴스가 매시간으로’ B tv AI-Studio가 바꾼 지역 보도국의 하루",
+      "publisher": "SK브로드밴드 뉴스룸",
+      "url": "https://www.skbroadband.com/newsroom/5000",
+      "published_at": "2026-11-23T00:00:00+09:00"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-23",
+      "title": "SKT 에어, 무신사 ‘무진장’서 특가 선보여",
+      "publisher": "SK텔레콤 뉴스룸",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE9aZERWdXlwbl9Ld3B5RjVXSmVnTl9SVnpMNWNTTXZqWkRjUU90R3B1bEZ4X09qV294N1lJNnphdjVRaWRobnYtSg?oc=5",
+      "published_at": "2026-11-23T08:43:10+09:00",
+      "publisher_host": "news.sktelecom.com"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-23",
+      "title": "[칼럼] AI 시대가 요구하는 사람의 힘",
+      "publisher": "SK텔레콤 뉴스룸",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1LM3JrYVZaQ1NPZWdVN1ZBQ3N1aFg4MUtNc2p2dmpQV0VRZkhncEs0bTF2RGU3MkpEMjVvNEFQTzh3RzJveXlQRw?oc=5",
+      "published_at": "2026-11-23T08:32:49+09:00",
+      "publisher_host": "news.sktelecom.com"
+    },
+    {
+      "topic": 3,
       "date": "2026-11-22",
-      "title": "SKB, 부산∼싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "매일경제TV",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9Ed3F4anZUMHU3NFBKWUJ4X0FrLUF5aUx6SXFCSVl4Q3gyMkdfd0lfeERHT0I1QWgzY0Foc3g5MEN5WHR1TzN4TVBLaDI3bjBuUkdHODluMDFILWxjZU5JUG5xa0pXSmo4?oc=5",
-      "published_at": "2026-11-22T19:21:00+09:00",
-      "publisher_host": "mbnmoney.mbn.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-22",
-      "title": "SK브로드밴드, 한국-싱가포르 해저케이블 '양자 보안' 국제 시험망 구축",
-      "publisher": "비즈트리뷴",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1NQ2pDeUZXV1gzYWxsaDlYRmdaVXQtcVd2RFpfU05DQU12Ylh6SlFoV3lEejIySWV2MHBFYUhPMVZHSXhxMmhyWGd2dmMzTXBrdk5Ld1djR1I5YWVuSmxzbU9CZ1FkSmhPeWJlT2tYNTg?oc=5",
-      "published_at": "2026-11-22T18:25:18+09:00",
-      "publisher_host": "www.biztribune.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-22",
-      "title": "SK브로드밴드, 데이터센터·해저케이블 분할…2030년 매출 5조원 목표",
-      "publisher": "아주경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1jYkVBeUNBdU00N2VRTzdrUEFlT1dpMzJrWDc1TGp6d1c5RjQ4YU94Y3NRNHZ3ZDQwbXdQbUpUSC1NZHZsOGN1ZzdLWHZHenFtX3R0RDAxREtEd9IBWEFVX3lxTE1fWXBvTWVvQ1FMSDhmbHBxY3dhanA3TzVUSVBOMTJyZnRURUJJM2V1Q1JoWlVuTEszeTY2VlVUc1gzTEdyenE2THhtaHlyd3I1cDBBQmtkNS0?oc=5",
-      "published_at": "2026-11-22T17:59:23+09:00",
-      "publisher_host": "www.ajunews.com"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-20",
-      "title": "SK브로드밴드, 부산~싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "양자신문",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5DbzdBb1NBUW54UmNGSUNiX3BmZ0ZCVXJjV1lPaGoxelVwLWhBM0x3WWlfbWMtemZKOURIZ1NIT0g0TTk1dlVBSTVUamtFZjF5c2RiRzJoNU5DbzNUQkl2WV9mMG5JT2FQMDYya2FqMA?oc=5",
-      "published_at": "2026-11-20T08:10:00+09:00",
-      "publisher_host": "www.quantumtimes.net"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SKB, 부산~싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "포인트데일리",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBiZUJRQ0FhdXRrRWhHd2M4aFhTa2xQazZFSjdnd2FkZDByYVU5c1JONGVDRkpnbGNMMjFZc0VzUDFVVS1JdlhqM3NlcjZCRmlsczFlMkZhaG9iSWdndUVkYUE2OTlwN2oyeDZ6RHNPTXLSAXRBVV95cUxNUl9OX0l1WUYxYjVtUWRGZ0ZHMTFveGFDOFp3M0s1MDl1MXBoLUlxYlJGei05QnRQaU9vZkQ4ZGJHdkJxenZRTXJVeUFpM2FVa21zNmlqYWlzdEQxTlhWV1FjbU5kdC15eWxmM0lTd0doTjdrNQ?oc=5",
-      "published_at": "2026-11-19T23:59:40+09:00",
-      "publisher_host": "www.pointdaily.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SKT, AIDC 사업 분할에…SKB 노조 “매각대금 재투자해야”",
-      "publisher": "서울경제TV",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9zLURhNzFQRzlWUTVjYjd6azRqTHVCQkxaRlRSejQwd0lDNDVCZm1IeHY2OEFJMGpzaEEzdVdzRWFZLXJkREhuM0cxYlhlemdkMGl1QUc0VVJFWjNweWR2Qlk5REs?oc=5",
-      "published_at": "2026-11-19T18:17:18+09:00",
-      "publisher_host": "www.sentv.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "[IT는 지금] SK브로드밴드, 한국-싱가포르 해저케이블 '양자 보안' 시험망 구축 外",
-      "publisher": "딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE4zaC1RR2dxbkR3TC1Rczk2TTlzbGtpWm9fRHA0ZEItNkc2cUdYWUQ1cThNSDlremlzOERieE4xZFQxWS1KSkpPa3VSMlNrclE?oc=5",
-      "published_at": "2026-11-19T17:24:00+09:00",
-      "publisher_host": "dealsite.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-19",
-      "title": "SK브로드밴드, 부산∼싱가포르 해저케이블에 양자보안 시험망 구축",
-      "publisher": "동아일보",
-      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFB4aWFUeWdobUw2R3FTVkpPUkM1RlEzUERGSi12WHVQNmJNSzZkZVQzMzdaeU11QnhOZzdTQ084dnRiMEpBeXc3b1FmYXlFMjZWZy1rUWdBUjQ0ZmZMNnJCU1RaTjNUQdIBZkFVX3lxTFB4aWFUeWdobUw2R3FTVkpPUkM1RlEzUERGSi12WHVQNmJNSzZkZVQzMzdaeU11QnhOZzdTQ084dnRiMEpBeXc3b1FmYXlFMjZWZy1rUWdBUjQ0ZmZMNnJCU1RaTjNUQQ?oc=5",
-      "published_at": "2026-11-19T17:20:00+09:00",
-      "publisher_host": "www.donga.com"
+      "title": "SK텔레콤, 무신사와 손잡고 에어 요금제 특가…최대 11만원 쇼핑 혜택",
+      "publisher": "이로운넷",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1CVUxyUjctTnZxR1VBbHNGYXBXYzZVcnZudmtJTzlyRFRDQm1xVFlZVmhZdTFaeFNXNUpoemR0bkZNc0dKSmZSNEQ0c2lldEFLT3FqMzJZVUhFM0I4Z1g3TVhwWTFJQQ?oc=5",
+      "published_at": "2026-11-22T22:25:05+09:00",
+      "publisher_host": "www.eroun.net"
     },
     {
       "topic": 3,
@@ -118,31 +144,13 @@
       "publisher_host": "www.cnbnews.com"
     },
     {
-      "topic": 3,
-      "date": "2026-11-20",
-      "title": "앤트로픽 상장 '5조 잭팟'에도…SK텔레콤 주가 12% 급락",
-      "publisher": "아이뉴스24",
-      "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE54R2Y5TFA0LU1ORlA1S0V3OG1MMkVJVG13TEZGcDZyUDZxNTFsdmRJS2pXMFBaSVk5X0hWVndmMjF2UlJmTEZ0Vm1raw?oc=5",
-      "published_at": "2026-11-20T16:42:22+09:00",
-      "publisher_host": "www.inews24.com"
-    },
-    {
-      "topic": 3,
-      "date": "2026-11-20",
-      "title": "SKT 에이닷을 '모두의 AI'로 전환…'에이닷올' 내달 출시",
-      "publisher": "전자신문",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE85RDdadDlCMmRQZlRVRm9OSDhkU1UtcVZWeURHVkVyUlFzYnlNWjlMQjFXVHpsbUZFdHNfTnhUb1l2U1VLU3VMa2NCZUdLQQ?oc=5",
-      "published_at": "2026-11-20T15:22:00+09:00",
-      "publisher_host": "www.etnews.com"
-    },
-    {
-      "topic": 3,
-      "date": "2026-11-20",
-      "title": "[특징주] SK텔레콤, 앤트로픽 나스닥 입성에도 11%대 약세 By EBN",
-      "publisher": "Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBtanVMZk1HXzBfUnkwSUkxS2h2SnRTR09zYkRkeFlCdTFrZ2Q1V1lOOFVac2dqUjBKRUZiT25PUzFTU2IxNU1oUGo5N1ZoajlWN3FVbHNDZzhQbzBfaWFnb2hRV2lPZU1CWTN5NnB4cFE?oc=5",
-      "published_at": "2026-11-20T14:47:00+09:00",
-      "publisher_host": "kr.investing.com"
+      "topic": 4,
+      "date": "2026-11-23",
+      "title": "최태원 SK그룹 회장 ‘도쿄포럼 2026’ 작심 제안 “한일 기업·대학 함께 AI 인재 육성하자”",
+      "publisher": "국민뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE53czd4dFhTU3NxOUJUTms5c3FXQTdVcXBTMTlnWnI5V2lMMUlwdHZENk5jSEdZWEZ4ZG9hZ0NZNko3Q1huSTBTMmRR?oc=5",
+      "published_at": "2026-11-23T00:03:00+09:00",
+      "publisher_host": "www.kookminnews.com"
     },
     {
       "topic": 4,
@@ -208,13 +216,22 @@
       "publisher_host": "www.koreadaily.com"
     },
     {
-      "topic": 4,
-      "date": "2026-11-20",
-      "title": "삼성전자 사장단 인사, LG·SK그룹 마무리...현대차는?",
-      "publisher": "초이스경제",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1ibDYwZ2g0MEhHRml0Ynd6UmtMN01EZ2dkbU1nZlRLZ1BVQ05CUzd3cEN5NER5LVkwYldPb2JGV0NZdVlvS1FUTHI5djRrQ2tCYkQwYlljTTNHaTd6RUpCcVZLNnZYMUZXZnNnZHhxVTHSAXNBVV95cUxOaEtNbW9XNndBZ0FKclpVSzRyV3NzSk1lYS1zczNEMldYM0hzaHpjcTdBRTlaX3RDUkFmRUVpUTRsZC1iN1FDWEZoTFJMUU5BenFvQ1FlMkE2OGRTY3hFUVpOTWZzRldmc3pwZ3lvS2Z2QUFB?oc=5",
-      "published_at": "2026-11-20T11:15:57+09:00",
-      "publisher_host": "www.choicenews.co.kr"
+      "topic": 5,
+      "date": "2026-11-23",
+      "title": "LG전자노동조합 구미지부, 지역 취약계층 아동 위해 장학금 300만원 전달",
+      "publisher": "경북문화신문",
+      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE0zNENKMXVmZTlrY3htNVJ0QjZMaVpqWU1LWTVGeDlTb3BOa3JZZzI5RkVodEJ5SVBjZUo0RmhvZHF2NXlfUGVOMy0yRG40bS16Q2hRbTRvbGRkTlJnbHNvS0tIRmdzU2Fpdy1HY1luNGtoZ1ppdFRwSTJzRW5BQQ?oc=5",
+      "published_at": "2026-11-23T07:41:03+09:00",
+      "publisher_host": "www.gminews.net"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-23",
+      "title": "보건의료노조 주 4일제 시동 건다",
+      "publisher": "매일노동뉴스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFB1NnIydUhBT19GUkI2S1RBeHJuOUpmdEhJMjM3QnY5NVlrN1lXM2swMnUzTDAzbmZLVS03TDZ4SndkbHdmeXlNRVppU0M2M2dpdGN5c0plOFNXaDktY0NfdXhSTE5pLXNEN09lUnQ4Vmw?oc=5",
+      "published_at": "2026-11-23T06:30:04+09:00",
+      "publisher_host": "www.labortoday.co.kr"
     },
     {
       "topic": 5,
@@ -233,6 +250,15 @@
       "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBoSDNqX0RCSnQ2T1RrLURUZ3hmN2ZTZ01zSFVFcGVRejBmalZrWFAtWU9uaVhhcWZLVkxxalVrTVUtRkI5UnN0ZW4wTXd6ajV0YXpzVHRfSGk?oc=5",
       "published_at": "2026-11-23T01:41:55+09:00",
       "publisher_host": "tapain.com"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-23",
+      "title": "노동조합이 조직한 놀이터에서 기업 내 결속력 강화",
+      "publisher": "Laodong.vn",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNR2o2cld6YnlUX01ybHRuQzBPNkk5ZnZkQ3VYUHRUcXVzZm54QWJkUnN1RFRxZVB3MU5wdFpmMGczTDl4QUlPakhQOHdvNWZxZEFlVXk2dm82UXdyZ2N3OHVYSWgtdWU1QkJ5aUl0RnAtY3VJWTZGUzFnZFQ4YkdTVlJuNDc3dmlQODRtSGkyUDdZamNKV2w0Y18zR0UxdThsMHN5TVlMUGNUZXc?oc=5",
+      "published_at": "2026-11-23T00:35:43+09:00",
+      "publisher_host": "ko.laodong.vn"
     },
     {
       "topic": 5,
@@ -259,33 +285,6 @@
       "publisher": "Vietnam.vn",
       "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOWUNQRERHTGViWEtPaE9ZdmRETTI5MWh2OG1BZ2NRTmZkZ2hQZE00Q3JpQkNGQ3lDbXcxQTQxcGoydGl3Q3NZNDh5bkl3ajBSeDdPX24tZDBlM3EtUDc2RlVGclNVRFFFUFN5Q3l1MGJMY2NzNW1pdHBnLVB1UElsRURSN2M4SkQ1WHgxbDRQQWJjWW45NWVNS0tfZlkweG8?oc=5",
       "published_at": "2026-11-22T22:43:19+09:00",
-      "publisher_host": "www.vietnam.vn"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-22",
-      "title": "지방 노동조합은 노동자 문화 축제에 대한 응답으로 피클볼 토너먼트를 개최했습니다.",
-      "publisher": "Vietnam.vn",
-      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNSVJ3Q1VMSUQ0UG5tbUlrLXY0VWRkSE1Ed2Eyc2ZuMm5BSmhqRDY3MWpTeXFnN0VSei0wY1FUMXVoanp4dmN6RjlTM2pnYWJiLW95UFZhZC1WbU9mNGx0LW0tTkk1REphX1VzMkZiSldSNExZV082bk9oR3ZZcEVIVTAyUzBtMFc2MUJTQm5mQ2dfa2MwU1Iwdm5DS1hFZDlleEZlVzBkel9VdDdVYXo4?oc=5",
-      "published_at": "2026-11-22T22:21:28+09:00",
-      "publisher_host": "www.vietnam.vn"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-22",
-      "title": "노동조합, 중대재해 예방 주체로 나서야…노동자 참여·안전문화 정착 강조",
-      "publisher": "강원신문",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE12ZDdOZG5EQ29OQXpDMUdWZjlpdEhYRGpTZ18tclFYdU84VnJIUV9uRnhueVg4MVpHd2pidlNHZ1VFRkhtdm5nNm1TNlpITFpqSmJvN2E4OEc0cm5QSjhlcFlOZFlyeVVt?oc=5",
-      "published_at": "2026-11-22T20:33:35+09:00",
-      "publisher_host": "www.gwnews.org"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-22",
-      "title": "직원들은 회사에서 열리는 지역 음식 축제에 대해 기대감을 드러냈다.",
-      "publisher": "Vietnam.vn",
-      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPeE13dXJTYkxQWkdwdVp2RFAyeGU0MG1ubzdjQ0tXUHZLU296QnE4cVlHbHdSM18td1QydnlleFZlU2ZxRFVmZ0M1MGVwQkZsUlBTVThOeHNCUkNwT1JzZUgtbnh2RVJWY1V0V0FsRlJJRTdNWXkwVzdLb3RmX3BsMmdqZTZzZEZKTm9mNms0bEU?oc=5",
-      "published_at": "2026-11-22T20:31:08+09:00",
       "publisher_host": "www.vietnam.vn"
     },
     {
@@ -417,20 +416,20 @@
     {
       "topic": 7,
       "date": "2026-11-20",
+      "title": "Saudi Arabia: ITUC and ITUC-Africa welcome agreement on migrant workers' rights and call for concrete action",
+      "publisher": "International Trade Union Confederation",
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOWFRuaWtpY1VhcElaemZLZ1JKUXpnMzFURngwRDdoX2tFcG1SM05IemlNdDBTaUVIRFlfSHZqQ0tSMFVmUTVWN2hHUUxBY2NRTXdRWURtZVpNeHhZb1d4QkhaMlE5S2ZyWFNGNmk0dWd2Rnhfdy01OEhVSTM3eDl2YXZB?oc=5",
+      "published_at": "2026-11-20T22:04:38+09:00",
+      "publisher_host": "www.ituc-csi.org"
+    },
+    {
+      "topic": 7,
+      "date": "2026-11-20",
       "title": "Haiti - South : An ILO project creates more than 8,600 workdays",
       "publisher": "HaitiLibre.com",
       "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNbm1ON205SmFBREo0Q2dQZFdXV09VWExKdGlZajBhME5KNG5qQWJFbzVmeFpmdjBfenBycXl4bkhINl9KZ0lxMUtHdkhJbHFrUGh3Si1ReFdvS2gzYU5EWkt3M3FKLTZLcDlxM2hZOVNBYTA0ZTVTdnVmcXpQMU5EOHVtd09uaWRZZzk3S2JyXzRXaEJiTU5QMkNINU9OcnlYQ3gzU3FWTE8?oc=5",
       "published_at": "2026-11-20T21:27:11+09:00",
       "publisher_host": "www.haitilibre.com"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-20",
-      "title": "Young trade union leaders seek to advance fair recruitment and protect migrant workers in India",
-      "publisher": "International Labour Organization",
-      "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPalYwM29PMEs2b0Q1R3FDYkR6eGFiNklIY0RXOVVGSWxRM2NXbXpyVFZHclJ2ODBoRkR3eE9rdUtrekQ2OUREbHJkd3pJMnB3bUNSTjEwaXMtTWlMaU5NYnY0OTZJQlRidnQ5a1lwMWxCamZMQ1hGQ2hBQWZqZHRpQlJmbkxjd0VqUHRCbVp5eDdDRUQtMDNEWWVHbHlkSEZPUjdabE13QURrSmZqU1E?oc=5",
-      "published_at": "2026-11-20T20:48:32+09:00",
-      "publisher_host": "www.ilo.org"
     }
   ]
 }
