@@ -87,12 +87,32 @@ jobs:
               sftp=paramiko.SFTPClient.from_transport(transport)
               if sftp.normalize(ROOT)!=ROOT:
                   raise RuntimeError("root_mismatch")
+              home=sftp.normalize(".")
+              report["sftpHome"]=home
+              try:
+                  home_info=sftp.lstat(home)
+                  report["sftpHomeExists"]=stat.S_ISDIR(home_info.st_mode)
+                  if report["sftpHomeExists"]:
+                      entries=sftp.listdir_attr(home)
+                      report["sftpHomeEntriesCount"]=len(entries)
+                      safe_names={"html","www","wwwroot","public_html","htdocs","web","site","rucyjeon79","hosting","busan","busan-assistant"}
+                      report["candidateDirectories"]=sorted([
+                          entry.filename for entry in entries
+                          if entry.filename in safe_names and stat.S_ISDIR(entry.st_mode)
+                      ])
+              except OSError:
+                  report["sftpHomeStatus"]="not_readable"
               for label, path in (
                   ("root", ROOT),
                   ("module_parent", ROOT+"/busan-assistant"),
                   ("newsroom", ROOT+"/busan-assistant/newsroom"),
                   ("extend", ROOT+"/extend"),
                   ("private", "/hosting/rucyjeon79/busan-assistant-private"),
+                  ("home", home),
+                  ("home_html",home.rstrip("/")+"/html"),
+                  ("home_www",home.rstrip("/")+"/www"),
+                  ("home_public_html",home.rstrip("/")+"/public_html"),
+                  ("hosting", "/hosting"),
               ):
                   try:
                       item=sftp.lstat(path)
