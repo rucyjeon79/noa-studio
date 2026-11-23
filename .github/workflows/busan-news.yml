@@ -1,7 +1,10 @@
 name: Busan reporter newsroom
 on:
   push:
-    branches: [main, busan/news-copy]
+    # Publishing ChatGPT editions on busan/news-copy is handled by the
+    # private newsroom OIDC workflow (scheduled :20/:45 KST and owner one-shot).
+    # Do not start the legacy SFTP deploy on each editorial commit.
+    branches: [main]
     paths: ['deploy/busan/newsroom/**', 'scripts/busan_news/**', 'newsroom/editions/**', '.github/workflows/busan-news.yml']
   workflow_dispatch:
 permissions: {contents: read}
