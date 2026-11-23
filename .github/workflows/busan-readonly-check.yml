@@ -133,6 +133,20 @@ jobs:
                       except Exception: pass
           print("Busan SFTP path audit:",json.dumps(report,ensure_ascii=False))
           PY
+      - name: Compare public Busan DNS with approved SSH target (read-only)
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, socket
+          from scripts.busan_readonly_check import HOST
+          domain="skhnslu-busan.com"
+          try:
+              addresses=sorted({row[4][0] for row in socket.getaddrinfo(domain,443,family=socket.AF_INET,type=socket.SOCK_STREAM)})
+              report={"domain":domain,"resolvedIps":addresses,"configuredSshHostMatchesARecord":HOST in addresses,"mode":"read_only"}
+          except OSError as e:
+              report={"domain":domain,"error":type(e).__name__,"mode":"read_only"}
+          print("Busan site DNS audit:",json.dumps(report))
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
