@@ -55,15 +55,28 @@ def write(s, path, data, mode):
             pass
 
 
+def ensure_managed_directory(s, path):
+    # Only known public news-module directories may be created. Never traverse
+    # symlinks or create arbitrary remote directories from input.
+    permitted = (ROOT+'/busan-assistant', ROOT+'/'+MODULE, ROOT+'/extend')
+    if path not in permitted:
+        raise RuntimeError('Unexpected newsroom directory')
+    try:
+        info = s.lstat(path)
+    except FileNotFoundError:
+        s.mkdir(path, 0o755)
+        info = s.lstat(path)
+    if not stat.S_ISDIR(info.st_mode) or s.normalize(path) != path:
+        raise RuntimeError('Unexpected newsroom directory state')
+
+
 def main(s):
     if s.normalize(ROOT) != ROOT or s.normalize(PRIVATE) != PRIVATE:
         raise RuntimeError('Unexpected hosting account')
-    directory = ROOT+'/'+MODULE
-    try:
-        s.mkdir(directory, 0o755)
-    except OSError:
-        if s.normalize(directory) != directory or not stat.S_ISDIR(s.lstat(directory).st_mode):
-            raise
+    # The previous release tried mkdir(parent/child) before the parent existed.
+    # Verify/create the parent first, then the module and native extend dir.
+    for directory in (ROOT+'/busan-assistant', ROOT+'/'+MODULE, ROOT+'/extend'):
+        ensure_managed_directory(s, directory)
     manifest_path = PRIVATE+'/newsroom-manifest.json'
     manifest = json.loads(read(s, manifest_path, 1500000) or b'{}')
     tracked = manifest.setdefault('assets', {})
