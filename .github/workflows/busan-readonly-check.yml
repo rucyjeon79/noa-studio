@@ -58,6 +58,61 @@ jobs:
           BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
           BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
         run: python scripts/busan_readonly_check.py
+      - name: Inspect approved Busan newsroom directories (read-only)
+        if: always()
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python - <<'PY'
+          import hmac, json, os, socket, stat, paramiko
+          from scripts.busan_readonly_check import configuration, fingerprint, PORT, ROOT
+          host, user, password, trusted = configuration(os.environ)
+          sock = transport = sftp = None
+          report = {"mode":"read_only","server_files_changed":0,"checks":[]}
+          try:
+              sock=socket.create_connection((host,PORT),timeout=15)
+              transport=paramiko.Transport(sock)
+              transport.banner_timeout=15
+              transport.auth_timeout=15
+              transport.get_security_options().key_types=('ssh-ed25519',)
+              transport.start_client(timeout=20)
+              if not hmac.compare_digest(fingerprint(transport.get_remote_server_key()),trusted):
+                  raise RuntimeError("host_key_mismatch")
+              transport.auth_password(user,password,fallback=False)
+              if not transport.is_authenticated():
+                  raise RuntimeError("authentication_failed")
+              sftp=paramiko.SFTPClient.from_transport(transport)
+              if sftp.normalize(ROOT)!=ROOT:
+                  raise RuntimeError("root_mismatch")
+              for label, path in (
+                  ("root", ROOT),
+                  ("module_parent", ROOT+"/busan-assistant"),
+                  ("newsroom", ROOT+"/busan-assistant/newsroom"),
+                  ("extend", ROOT+"/extend"),
+                  ("private", "/hosting/rucyjeon79/busan-assistant-private"),
+              ):
+                  try:
+                      item=sftp.lstat(path)
+                      row={"label":label,"exists":True,"directory":stat.S_ISDIR(item.st_mode),
+                           "permissionBits":oct(stat.S_IMODE(item.st_mode)),
+                           "normalized":sftp.normalize(path)==path}
+                  except FileNotFoundError:
+                      row={"label":label,"exists":False}
+                  except OSError:
+                      row={"label":label,"exists":"unknown","error":"stat_unavailable"}
+                  report["checks"].append(row)
+          except Exception as error:
+              report["error"]=type(error).__name__ if str(error)!="host_key_mismatch" else "host_key_mismatch"
+          finally:
+              for item in (sftp,transport,sock):
+                  if item is not None:
+                      try: item.close()
+                      except Exception: pass
+          print("Busan SFTP path audit:",json.dumps(report,ensure_ascii=False))
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
