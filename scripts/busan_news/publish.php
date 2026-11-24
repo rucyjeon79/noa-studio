@@ -68,24 +68,37 @@ function bnvalidate($a){
     $d=DateTimeImmutable::createFromFormat('!Y-m-d',$a['date']??'');
     if(!$d||$d->format('Y-m-d')!==$a['date']||$a['date']>G5_TIME_YMD)throw new RuntimeException('article date');
 }
-function bnpublish($a) {
+function bnpublish($a,$admin_id,$write_point) {
     global $g5;
     $wt=$g5['write_prefix'].BN_BOARD;
     $key=hash('sha256',$a['url']);$event=hash('sha256',preg_replace('/[\p{P}\p{Z}\s]+/u','',mb_strtolower($a['title'])));
-    $row=sql_fetch("SELECT wr_id FROM `$wt` WHERE wr_is_comment=0 AND (wr_3='$key' OR wr_4='$event') LIMIT 1",false);
+    $row=sql_fetch("SELECT wr_id,mb_id,wr_5 FROM `$wt` WHERE wr_is_comment=0 AND (wr_3='$key' OR wr_4='$event') LIMIT 1",false);
     $new=empty($row['wr_id']);
     if($new){
         $body='';
         foreach($a['body'] as $p)$body.='<p>'.bneh($p).'</p>';
         $body.='<p><strong>출처</strong> · '.bneh($a['publisher']).' · '.bneh($a['date']).' &nbsp; <a href="'.bneh($a['url']).'" target="_blank" rel="noopener noreferrer">원문 읽기 ↗</a></p>';
         $post=['wr_num'=>get_next_num($wt),'wr_reply'=>'','wr_option'=>'html1','wr_subject'=>$a['title'],'wr_content'=>$body,
-          'mb_id'=>'busanjibuon','wr_name'=>'챗지기자','wr_datetime'=>G5_TIME_YMDHIS,'wr_last'=>G5_TIME_YMDHIS,'ca_name'=>BN_TOPICS[$a['topic']-1],
-          'wr_1'=>$a['date'],'wr_2'=>$a['topic'],'wr_3'=>$key,'wr_4'=>$event,'wr_link1'=>$a['url'],'wr_link2'=>'','wr_ip'=>'','wr_seo_title'=>function_exists('generate_seo_title')?generate_seo_title($a['title']):''];
+          'mb_id'=>$admin_id,'wr_name'=>'챗지기자','wr_datetime'=>G5_TIME_YMDHIS,'wr_last'=>G5_TIME_YMDHIS,'ca_name'=>BN_TOPICS[$a['topic']-1],
+          'wr_1'=>$a['date'],'wr_2'=>$a['topic'],'wr_3'=>$key,'wr_4'=>$event,'wr_5'=>$write_point>0?'bn-point-pending-v1':'','wr_link1'=>$a['url'],'wr_link2'=>'','wr_ip'=>'','wr_seo_title'=>function_exists('generate_seo_title')?generate_seo_title($a['title']):''];
         bnq("INSERT INTO `$wt` SET ".bnset($post));$id=(int)sql_insert_id();
     }else{$id=(int)$row['wr_id'];}
     bnq("UPDATE `$wt` SET wr_parent=$id WHERE wr_id=$id AND wr_parent=0");
     $nt=$g5['board_new_table'];
     bnq("INSERT INTO $nt (bo_table,wr_id,wr_parent,bn_datetime,mb_id) SELECT 'busan_news',$id,$id,wr_datetime,mb_id FROM `$wt` WHERE wr_id=$id AND wr_datetime>=DATE_SUB(NOW(),INTERVAL 7 DAY) AND NOT EXISTS(SELECT 1 FROM $nt WHERE bo_table='busan_news' AND wr_id=$id)");
+    // Only articles created under this policy receive writing points. Native relation
+    // keys make recovery idempotent, including a retry after an interrupted award.
+    $pending=$new ? $write_point>0 : ($row['wr_5']??'')==='bn-point-pending-v1';
+    if($pending){
+        $recipient=$new ? $admin_id : (string)$row['mb_id'];
+        if($write_point<=0 || $recipient==='')throw new RuntimeException('news point policy unavailable');
+        if(!function_exists('insert_point'))throw new RuntimeException('point ledger unavailable');
+        insert_point($recipient,$write_point,'챗지기자 기사 발행 +'.$write_point.'P',BN_BOARD,(string)$id,'쓰기');
+        $pt=$g5['point_table'];
+        $entry=sql_fetch("SELECT po_point FROM $pt WHERE mb_id=".bnvalue($recipient)." AND po_rel_table=".bnvalue(BN_BOARD)." AND po_rel_id=".bnvalue((string)$id)." AND po_rel_action=".bnvalue('쓰기')." LIMIT 1",false);
+        if((int)($entry['po_point']??0)<=0)throw new RuntimeException('news point not verified');
+        bnq("UPDATE `$wt` SET wr_5='bn-point-credited-v1' WHERE wr_id=$id AND wr_5='bn-point-pending-v1'");
+    }
     return ['id'=>$id,'created'=>$new];
 }
 $stage='input';
@@ -100,8 +113,15 @@ try{
     $stage='lock'; $lock=sql_fetch("SELECT GET_LOCK('busan_news_publish_v1',15) AS ok",false);
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
     $stage='setup';if (!defined('BUSAN_ACCOUNT_NEWS')) bnsetup();
-    $actor=get_member('busanjibuon');if(empty($actor['mb_id']))throw new RuntimeException('reporter account missing');
-    $stage='publish';$rows=[];foreach($input as $a)$rows[]=bnpublish($a);
+    // Resolve the site's configured super administrator, never a display nickname.
+    $admin_id=(string)($config['cf_admin']??'');
+    if($admin_id==='')throw new RuntimeException('super administrator not configured');
+    $actor=get_member($admin_id);
+    if(($actor['mb_id']??'')!==$admin_id||!empty($actor['mb_leave_date'])||!empty($actor['mb_intercept_date']))throw new RuntimeException('super administrator unavailable');
+    $policy=sql_fetch("SELECT bo_write_point FROM {$g5['board_table']} WHERE bo_table='busan_news' LIMIT 1",false);
+    if(!isset($policy['bo_write_point']))throw new RuntimeException('news board policy missing');
+    $write_point=!empty($config['cf_use_point'])?max(0,(int)$policy['bo_write_point']):0;
+    $stage='publish';$rows=[];foreach($input as $a)$rows[]=bnpublish($a,$admin_id,$write_point);
     bnq("UPDATE {$g5['board_table']} SET bo_count_write=(SELECT COUNT(*) FROM `{$g5['write_prefix']}busan_news` WHERE wr_is_comment=0) WHERE bo_table='busan_news'");
     if(function_exists('delete_cache_latest'))delete_cache_latest('busan_news');
     echo json_encode(['ok'=>true,'rows'=>$rows]);
