@@ -73,6 +73,10 @@ def audit():
         raise ValueError("invalid_schedule_allowlist")
     if config.get("retired") is not True:
         raise ValueError("scheduled_wake_retired")
+    if (config.get("youtubeFanReplyWakeAuthority") != "google_apps_script"
+            or config.get("githubYoutubeWakeProhibited") is not True
+            or config.get("busanWorkflowsExcluded") is not True):
+        raise ValueError("google_apps_script_wake_authority_required")
     approved = {}
     for row in config["approved"]:
         if not isinstance(row, dict):
@@ -104,6 +108,14 @@ def audit():
         # Ignore YAML comments, not workflow definitions.
         text = "\n".join(line for line in text.splitlines()
                          if not line.lstrip().startswith("#"))
+        # NOA YouTube's four-hour authenticated wake is owned solely by
+        # Google Apps Script. Reject reintroduced GitHub triggers even when
+        # they use workflow_dispatch/push instead of cron.
+        forbidden = ("youtube-auto-wake.php", "fan_reply_tick",
+                     "N80_FAN_REPLY_WAKE_KEY", "n80WakeIfDue",
+                     "X-N80-WAKE-SENDER")
+        if any(token in text for token in forbidden):
+            bad.append(f"{path.name}: github_youtube_wake_retired_use_gas")
         expressions = [x.strip() for x in CRON.findall(text)]
         if expressions:
             seen.add(path.name)
