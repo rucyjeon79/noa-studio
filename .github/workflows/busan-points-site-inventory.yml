@@ -1,0 +1,24 @@
+name: Busan live point hook inventory - read only
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-points-site-inventory.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Inspect fixed-path source hook names only
+        env:
+          BUSAN_SSH_HOST: SSH_HOST
+          BUSAN_SSH_USER: SSH_USER
+          BUSAN_SSH_PASSWORD: SSH_PASSWORD
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python3 -m pip install -q paramiko==3.5.1
+          python3 scripts/busan_points_site_inventory.py
