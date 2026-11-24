@@ -17,9 +17,9 @@ jobs:
       - run: python3 -m pip install -q paramiko==3.5.1
       - name: Read-only SSH command availability (no remote writes)
         env:
-          BUSAN_${{ secrets.BUSAN_SSH_HOST }}: SSH_HOST
-          BUSAN_${{ secrets.BUSAN_SSH_USER }}: SSH_USER
-          BUSAN_${{ secrets.BUSAN_SSH_PASSWORD }}: SSH_PASSWORD
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
           BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
         run: |
           python3 - <<'PY'
