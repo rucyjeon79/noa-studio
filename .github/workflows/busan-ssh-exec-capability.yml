@@ -1,0 +1,64 @@
+name: Busan SSH shell capability probe - read only
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-ssh-exec-capability.yml']
+permissions: {contents: read}
+concurrency: {group: busan-ssh-shell-probe, cancel-in-progress: false}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python3 -m pip install -q paramiko==3.5.1
+      - name: Read-only SSH command availability (no remote writes)
+        env:
+          BUSAN_${{ secrets.BUSAN_SSH_HOST }}: SSH_HOST
+          BUSAN_${{ secrets.BUSAN_SSH_USER }}: SSH_USER
+          BUSAN_${{ secrets.BUSAN_SSH_PASSWORD }}: SSH_PASSWORD
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python3 - <<'PY'
+          import hmac,json,os,socket
+          import paramiko
+          from scripts.busan_readonly_check import configuration,fingerprint,PORT
+          host,user,password,pin=configuration(os.environ)
+          tests={
+            'shell_printf':("printf 'BUSAN_SSH_EXEC_OK\\n'", lambda out,code:code==0 and out.strip()=='BUSAN_SSH_EXEC_OK'),
+            'shell_pwd':("pwd",lambda out,code:code==0 and out.startswith('/')),
+            'webroot_exists':("test -d /hosting/rucyjeon79/html",lambda out,code:code==0),
+            'gnuboard_common_exists':("test -f /hosting/rucyjeon79/html/common.php",lambda out,code:code==0),
+            'php_command_available':("command -v php >/dev/null 2>&1",lambda out,code:code==0),
+          }
+          report={'target':'busan','read_only':True,'authenticated':False,'exec_channel':None,'results':{}}
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+            with paramiko.Transport(sock) as tr:
+              tr.banner_timeout=15;tr.auth_timeout=15
+              tr.get_security_options().key_types=('ssh-ed25519',)
+              tr.start_client(timeout=20)
+              if not hmac.compare_digest(fingerprint(tr.get_remote_server_key()),pin):
+                raise SystemExit('BUSAN_SSH_EXEC status=blocked reason=host_key_mismatch')
+              tr.auth_password(user,password,fallback=False)
+              if not tr.is_authenticated():
+                raise SystemExit('BUSAN_SSH_EXEC status=blocked reason=not_authenticated')
+              report['authenticated']=True
+              for label,(command,test) in tests.items():
+                try:
+                  with tr.open_session(timeout=12) as channel:
+                    channel.settimeout(15)
+                    channel.exec_command(command)
+                    report['exec_channel']=True
+                    stdout=channel.makefile('rb').read(2048).decode('utf-8','replace')
+                    stderr=channel.makefile_stderr('rb').read(2048)
+                    code=channel.recv_exit_status()
+                    report['results'][label]={'accepted':True,'passed':bool(test(stdout,code)),
+                      'exit_code':code,'stderr_present':bool(stderr),'stdout_bytes':len(stdout)}
+                except Exception as exc:
+                  report['results'][label]={'accepted':False,'error_type':type(exc).__name__}
+                  if report['exec_channel'] is None:report['exec_channel']=False
+          print('BUSAN_SSH_EXEC',json.dumps(report,ensure_ascii=False))
+          PY
