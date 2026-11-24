@@ -1,0 +1,28 @@
+name: Busan ON unified point policy contract (offline audit)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/busan-point-policy.json'
+      - 'docs/busan/POINT_POLICY_UNIFICATION.md'
+      - 'scripts/busan_point_contract.py'
+      - 'scripts/busan_tests/test_busan_point_contract.py'
+      - '.github/workflows/busan-point-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  point-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Verify read-only native point agreement contract
+        run: |
+          python3 -m py_compile scripts/busan_point_contract.py
+          python3 -m unittest discover -s scripts/busan_tests -p 'test_busan_point_contract.py' -v
+      - name: Verify no production changes without an admin snapshot
+        run: python3 scripts/busan_point_contract.py
