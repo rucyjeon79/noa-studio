@@ -1,6 +1,10 @@
 {
   "version": 1,
   "approved": [],
-  "note": "Audio optimization must wake on each uploaded source event, never via GitHub cron; N80 resident host runner retired. Four-hour schedules apply only to periodic work.",
-  "retired": true
+  "note": "NOA YouTube four-hour fan-reply wake is owned by Google Apps Script; GitHub cron/YouTube wake is retired. Busan workflows are explicitly outside NOA policy and must remain unchanged.",
+  "retired": true,
+  "youtubeFanReplyWakeAuthority": "google_apps_script",
+  "githubYoutubeWakeProhibited": true,
+  "busanWorkflowsExcluded": true,
+  "lastVerifiedNoaWorkflowAudit": "2026-11-24"
 }
