@@ -1,0 +1,46 @@
+name: Busan ON host bridge bootstrap - fail closed
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/busan-host-bridge-bootstrap.yml'
+permissions: {contents: read}
+concurrency:
+  group: busan-readonly-sftp
+  cancel-in-progress: false
+jobs:
+  audit-and-install:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate controller syntax and strict operation contract
+        run: |
+          php -l deploy/busan/host-bridge/host-bridge.php
+          python3 -m py_compile scripts/busan_host_bridge_install.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('deploy/busan/host-bridge/host-bridge.php').read_text()
+          assert 'bh_verified_claims' in p and 'repository_id' in p
+          assert 'host.inspect.v1' in p and 'host.apply.v1' in p
+          assert 'busan-points-bridge.yml' not in p
+          assert 'busan-host-bridge.yml@refs/heads/main' in p
+          assert 'busan-assistant-private' in p
+          assert 'expected_sha256' in p and 'backup-' in p
+          for forbidden in ('eval(', 'shell_exec(', 'passthru(', 'proc_open(', 'sql_query(', 'system('):
+              assert forbidden not in p, forbidden
+          print('BUSAN_HOST_BRIDGE_POLICY verified=1')
+          PY
+      - run: python3 -m pip install -q paramiko==3.5.1
+      - name: Bootstrap only when the original live site root is verified
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python3 scripts/busan_host_bridge_install.py
