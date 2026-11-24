@@ -46,6 +46,22 @@ jobs:
               if not tr.is_authenticated():
                 raise SystemExit('BUSAN_SSH_EXEC status=blocked reason=not_authenticated')
               report['authenticated']=True
+              import posixpath, stat
+              from scripts.busan_readonly_check import ROOT
+              with paramiko.SFTPClient.from_transport(tr) as sftp:
+                sftp.get_channel().settimeout(12)
+                home = sftp.normalize('.')
+                roots = {'configured': ROOT, 'login': home, 'login_html': posixpath.join(home, 'html'), 'virtual_html': '/html', 'virtual_root': '/'}
+                markers = ('common.php', 'index.php', 'busan-assistant', 'busan-assistant/style.css', 'data/dbconfig.php', '../busan-assistant-private')
+                for label, root in roots.items():
+                  states = {}
+                  for marker in ('.', *markers):
+                    try:
+                      mode = sftp.lstat(posixpath.normpath(posixpath.join(root, marker))).st_mode
+                      states[marker] = 'directory' if stat.S_ISDIR(mode) else 'file' if stat.S_ISREG(mode) else 'other'
+                    except OSError as error:
+                      states[marker] = 'errno_' + str(error.errno)
+                  print('BUSAN_SFTP_ROOT', label, json.dumps(states), flush=True)
               for label,(command,test) in tests.items():
                 try:
                   with tr.open_session(timeout=12) as channel:
