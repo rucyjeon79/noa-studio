@@ -61,4 +61,8 @@ jobs:
                   report['results'][label]={'accepted':False,'error_type':type(exc).__name__}
                   if report['exec_channel'] is None:report['exec_channel']=False
           print('BUSAN_SSH_EXEC',json.dumps(report,ensure_ascii=False))
+          required = ('shell_printf', 'shell_pwd', 'webroot_exists', 'gnuboard_common_exists')
+          failed = [name for name in required if not report['results'][name].get('passed')]
+          if failed:
+              raise SystemExit('BUSAN_SSH_EXEC failed=' + ','.join(failed))
           PY
