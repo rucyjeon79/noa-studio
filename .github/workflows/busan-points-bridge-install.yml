@@ -1,0 +1,46 @@
+name: Busan ON secure point bridge install
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/busan-points-bridge-install.yml'
+      - 'scripts/busan_points_bridge_install.py'
+      - 'deploy/busan/points/points-inventory.php'
+permissions: {contents: read}
+concurrency:
+  group: busan-readonly-sftp
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Lint point inspector
+        run: php -l deploy/busan/points/points-inventory.php
+      - name: Enforce strict read-only endpoint contract
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          text=Path('deploy/busan/points/points-inventory.php').read_text()
+          assert 'points.inventory.v1' in text and 'bp_identity(' in text
+          assert '1442403680' in text and 'busan-points-bridge.yml@refs/heads/main' in text
+          assert 'cf_register_point' in text and 'bo_write_point' in text
+          assert 'sql_fetch_array($result)' in text
+          assert not re.search(r'\b(INSERT|UPDATE|DELETE|REPLACE|TRUNCATE|DROP|ALTER)\s+(?:INTO\s+|FROM\s+)?[A-Za-z_]',text,re.I)
+          print('BUSAN_READ_ONLY_CONTRACT passed')
+          PY
+      - run: python3 -m pip install -q paramiko==3.5.1
+      - name: Install one endpoint if and only if real webroot is verified
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python3 scripts/busan_points_bridge_install.py
