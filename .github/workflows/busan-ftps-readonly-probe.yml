@@ -25,13 +25,18 @@ jobs:
           assert os.getenv('BUSAN_SSH_HOST') == '112.175.184.79' and os.getenv('BUSAN_SSH_USER') == 'rucyjeon79', 'account mismatch'
           output={'mode':'strict_ftps_readonly','authenticated':False,'webroot_verified':False,'remote_changes':0}
           ftp=None
+          stage='connect'
           try:
               # Domain refers to the verified public site. No insecure FTP fallback.
               ftp=ftplib.FTP_TLS(context=ssl.create_default_context(),timeout=12)
               ftp.connect('skhnslu-busan.com',21,timeout=12)
+              stage='auth_tls'
               ftp.auth()
+              stage='login'
               ftp.login(user=os.environ['BUSAN_SSH_USER'],passwd=os.environ['BUSAN_SSH_PASSWORD'])
+              stage='data_tls'
               ftp.prot_p()
+              stage='list'
               output['authenticated']=True
               output['cwd']=ftp.pwd().rsplit('/',1)[-1] if ftp.pwd() else '(unknown)'
               try:
@@ -42,6 +47,7 @@ jobs:
               except ftplib.all_errors as ex:
                   output['list_reason']=type(ex).__name__
           except Exception as ex:
+              output['failure_stage']=stage
               output['failure_type']=type(ex).__name__
               if isinstance(ex,ftplib.error_perm):
                   output['failure_class']='ftp_reply_rejected'
