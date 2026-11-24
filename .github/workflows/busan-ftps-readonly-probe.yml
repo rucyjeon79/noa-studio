@@ -1,0 +1,58 @@
+name: Busan hosting FTPS safe read-only probe
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/busan-ftps-readonly-probe.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Read-only authenticated FTPS probe, strict TLS only
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import ftplib, json, os, ssl
+          assert os.getenv('BUSAN_SSH_HOST') == '112.175.184.79' and os.getenv('BUSAN_SSH_USER') == 'rucyjeon79', 'account mismatch'
+          output={'mode':'strict_ftps_readonly','authenticated':False,'webroot_verified':False,'remote_changes':0}
+          ftp=None
+          try:
+              # Domain refers to the verified public site. No insecure FTP fallback.
+              ftp=ftplib.FTP_TLS(context=ssl.create_default_context(),timeout=12)
+              ftp.connect('skhnslu-busan.com',21,timeout=12)
+              ftp.auth()
+              ftp.login(user=os.environ['BUSAN_SSH_USER'],passwd=os.environ['BUSAN_SSH_PASSWORD'])
+              ftp.prot_p()
+              output['authenticated']=True
+              output['cwd']=ftp.pwd().rsplit('/',1)[-1] if ftp.pwd() else '(unknown)'
+              try:
+                  folderlist=ftp.nlst()
+                  output['home_entry_count']=len(folderlist)
+                  output['webroot_candidates']=[s.split('/')[-1] for s in folderlist if s.split('/')[-1] in ('html','public_html','www','htdocs','busan-assistant')]
+                  output['webroot_verified']=bool(output['webroot_candidates'])
+              except ftplib.all_errors as ex:
+                  output['list_reason']=type(ex).__name__
+          except Exception as ex:
+              output['failure_type']=type(ex).__name__
+              if isinstance(ex,ftplib.error_perm):
+                  output['failure_class']='ftp_reply_rejected'
+              elif isinstance(ex,ssl.SSLError):
+                  output['failure_class']='tls_verification_failed'
+              else:
+                  output['failure_class']='connection_or_authentication'
+          finally:
+              if ftp:
+                  try:ftp.close()
+                  except Exception:pass
+          print('BUSAN_FTPS_READONLY',json.dumps(output,ensure_ascii=False))
+          if not output['webroot_verified']:raise SystemExit(2)
+          PY
