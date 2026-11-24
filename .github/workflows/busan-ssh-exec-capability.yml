@@ -70,9 +70,18 @@ jobs:
                     report['exec_channel']=True
                     stdout=channel.makefile('rb').read(2048).decode('utf-8','replace')
                     stderr=channel.makefile_stderr('rb').read(2048)
+                    diagnostics = {
+                      'sftp_only': b'sftp connections only',
+                      'shell_unavailable': b'not available',
+                      'permission_denied': b'permission denied',
+                      'access_denied': b'access denied',
+                      'chdir_failed': b'could not chdir',
+                      'disabled': b'disabled',
+                    }
+                    reason = next((key for key, token in diagnostics.items() if token in stderr.lower()), 'unclassified')
                     code=channel.recv_exit_status()
                     report['results'][label]={'accepted':True,'passed':bool(test(stdout,code)),
-                      'exit_code':code,'stderr_present':bool(stderr),'stdout_bytes':len(stdout)}
+                      'exit_code':code,'stderr_category':reason,'stderr_present':bool(stderr),'stdout_bytes':len(stdout)}
                 except Exception as exc:
                   report['results'][label]={'accepted':False,'error_type':type(exc).__name__}
                   if report['exec_channel'] is None:report['exec_channel']=False
