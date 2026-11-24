@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/busan-points-site-inventory.yml']
+    paths: ['.github/workflows/busan-points-site-inventory.yml', 'scripts/busan_points_site_inventory.py']
 permissions: {contents: read}
 jobs:
   inspect:
