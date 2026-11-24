@@ -58,7 +58,16 @@ def inventory(s):
         result["files"].append({"path":p,"status":"present","bytes":len(txt.encode()),"events":out[:100]})
     return result
 def main():
-    host,user,password,pin=configuration(os.environ)
+    try:
+        host,user,password,pin=configuration(os.environ)
+    except Exception as exc:
+        if str(exc)=='busan_target_mismatch':
+            print('BUSAN_POINTS_HOST_MAPPING',json.dumps({
+                'hostname_matches_known':os.environ.get('BUSAN_SSH_HOST')=='112.175.184.79',
+                'account_matches_known':os.environ.get('BUSAN_SSH_USER')=='rucyjeon79',
+                'password_present':bool(os.environ.get('BUSAN_SSH_PASSWORD')),
+                'pin_present':bool(os.environ.get('BUSAN_SSH_HOST_FINGERPRINT'))}))
+        raise
     with socket.create_connection((host,PORT),timeout=15) as sock:
         with paramiko.Transport(sock) as t:
             t.banner_timeout=15;t.auth_timeout=15;t.get_security_options().key_types=('ssh-ed25519',)
