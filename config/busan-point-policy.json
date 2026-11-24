@@ -1,0 +1,70 @@
+{
+  "schema": "busan-native-point-policy-v1",
+  "site": "skhnslu-busan.com",
+  "environment": "busan-only",
+  "rollout": "audit_only",
+  "source": "native_gnuboard",
+  "values_confirmed": false,
+  "unit": "P",
+  "ai_settlement": {
+    "rate": "1P_per_1_KRW_actual_cost",
+    "requires_actual_usage": true,
+    "requires_admin_fx": true,
+    "fractional_krw": "carry_forward",
+    "charge_on_completed_answer_only": true,
+    "failed_or_free_reply_charge": 0
+  },
+  "award_targets": {
+    "register_on_approval": {
+      "amount": null,
+      "scope": "once_per_approved_member",
+      "native_config": "cf_register_point",
+      "approval_hook_required": true
+    },
+    "login_daily": {
+      "amount": null,
+      "scope": "once_per_member_per_KST_day",
+      "native_config": "cf_login_point"
+    },
+    "write_created": {
+      "amount": null,
+      "scope": "once_per_new_post",
+      "native_board_column": "bo_write_point"
+    },
+    "comment_created": {
+      "amount": null,
+      "scope": "once_per_new_comment",
+      "native_board_column": "bo_comment_point"
+    },
+    "recommendation_received": {
+      "amount": null,
+      "scope": "once_per_verified_recommendation",
+      "custom_hook_required": true,
+      "enabled": false
+    }
+  },
+  "charge_targets": {
+    "read": {
+      "amount": null,
+      "native_board_column": "bo_read_point"
+    },
+    "download": {
+      "amount": null,
+      "native_board_column": "bo_download_point"
+    }
+  },
+  "safeguards": {
+    "exclude_service_accounts": [
+      "busanjibuon"
+    ],
+    "minimum_approved_level": 3,
+    "preserve_existing_balances": true,
+    "historical_replay_allowed": false,
+    "immutable_event_keys": true,
+    "reversal_requires_original_grant": true,
+    "refunds_idempotent": true,
+    "per_day_cap": null,
+    "excluded_bo_tables": [],
+    "point_expiry_days": null
+  }
+}
