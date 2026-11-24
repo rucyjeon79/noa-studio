@@ -127,6 +127,8 @@ def main(s):
                 raise RuntimeError('News import failed') from None
             if not result.get('ok'):
                 raise RuntimeError('News importer returned an invalid result')
+            if result.get('historical_points') is not None:
+                print('BUSAN_REPORTER_RETRO_POINTS', json.dumps(result['historical_points'], sort_keys=True))
             if name:
                 receipts[name]=digest(data)
                 write(s, manifest_path, json.dumps(manifest).encode(), 0o600)
