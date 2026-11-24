@@ -1,0 +1,69 @@
+name: Busan point current live read-only inventory
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/busan-point-live-inventory.yml'
+      - 'scripts/busan_current_point_readonly.php'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.2'}
+      - name: Validate read-only PHP source
+        run: php -l scripts/busan_current_point_readonly.php
+      - run: python3 -m pip install paramiko==3.5.1
+      - name: Query existing native admin settings only (no writes)
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python3 - <<'PY'
+          import hmac, json, os, shlex, socket
+          from pathlib import Path
+          import paramiko
+          from scripts.busan_readonly_check import configuration, fingerprint, PORT
+          host,user,password,pin=configuration(os.environ)
+          source=Path('scripts/busan_current_point_readonly.php').read_text(encoding='utf-8').removeprefix('<?php').strip()
+          def strict_payload(data):
+              if not isinstance(data,dict) or data.get('status') != 'verified':
+                  return {'status':data.get('status','unavailable') if isinstance(data,dict) else 'unavailable',
+                          'reason':data.get('reason','no_valid_response') if isinstance(data,dict) else 'no_valid_response'}
+              fields={'cf_use_point','cf_register_point','cf_login_point','cf_point_term','cf_read_point','cf_write_point','cf_comment_point','cf_download_point'}
+              board_fields={'bo_table','bo_write_point','bo_comment_point','bo_read_point','bo_download_point'}
+              conf=data.get('config',{})
+              boards=data.get('boards',[])
+              if set(conf)!=fields or any(type(v) is not int for v in conf.values()) or not isinstance(boards,list) or len(boards)>120 or any(set(row)!=board_fields or type(row.get('bo_table')) is not str or any(type(row.get(k)) is not int for k in board_fields-{'bo_table'}) for row in boards):
+                  raise RuntimeError('unexpected_config_schema')
+              return {'status':'verified','source':'live_native_settings_readonly','config':conf,'boards':boards,'board_count':len(boards)}
+          with socket.create_connection((host,PORT),timeout=15) as sock:
+              with paramiko.Transport(sock) as transport:
+                  transport.banner_timeout=15
+                  transport.auth_timeout=15
+                  transport.get_security_options().key_types=('ssh-ed25519',)
+                  transport.start_client(timeout=20)
+                  if not hmac.compare_digest(fingerprint(transport.get_remote_server_key()),pin):
+                      raise RuntimeError('host_key_mismatch')
+                  transport.auth_password(user,password,fallback=False)
+                  if not transport.is_authenticated():raise RuntimeError('authentication_failed')
+                  with transport.open_session(timeout=20) as channel:
+                      channel.settimeout(25)
+                      channel.exec_command('php -r '+shlex.quote(source))
+                      raw=channel.makefile('rb').read(45000)
+                      code=channel.recv_exit_status()
+                      try: payload=json.loads(raw)
+                      except (ValueError,UnicodeDecodeError):payload={'status':'unavailable','reason':'remote_php_execution_not_available'}
+                      sanitized=strict_payload(payload)
+                      print('BUSAN_CURRENT_POINTS_READ_ONLY',json.dumps(sanitized,ensure_ascii=False))
+                      if code!=0 or sanitized['status']!='verified':raise SystemExit(2)
+          PY
