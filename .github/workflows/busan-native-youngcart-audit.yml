@@ -1,0 +1,28 @@
+name: Busan native Youngcart read-only audit
+on:
+  push:
+    branches: [busan/pointzone-order-lifecycle-20261125]
+    paths:
+      - 'scripts/busan_pointzone/audit_native_youngcart.py'
+      - '.github/workflows/busan-native-youngcart-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Inspect native routes and extension hooks
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python -m py_compile scripts/busan_pointzone/audit_native_youngcart.py
+          python -m pip install -q paramiko==3.5.1
+          python scripts/busan_pointzone/audit_native_youngcart.py
