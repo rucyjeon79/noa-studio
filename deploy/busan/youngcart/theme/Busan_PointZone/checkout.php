@@ -61,6 +61,17 @@ try{
     while($r=sql_fetch_array($rs))$rows[]=$r;
 }catch(Throwable $e){$loadError=true;}
 $result=get_session('ss_bpz_action_result');set_session('ss_bpz_action_result',null);
+require_once __DIR__.'/lib/order-views.php';
+$selected=null;$cancelOrder=null;
+try{
+    $item=$_GET['item']??null;$order=$_GET['order']??null;
+    if(is_string($item)&&preg_match('/^[a-f0-9]{20}$/D',$item)){
+        foreach(BusanOrderViews::catalog() as $r)if($r['it_id']===$item){$selected=$r;break;}
+    }
+    if(is_string($order)&&preg_match('/^[1-9][0-9]{14}$/D',$order)){
+        foreach(BusanOrderViews::orders() as $r)if((string)$r['od_id']===$order&&$r['od_status']==='입금'){$cancelOrder=$r;break;}
+    }
+}catch(Throwable $e){}
 require __DIR__.'/shop/shop.head.php';
 function bpz_action_fields($csrf,$action){echo '<input type="hidden" name="csrf" value="'.bpz_theme_escape($csrf).'"><input type="hidden" name="action" value="'.bpz_theme_escape($action).'">';}
 ?>
@@ -68,6 +79,10 @@ function bpz_action_fields($csrf,$action){echo '<input type="hidden" name="csrf"
 <?php if(!$enabled){ ?><section class="bpz-card" role="status">현재 구매·취소 준비 중입니다. 실제 포인트는 차감되지 않습니다.</section><?php } ?>
 <?php if(is_array($result)){ ?><section class="bpz-card" role="status"><?php echo bpz_theme_escape(['paid'=>'구매 완료','cancelled'=>'취소 완료','cart_updated'=>'장바구니 변경 완료','check_required'=>'주문 상태를 확인해 주세요. 같은 결제를 다시 실행하지 마세요.'][$result['state']??'']??'거래 상태 확인'); ?>
 <?php if(($is_admin??'')==='super'&&isset($result['can_finalize'],$result['order'])){ ?><p>주문 <?php echo bpz_theme_escape($result['order']); ?> · 확인된 포인트 기록 <?php echo bpz_theme_escape($result['point_id']??'없음'); ?></p><?php } ?></section><?php } ?>
+<?php if($selected!==null){ ?><section class="bpz-card"><h2><?php echo bpz_theme_escape($selected['it_name']); ?></h2><p><?php echo number_format((int)$selected['it_price']); ?> P · 재고 <?php echo number_format((int)$selected['it_stock_qty']); ?>개</p>
+<form method="post"><fieldset<?php if(!$enabled||(int)$selected['it_stock_qty']<1)echo ' disabled'; ?>><?php bpz_action_fields($csrf,'cart_set'); ?><input type="hidden" name="item" value="<?php echo bpz_theme_escape($selected['it_id']); ?>"><label>수량 <input name="qty" type="number" min="1" max="<?php echo (int)$selected['it_stock_qty']; ?>" value="1" required></label><button type="submit">장바구니 담기</button></fieldset></form></section><?php } ?>
+<?php if($cancelOrder!==null){ ?><section class="bpz-card"><h2>주문 취소 확인</h2><p>주문 <?php echo bpz_theme_escape($cancelOrder['od_id']); ?> · <?php echo number_format((int)$cancelOrder['od_receipt_point']); ?> P 반환</p>
+<form method="post"><fieldset<?php if(!$enabled)echo ' disabled'; ?>><?php bpz_action_fields($csrf,'cancel'); ?><input type="hidden" name="order" value="<?php echo bpz_theme_escape($cancelOrder['od_id']); ?>"><button type="submit">주문 취소</button></fieldset></form></section><?php } ?>
 <section class="bpz-card"><h2>장바구니</h2>
 <?php if($loadError){ ?><p>장바구니 조회 불가</p><?php }elseif(!$rows){ ?><p>장바구니가 비어 있습니다.</p><?php }else{ $total=0;foreach($rows as $r){$total+=(int)$r['ct_price']*(int)$r['ct_qty']; ?>
 <article class="bpz-card"><h3><?php echo bpz_theme_escape($r['it_name']); ?></h3><p><?php echo number_format((int)$r['ct_price']); ?> P</p>
