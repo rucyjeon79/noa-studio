@@ -18,7 +18,8 @@ final class BusanActivitiesBridge {
         return $db;
     }
     public static function open():BusanPointZoneActivities{
-        return new BusanPointZoneActivities(self::database());
+        $db=self::database(); // Load the activity class before PHP resolves new.
+        return new BusanPointZoneActivities($db);
     }
     public static function financialEnabled():bool{
         if(!defined('BPZ_ISOLATED_FIXTURE')||BPZ_ISOLATED_FIXTURE!==true||getenv('BUSAN_FIXTURE_DB')!=='pointzone_fixture')return false;
