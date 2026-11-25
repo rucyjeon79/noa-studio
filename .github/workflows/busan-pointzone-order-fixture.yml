@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/busan_youngcart/order*'
       - 'deploy/busan/youngcart/order-lifecycle.php'
+      - 'deploy/busan/youngcart/native-point-ledger.php'
       - 'deploy/busan/youngcart/theme/Busan_PointZone/**'
       - '.github/workflows/busan-pointzone-order-fixture.yml'
   workflow_dispatch:
@@ -47,3 +48,7 @@ jobs:
           php -l deploy/busan/youngcart/theme/Busan_PointZone/shop/index.php
           php -l scripts/busan_youngcart/order_views_fixture_test.php
           php scripts/busan_youngcart/order_views_fixture_test.php
+          php -l deploy/busan/youngcart/native-point-ledger.php
+          php -l scripts/busan_youngcart/order_native_ledger_fixture_test.php
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; cat scripts/busan_youngcart/order_native_ledger_fixture_schema.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/order_native_ledger_fixture_test.php
