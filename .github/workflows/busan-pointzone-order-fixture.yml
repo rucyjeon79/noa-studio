@@ -69,3 +69,4 @@ jobs:
           php -l deploy/busan/youngcart/theme/Busan_PointZone/checkout.php
           php -l deploy/busan/youngcart/pointzone-actions.php
           php scripts/busan_youngcart/order_http_actions_test.php
+          python scripts/busan_youngcart/order_theme_package_test.py
