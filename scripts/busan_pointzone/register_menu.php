@@ -57,13 +57,27 @@ try{
     }
     $top=pzm_q("SELECT me_id,me_code,me_name,me_link,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=2 ORDER BY me_order,me_id");
     $ordered=[];while($v=sql_fetch_array($top))$ordered[]=$v;
-    $pos=null;foreach($ordered as $i=>$v)if($v['me_code']===$code)$pos=$i;
-    if($pos===null||$pos===0||strtoupper(trim($ordered[$pos-1]['me_name']))!=='ETC'||
-       !in_array($ordered[$pos]['me_link'],[$url,$legacy],true)||(int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)
-        throw new RuntimeException('menu verification failed');
+    $pos=null;foreach($ordered as $i=>$v)if((string)$v['me_code']===(string)$code)$pos=$i;
+    if($pos===null)throw new RuntimeException('POINT ZONE root not located');
+    if(!in_array($ordered[$pos]['me_link'],[$url,$legacy],true))throw new RuntimeException('POINT ZONE root URL mismatch');
+    if((int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)throw new RuntimeException('POINT ZONE visibility disabled');
+    $needsOrder=false;
+    foreach(['me_use','me_mobile_use'] as $flag){
+        $visible=array_values(array_filter($ordered,static function($v)use($flag){return (int)$v[$flag]===1;}));
+        $names=array_map(static function($v){return strtoupper(trim($v['me_name']));},$visible);
+        $p=array_search('POINT ZONE',$names,true);$e=array_search('ETC',$names,true);
+        if($p===false||$e===false)throw new RuntimeException('ETC or POINT ZONE not visible: '.$flag);
+        if($p!==$e+1){
+            $others=array_values(array_filter($names,static function($n){return $n!=='POINT ZONE';}));
+            if(end($others)!=='ETC')throw new RuntimeException('ETC not final visible existing section: '.$flag);
+            $needsOrder=true;
+        }
+    }
+    $newOrder=(int)$parent['me_order']+1;
+    if($needsOrder&&($newOrder<0||$newOrder>2147483647))throw new RuntimeException('menu order range');
     $desired=['shop'=>'포인트 상점','auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트',
               'profile'=>'프로필 꾸미기','honor'=>'명예의 전당','my'=>'나의 포인트존'];
-    $children=pzm_q("SELECT me_id,me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code));
+    $children=pzm_q("SELECT me_id,me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code)." ORDER BY me_code,me_id");
     $byCode=[];while($row=sql_fetch_array($children)){
         if(isset($byCode[$row['me_code']]))throw new RuntimeException('duplicate submenu code');
         $byCode[$row['me_code']]=$row;
@@ -77,7 +91,7 @@ try{
         $plan[]=[$childCode,$target,$name,$i,$old];$i++;
     }
     if(!$matches)throw new RuntimeException('expected existing POINT ZONE tree');
-    $snapshot=['root'=>$matches[0],'children'=>array_values($byCode)];
+    $snapshot=['root'=>$matches[0],'children'=>array_values($byCode),'root_order'=>$ordered];
     $snapshotHash=hash('sha256',json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
     $input=json_decode(file_get_contents('php://input'),true);
     if(($input['mode']??'')==='snapshot'){
@@ -85,6 +99,10 @@ try{
     }
     if(($input['mode']??'')!=='apply'||!hash_equals($snapshotHash,(string)($input['expected_sha256']??'')))
         throw new RuntimeException('menu snapshot mismatch');
+    if($needsOrder){
+        pzm_q("UPDATE $mt SET me_order=".$newOrder." WHERE me_id=".(int)$ordered[$pos]['me_id']);
+        $changed++;
+    }
     if($matches&&$ordered[$pos]['me_link']===$legacy){
         /* backup verified by deployment client over authenticated SFTP */ 
         $private=null;
@@ -113,6 +131,12 @@ try{
     if($verified!==array_values($desired))throw new RuntimeException('submenu ordering verification failed');
     $rootcheck=sql_fetch("SELECT me_link FROM $mt WHERE me_code=".pzm_v($code)." LIMIT 1",false);
     if(($rootcheck['me_link']??'')!==$url)throw new RuntimeException('independent theme link not verified');
+    foreach(['me_use','me_mobile_use'] as $flag){
+        $rs=pzm_q("SELECT me_name FROM $mt WHERE LENGTH(me_code)=2 AND $flag=1 ORDER BY me_order,me_id");
+        $names=[];while($row=sql_fetch_array($rs))$names[]=strtoupper(trim($row['me_name']));
+        $p=array_search('POINT ZONE',$names,true);
+        if($p===false||$p===0||$names[$p-1]!=='ETC')throw new RuntimeException('post-migration visible order failed: '.$flag);
+    }
     if($changed&&function_exists('run_event'))run_event('admin_menu_list_update');
     pzm_out(200,['status'=>$changed?'applied':'already_current','after'=>'ETC','menu'=>'POINT ZONE','submenus'=>$verified,'url'=>$url,'desktop'=>true,'mobile'=>true,'mutations'=>$changed]);
 }catch(Throwable $e){pzm_out(200,['status'=>'blocked','reason'=>$e instanceof RuntimeException?$e->getMessage():'runtime error']);}

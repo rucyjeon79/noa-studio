@@ -1,0 +1,56 @@
+name: Busan Youngcart empty schema initialization
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/busan-youngcart-empty-schema.yml'
+      - 'scripts/busan_youngcart/install_empty.php'
+      - 'scripts/busan_youngcart/install_empty.py'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-youngcart-empty-schema, cancel-in-progress: false}
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: fixture-only
+          MARIADB_DATABASE: pointzone_fixture
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate create-only schema and run against isolated MariaDB
+        env:
+          DB_CONTAINER: ${{ job.services.db.id }}
+        run: |
+          set -euo pipefail
+          python scripts/busan_youngcart/schema_test.py
+          php -l scripts/busan_youngcart/install_empty.php
+          python -m py_compile scripts/busan_youngcart/install_empty.py
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; sed 's/`g5_shop_/`yc5_/g' deploy/busan/youngcart/schema/youngcart-v5.6.4-create-only.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          actual=$(docker exec "$DB_CONTAINER" mariadb -N -uroot -pfixture-only pointzone_fixture -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND ENGINE='InnoDB'")
+          test "$actual" = 24
+          docker exec "$DB_CONTAINER" mariadb -N -uroot -pfixture-only pointzone_fixture -e 'SELECT COUNT(*) FROM yc5_item; SELECT COUNT(*) FROM yc5_order;' | diff -u <(printf '0\n0\n') -
+          echo BUSAN_YOUNGCART_MARIADB_FIXTURE_OK
+  install:
+    needs: stage
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: python -m pip install -q paramiko==3.5.1
+      - name: Create empty native shop tables only; keep engine disabled
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_youngcart/install_empty.py
