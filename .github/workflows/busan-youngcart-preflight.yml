@@ -23,6 +23,7 @@ jobs:
           php -l deploy/busan/youngcart/point-contract.php
           find deploy/busan/youngcart/theme/Busan_PointZone -name '*.php' -exec php -l {} \;
           php scripts/busan_youngcart/contract_test.php
+          python scripts/busan_youngcart/schema_test.py
           python -m py_compile scripts/busan_youngcart/audit.py
           python -m pip install -q paramiko==3.5.1
       - name: Inventory actual Busan Youngcart installation without DB writes

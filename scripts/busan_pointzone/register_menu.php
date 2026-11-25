@@ -33,6 +33,7 @@ try{
     if(count($etc)!==1||count($matches)>1)throw new RuntimeException('menu identity conflict');
     $parent=$etc[0];$changed=0;
     if(!$matches){
+        throw new RuntimeException('expected existing POINT ZONE tree');
         // ETC is the final existing section in the approved layout; fail closed
         // if it has moved rather than reorder unrelated menu rows.
         $last=end($roots);
@@ -75,16 +76,18 @@ try{
             throw new RuntimeException('submenu conflict');
         $plan[]=[$childCode,$target,$name,$i,$old];$i++;
     }
+    if(!$matches)throw new RuntimeException('expected existing POINT ZONE tree');
+    $snapshot=['root'=>$matches[0],'children'=>array_values($byCode)];
+    $snapshotHash=hash('sha256',json_encode($snapshot,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
+    $input=json_decode(file_get_contents('php://input'),true);
+    if(($input['mode']??'')==='snapshot'){
+        pzm_out(200,['status'=>'snapshot','snapshot'=>$snapshot,'sha256'=>$snapshotHash]);
+    }
+    if(($input['mode']??'')!=='apply'||!hash_equals($snapshotHash,(string)($input['expected_sha256']??'')))
+        throw new RuntimeException('menu snapshot mismatch');
     if($matches&&$ordered[$pos]['me_link']===$legacy){
-        $private=realpath(dirname(G5_PATH).'/busan-assistant-private');
-        if(!$private||!is_dir($private)||!is_writable($private))throw new RuntimeException('menu backup unavailable');
-        $backup=$private.'/pointzone-menu-before-native-theme.json';
-        if(!file_exists($backup)){
-            $json=json_encode(['root'=>$matches[0],'children'=>array_values($byCode)],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
-            $fp=fopen($backup,'x');if(!$fp)throw new RuntimeException('menu backup failed');
-            try{if(fwrite($fp,$json)!==strlen($json))throw new RuntimeException('menu backup incomplete');}finally{fclose($fp);}
-            chmod($backup,0600);
-        }
+        /* backup verified by deployment client over authenticated SFTP */ 
+        $private=null;
         pzm_q("UPDATE $mt SET me_link=".pzm_v($url)." WHERE me_id=".(int)$ordered[$pos]['me_id']." AND me_link=".pzm_v($legacy));
         $changed++;
     }
@@ -112,4 +115,4 @@ try{
     if(($rootcheck['me_link']??'')!==$url)throw new RuntimeException('independent theme link not verified');
     if($changed&&function_exists('run_event'))run_event('admin_menu_list_update');
     pzm_out(200,['status'=>$changed?'applied':'already_current','after'=>'ETC','menu'=>'POINT ZONE','submenus'=>$verified,'url'=>$url,'desktop'=>true,'mobile'=>true,'mutations'=>$changed]);
-}catch(Throwable $e){pzm_out(409,['status'=>'blocked','reason'=>$e instanceof RuntimeException?$e->getMessage():'runtime error']);}
+}catch(Throwable $e){pzm_out(200,['status'=>'blocked','reason'=>$e instanceof RuntimeException?$e->getMessage():'runtime error']);}

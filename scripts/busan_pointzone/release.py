@@ -42,12 +42,27 @@ def release(s):
     try:
         with s.open(dest,'wx') as f: f.write(source)
         s.chmod(dest,0o644)
-        req=Request(ORIGIN+'/busan-assistant/'+name,data=b'{}',headers={'X-Busan-Pointzone':token,'Content-Type':'application/json'})
-        try:
-            with urlopen(req,timeout=40) as res: result=json.load(res)
-        except HTTPError as error:
-            print('POINTZONE_MENU_BLOCKED',error.code,error.read(300).decode(errors='replace'))
-            raise RuntimeError('menu registration rejected') from None
+        def call(payload):
+            req=Request(ORIGIN+'/busan-assistant/'+name,data=json.dumps(payload).encode(),headers={'X-Busan-Pointzone':token,'Content-Type':'application/json'})
+            with urlopen(req,timeout=40) as res: return json.load(res)
+        snapshot=call({'mode':'snapshot'})
+        if snapshot.get('status')!='snapshot' or not isinstance(snapshot.get('snapshot'),dict):
+            raise RuntimeError('menu snapshot rejected: '+str(snapshot.get('reason','unknown')))
+        digest=snapshot.get('sha256','')
+        if len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
+            raise RuntimeError('invalid menu snapshot hash')
+        private='/hosting/rucyjeon79/busan-assistant-private'
+        if s.normalize(private)!=private or not stat.S_ISDIR(s.lstat(private).st_mode):
+            raise RuntimeError('private menu backup unavailable')
+        backup=private+'/pointzone-menu-'+digest+'.json'
+        data=json.dumps(snapshot['snapshot'],ensure_ascii=False,separators=(',',':')).encode()
+        old=read(s,backup,100000)
+        if old is None: write(s,backup,data,0o600)
+        elif old!=data: raise RuntimeError('menu backup conflict')
+        if read(s,backup,100000)!=data: raise RuntimeError('menu backup verification failed')
+        result=call({'mode':'apply','expected_sha256':digest})
+        if result.get('status')=='blocked':
+            raise RuntimeError('menu migration blocked: '+str(result.get('reason','unknown')))
         if result.get('status') not in ('applied','already_current') or result.get('after')!='ETC' or result.get('menu')!='POINT ZONE' or result.get('submenus')!=['포인트 상점','포인트 경매','포인트 나눔','지부장 이벤트','프로필 꾸미기','명예의 전당','나의 포인트존'] or not result.get('desktop') or not result.get('mobile'):
             raise RuntimeError('unverified menu result')
         print('BUSAN_POINTZONE_MENU',json.dumps(result,ensure_ascii=False))

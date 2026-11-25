@@ -39,6 +39,15 @@ if(is_string($memberTable)&&preg_match('/^([A-Za-z0-9_]+)member$/D',$memberTable
         $schemaCandidates[$suffix]=['exists'=>!empty($info['engine']),'engine'=>$info['engine']??null];
     }
 }
+// Official v5.6.4 installer uses yc5_ by default, not g5_shop_.
+$nativeCandidates=[];
+foreach(['yc5_','g5_shop_'] as $prefix){
+    foreach(['category','item','cart','order','default','item_option'] as $suffix){
+        $name=$prefix.$suffix;
+        $info=sql_fetch("SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='".sql_real_escape_string($name)."' LIMIT 1",false);
+        $nativeCandidates[$prefix][$suffix]=['exists'=>!empty($info['engine']),'engine'=>$info['engine']??null];
+    }
+}
 $themePaths=[];
 foreach(['theme/basic/shop/index.php','theme/basic/shop/shop.head.php','theme/basic/shop/shop.tail.php','theme/basic/mobile/shop/index.php','theme/basic/skin/shop/basic','theme/basic/mobile/skin/shop/basic'] as $p){
     $themePaths[$p]=file_exists($root.'/'.$p);
@@ -65,5 +74,5 @@ if(!empty($tables['g5_shop_default_table']['exists'])){
 echo json_encode(['status'=>'verified','gnuboard_version'=>defined('G5_GNUBOARD_VER')?G5_GNUBOARD_VER:null,
  'youngcart_version'=>defined('G5_YOUNGCART_VER')?G5_YOUNGCART_VER:null,
  'shop_enabled'=>defined('G5_USE_SHOP')?(bool)G5_USE_SHOP:null,
- 'points_enabled'=>(bool)($config['cf_use_point']??false),'files'=>$files,'tables'=>$tables,'payment_flags'=>$flags,'schema_candidates'=>$schemaCandidates,'native_theme_files'=>$themePaths,'hook_hints'=>$hookHints,
+ 'points_enabled'=>(bool)($config['cf_use_point']??false),'files'=>$files,'tables'=>$tables,'payment_flags'=>$flags,'schema_candidates'=>$schemaCandidates,'native_prefix_candidates'=>$nativeCandidates,'native_theme_files'=>$themePaths,'hook_hints'=>$hookHints,
  'mutations'=>0],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
