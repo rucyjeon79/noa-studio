@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../../deploy/busan/youngcart/native-order-port.php';
+require __DIR__.'/../../deploy/busan/youngcart/native-cart.php';
+if(getenv('BUSAN_FIXTURE_DB')!=='pointzone_fixture')throw new RuntimeException('fixture only');
+$db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=pointzone_fixture;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
+if($db->query('SELECT DATABASE()')->fetchColumn()!=='pointzone_fixture')throw new RuntimeException('fixture only');
+$db->exec("SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION'");
+function expectPort($ok,string $label):void{if(!$ok)throw new RuntimeException($label);}
+function rejectPort(callable $fn,string $type):void{try{$fn();}catch(Throwable $e){if($e instanceof $type)return;throw $e;}throw new RuntimeException('expected rejection');}
+$db->exec('ALTER TABLE g5_point ENGINE=InnoDB');
+$db->exec("INSERT INTO g5_member SET mb_id='port_member',mb_point=300,mb_signature='',mb_memo='',mb_profile='',mb_lost_certify=''");
+$db->exec("INSERT INTO g5_point SET mb_id='port_member',po_datetime=NOW(),po_content='fixture',po_point=300,po_mb_point=300,po_expire_date='9999-12-31'");
+$db->exec("INSERT INTO yc5_category SET ca_id='p1',ca_name='fixture',ca_use=1,ca_head_html='',ca_tail_html='',ca_mobile_head_html='',ca_mobile_tail_html=''");
+$item=str_repeat('9',20);$cart='123456789012398';
+$db->prepare("INSERT INTO yc5_item SET it_id=?,ca_id='p1',it_name='fixture',it_price=100,it_stock_qty=5,it_use=1,it_basic='',it_explan='',it_explan2='',it_mobile_explan='',it_head_html='',it_tail_html='',it_mobile_head_html='',it_info_value='',it_use_avg=0,it_shop_memo=''")->execute([$item]);
+(new BusanNativeCart($db))->set('port_member',$cart,$item,2);
+$p=new BusanNativeOrderPort($db,0);$s=new BusanOrderLifecycle($p);
+$r=['csrf'=>'token','method'=>'POINT','request_id'=>str_repeat('b',32)];$c=['csrf'=>'token'];
+$balance=fn()=>(int)$db->query("SELECT mb_point FROM g5_member WHERE mb_id='port_member'")->fetchColumn();
+$events=fn()=>(int)$db->query("SELECT COUNT(*) FROM g5_point WHERE mb_id='port_member' AND po_rel_table='@bpz-order'")->fetchColumn();
+$db->exec("CREATE TRIGGER bpz_fixture_fail_order BEFORE INSERT ON bpz_order_receipt FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture receipt failure'");
+rejectPort(fn()=>$s->purchase('port_member',$cart,'token',$r),PDOException::class);
+expectPort($balance()===300&&$events()===0,'failed receipt rolls native debit back');
+expectPort((int)$db->query('SELECT COUNT(*) FROM bpz_order_request')->fetchColumn()===0,'request rollback');
+$db->exec('DROP TRIGGER bpz_fixture_fail_order');
+$receipt=$s->purchase('port_member',$cart,'token',$r);
+expectPort($balance()===100&&$events()===1,'native-only purchase');
+expectPort($s->purchase('port_member',$cart,'token',$r)===$receipt&&$events()===1,'idempotency');
+$db->exec("CREATE TRIGGER bpz_fixture_fail_cancel BEFORE UPDATE ON bpz_order_receipt FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture reversal failure'");
+rejectPort(fn()=>$s->cancel('port_member',$cart,'token',$c),PDOException::class);
+expectPort($balance()===100&&$events()===1,'failed receipt rolls native reversal back');
+$db->exec('DROP TRIGGER bpz_fixture_fail_cancel');
+$refund=$s->cancel('port_member',$cart,'token',$c);
+expectPort($refund['returned_points']===200&&$balance()===300&&$events()===2,'native-only reversal');
+expectPort($s->cancel('port_member',$cart,'token',$c)===$refund&&$events()===2,'reversal replay');
+expectPort((int)$db->query("SELECT COUNT(*) FROM bpz_fixture_member WHERE mb_id='port_member'")->fetchColumn()===0,'no fixture balance');
+expectPort((int)$db->query("SELECT COUNT(*) FROM bpz_fixture_ledger WHERE member_id='port_member'")->fetchColumn()===0,'no fixture ledger');
+putenv('BUSAN_FIXTURE_DB');
+rejectPort(fn()=>new BusanNativeOrderPort($db,0),DomainException::class);
+echo "BUSAN_NATIVE_ORDER_PORT_CANDIDATE_OK\n";
