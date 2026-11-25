@@ -28,6 +28,9 @@ final class BusanExistingPoints {
                     $due=sql_fetch('SELECT COUNT(*) AS n FROM g5_point WHERE mb_id='.$q($member)." AND po_expired=0 AND po_point>po_use_point AND po_expire_date<".$q(G5_TIME_YMD),false);
                     if(!isset($due['n'])||(int)$due['n']!==0)throw new DomainException('existing point expiry must be processed first');
                 }
+                // Read-only check catches an interrupted native allocation update.
+                $lots=sql_fetch('SELECT COALESCE(SUM(CASE WHEN po_point>0 AND po_expired=0 THEN po_point-po_use_point ELSE 0 END),0) AS available, COALESCE(SUM(CASE WHEN po_point>0 AND (po_use_point<0 OR po_use_point>po_point OR (po_expired=100 AND po_use_point<>po_point)) THEN 1 ELSE 0 END),0) AS invalid FROM g5_point WHERE mb_id='.$q($member),false);
+                if(!isset($lots['available'],$lots['invalid'])||(int)$lots['invalid']!==0||(int)$lots['available']!==(int)$r['mb_point'])throw new RuntimeException('native allocation requires reconciliation');
                 return (int)$r['mb_point'];
             },
             static function(string $member,string $order,string $action)use($q):array{
