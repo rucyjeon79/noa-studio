@@ -125,6 +125,10 @@ def run():
                 check(not re.search(r"PHP (Fatal error|Warning|Parse error|Notice)",log.read()),"HTTP PHP runtime warnings")
                 print("BUSAN_POINTZONE_HTTP_RENDER_AND_LOCK_OK")
                 print("BUSAN_POINTZONE_SHARED_LAYOUT_OK")
+            except Exception:
+                log.flush();log.seek(0)
+                print(log.read()[-12000:]) # synthetic loopback fixture only
+                raise
             finally:
                 proc.terminate();proc.wait(timeout=5)
 if __name__=="__main__":run()
