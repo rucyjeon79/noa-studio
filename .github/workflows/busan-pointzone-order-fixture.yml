@@ -9,6 +9,7 @@ on:
       - 'deploy/busan/youngcart/native-order-port.php'
       - 'deploy/busan/youngcart/pointzone-actions.php'
       - 'deploy/busan/youngcart/pointzone-activities.php'
+      - 'deploy/busan/youngcart/pointzone-activity-settlement.php'
       - 'deploy/busan/youngcart/schema/pointzone-activities.sql'
       - 'deploy/busan/youngcart/existing-point*.php'
       - 'deploy/busan/youngcart/schema/native-order-receipt-candidate.sql'
@@ -76,3 +77,5 @@ jobs:
           python scripts/busan_youngcart/order_http_render_test.py
           php -l deploy/busan/youngcart/pointzone-activities.php
           php scripts/busan_youngcart/order_activities_test.php
+          php -l deploy/busan/youngcart/pointzone-activity-settlement.php
+          php scripts/busan_youngcart/order_activity_settlement_test.php
