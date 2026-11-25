@@ -42,3 +42,9 @@ CREATE TABLE bpz_entitlement (
  KEY member_entitlements (mb_id,expires_at),
  CONSTRAINT bpz_entitlement_activity FOREIGN KEY(activity_id) REFERENCES bpz_activity(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE bpz_profile_selection (
+ mb_id VARCHAR(20) NOT NULL PRIMARY KEY,
+ entitlement_id CHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ CONSTRAINT bpz_selection_entitlement FOREIGN KEY(entitlement_id) REFERENCES bpz_entitlement(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
