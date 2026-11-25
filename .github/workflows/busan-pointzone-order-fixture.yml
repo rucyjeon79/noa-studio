@@ -7,6 +7,7 @@ on:
       - 'deploy/busan/youngcart/order-lifecycle.php'
       - 'deploy/busan/youngcart/native-point-ledger.php'
       - 'deploy/busan/youngcart/native-order-port.php'
+      - 'deploy/busan/youngcart/pointzone-actions.php'
       - 'deploy/busan/youngcart/existing-point*.php'
       - 'deploy/busan/youngcart/schema/native-order-receipt-candidate.sql'
       - 'deploy/busan/youngcart/theme/Busan_PointZone/**'
@@ -65,3 +66,6 @@ jobs:
           php -l scripts/busan_youngcart/order_existing_native_functions_fixture.php
           php -l scripts/busan_youngcart/order_existing_point_api_fixture_test.php
           php scripts/busan_youngcart/order_existing_point_api_fixture_test.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/checkout.php
+          php -l deploy/busan/youngcart/pointzone-actions.php
+          php scripts/busan_youngcart/order_http_actions_test.php
