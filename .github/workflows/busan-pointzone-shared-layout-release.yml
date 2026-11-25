@@ -1,0 +1,31 @@
+name: Busan POINT ZONE verified shared layout release
+on:
+  push:
+    branches: [busan/pointzone-order-lifecycle-20261125]
+    paths:
+      - '.github/workflows/busan-pointzone-shared-layout-release.yml'
+permissions:
+  contents: read
+concurrency:
+  group: busan-pointzone-menu
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Verify locked theme package and release script
+        run: |
+          python scripts/busan_youngcart/order_theme_package_test.py
+          python -m py_compile scripts/busan_pointzone/release_shared_layout.py
+          python -m pip install -q paramiko==3.5.1
+      - name: Release only previously verified screen files, no DB mutations
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_pointzone/release_shared_layout.py
