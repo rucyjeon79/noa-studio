@@ -1,0 +1,33 @@
+name: Busan Youngcart point-only preflight
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/busan_youngcart/**'
+      - 'deploy/busan/youngcart/**'
+      - '.github/workflows/busan-youngcart-preflight.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-youngcart-preflight, cancel-in-progress: false}
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Check point-only server policy
+        run: |
+          php -l scripts/busan_youngcart/audit.php
+          php -l deploy/busan/youngcart/point-contract.php
+          php scripts/busan_youngcart/contract_test.php
+          python -m py_compile scripts/busan_youngcart/audit.py
+          python -m pip install -q paramiko==3.5.1
+      - name: Inventory actual Busan Youngcart installation without DB writes
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_youngcart/audit.py
