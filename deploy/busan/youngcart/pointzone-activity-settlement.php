@@ -61,7 +61,7 @@ final class BusanActivitySettlement {
         });
     }
     private function nativeEvidence(array $p,int $delta):?array{
-        $rows=$this->q("SELECT po_id,po_point FROM g5_point WHERE mb_id=? AND po_rel_table='@bpz-activity' AND po_rel_id=? AND po_rel_action='settle' LIMIT 2",[$p['mb_id'],$p['id']])->fetchAll(PDO::FETCH_ASSOC);
+        $rows=$this->q("SELECT po_id,po_point FROM g5_point WHERE mb_id=? AND po_rel_table='@bpz-activity' AND po_rel_id=? AND po_rel_action=? LIMIT 2",[$p['mb_id'],substr($p['id'],0,20),'settle:'.$p['id']])->fetchAll(PDO::FETCH_ASSOC);
         if(!$rows)return null;
         if(count($rows)!==1||(int)$rows[0]['po_point']!==$delta||(int)$rows[0]['po_id']<1)throw new RuntimeException('point evidence conflict');
         return $rows[0];
@@ -84,7 +84,7 @@ final class BusanActivitySettlement {
         if($this->nativeEvidence($p,$delta)!==null)throw new RuntimeException('existing evidence; reconcile only');
         $points=BusanExistingPoints::native();$before=$points->balance($p['mb_id']);
         if($before+$delta<0||$before+$delta>2147483647)throw new DomainException('balance limit; pending review');
-        $result=insert_point($p['mb_id'],$delta,'POINT ZONE 활동 정산','@bpz-activity',$p['id'],'settle');
+        $result=insert_point($p['mb_id'],$delta,'POINT ZONE 활동 정산','@bpz-activity',substr($p['id'],0,20),'settle:'.$p['id']);
         $e=$this->nativeEvidence($p,$delta);
         if($result!==1||!$e||$points->balance($p['mb_id'])!==$before+$delta)throw new RuntimeException('uncertain settlement; no retry');
         return $this->finish($p,$delta,(int)$e['po_id']);
