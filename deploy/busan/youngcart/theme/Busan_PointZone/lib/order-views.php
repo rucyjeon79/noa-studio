@@ -14,9 +14,15 @@ final class BusanOrderViews {
         $rows=[];while($r=sql_fetch_array($rs))$rows[]=$r;return $rows;
     }
     private static function quote(string $v):string{return "'".sql_real_escape_string($v)."'";}
-    public static function catalog():array{
+    public static function catalog(?string $itemId=null):array{
         self::member();
-        return self::q("SELECT i.it_id,i.it_name,i.it_basic,i.it_price,i.it_stock_qty FROM yc5_item i INNER JOIN yc5_category c ON c.ca_id=i.ca_id WHERE i.it_use=1 AND c.ca_use=1 AND i.it_soldout=0 AND i.it_tel_inq=0 AND i.it_price>0 ORDER BY i.it_order,i.it_id LIMIT 100");
+        $columns='i.it_id,i.it_name,i.it_basic,i.it_price,i.it_stock_qty,i.it_img1';
+        $scope='';
+        if($itemId!==null){
+            $columns.=',i.it_explan,i.it_mobile_explan,c.ca_name';
+            $scope=" AND i.it_id=".self::quote($itemId);
+        }
+        return self::q("SELECT $columns FROM yc5_item i INNER JOIN yc5_category c ON c.ca_id=i.ca_id WHERE i.it_use=1 AND c.ca_use=1 AND i.it_soldout=0 AND i.it_tel_inq=0 AND i.it_price>0$scope ORDER BY i.it_order,i.it_id LIMIT 100");
     }
     public static function orders(bool $admin=false):array{
         $member=self::member();

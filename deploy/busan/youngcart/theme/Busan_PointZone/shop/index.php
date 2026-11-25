@@ -14,12 +14,25 @@ $bpz_section=$_GET['section']??'';
 if(!is_string($bpz_section)||($bpz_section!==''&&!isset($bpz_sections[$bpz_section]))){http_response_code(404);exit;}
 $g5['title']=$bpz_section===''?'POINT ZONE':$bpz_sections[$bpz_section][0].' · POINT ZONE';
 require_once dirname(__DIR__).'/lib/order-views.php';
+$bpz_itemId=$bpz_section==='shop'?($_GET['it_id']??null):null;
+if($bpz_itemId!==null && (!is_string($bpz_itemId)||$bpz_itemId===''||strlen($bpz_itemId)>20)){
+    http_response_code(404);exit;
+}
 $bpz_viewRows=[];$bpz_viewError=false;
 if(in_array($bpz_section,['shop','my','manage'],true)){
-    try{$bpz_viewRows=$bpz_section==='shop'?BusanOrderViews::catalog():BusanOrderViews::orders($bpz_section==='manage');}
+    try{$bpz_viewRows=$bpz_section==='shop'?BusanOrderViews::catalog($bpz_itemId):BusanOrderViews::orders($bpz_section==='manage');}
     catch(Throwable $e){$bpz_viewError=true;}
 }
 
+if($bpz_itemId!==null){
+    if($bpz_viewError){http_response_code(503);}
+    elseif(!$bpz_viewRows){http_response_code(404);}
+    else{$g5['title']=$bpz_viewRows[0]['it_name'].' · 포인트 상점';}
+    require __DIR__.'/shop.head.php';
+    require __DIR__.'/item.form.skin.php';
+    require __DIR__.'/shop.tail.php';
+    return;
+}
 require dirname(__DIR__).'/lib/activities-controller.php';
 require __DIR__.'/shop.head.php';
 $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
@@ -47,24 +60,16 @@ $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 <h2><?php echo $bpz_section==='shop'?'공개 상품':($bpz_section==='my'?'나의 주문 내역':'포인트 주문 관리'); ?></h2>
 <?php if($bpz_viewError){ ?><p role="status">현재 정보를 조회할 수 없습니다. 잠시 후 다시 확인해 주세요.</p>
 <?php }elseif(!$bpz_viewRows){ ?><p><?php echo $bpz_section==='shop'?'현재 공개된 상품이 없습니다.':'주문 내역이 없습니다.'; ?></p>
-<?php }else{ ?>
+<?php }elseif($bpz_section==='shop'){require __DIR__.'/list.10.skin.php';}else{ ?>
 <div class="bpz-order-grid">
 <?php foreach($bpz_viewRows as $bpz_r){ ?>
 <article class="bpz-order-row">
-<?php if($bpz_section==='shop'){ ?>
-<h3><?php echo bpz_theme_escape($bpz_r['it_name']); ?></h3>
-<p><?php echo bpz_theme_escape($bpz_r['it_basic']); ?></p>
-<strong><?php echo number_format((int)$bpz_r['it_price']); ?> P</strong>
-<p>재고 <?php echo number_format(max(0,(int)$bpz_r['it_stock_qty'])); ?>개</p>
-<a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/checkout.php?item='.rawurlencode($bpz_r['it_id'])); ?>">상품 및 구매 안내</a>
-<?php }else{ ?>
 <h3>주문 <?php echo bpz_theme_escape($bpz_r['od_id']); ?></h3>
 <p><?php echo bpz_theme_escape($bpz_r['od_time']); ?> · <?php echo bpz_theme_escape(BusanOrderViews::status((string)$bpz_r['od_status'])); ?></p>
 <?php if($bpz_section==='manage'){ ?><p>회원 ID: <?php echo bpz_theme_escape($bpz_r['mb_id']); ?></p><?php } ?>
 <p>상품 <?php echo number_format((int)$bpz_r['od_cart_count']); ?>종 · 원 주문 <?php echo number_format((int)$bpz_r['od_receipt_point']); ?> P</p>
 <?php if($bpz_section==='my'&&$bpz_r['od_status']==='입금'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/checkout.php?order='.rawurlencode((string)$bpz_r['od_id'])); ?>">주문 취소 안내</a></p><?php } ?>
 <p>주문 변경 및 취소는 현재 잠금 상태입니다.</p>
-<?php } ?>
 </article>
 <?php } ?>
 </div>

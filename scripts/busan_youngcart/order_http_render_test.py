@@ -72,13 +72,19 @@ def run():
                     check(call("checkout.php",role)[0]==403,"unauthorized checkout")
                     check(call("pointzone.php?section=my",role)[0]==403,"unauthorized order history")
                 code,body,headers=call("pointzone.php?section=shop")
-                check(code==200 and "상품 및 구매 안내" in body and "API fixture" in body,"real catalog render")
+                check(code==200 and "section=shop&amp;it_id=" in body and "API fixture" in body,"real catalog render")
                 check("private" in headers.get("Cache-Control",""),"private cache")
                 def integrated(html):
                     check(html.count("<html")==1 and html.count("</html>")==1,"single native document")
                     check(html.index('id="native-site-header"')<html.index('id="native-site-menu"')<html.index('id="contentsWrap"')<html.index('id="busan-pointzone"')<html.index('id="native-site-footer"'),"shared native layout order")
                     check("pointzone.css?v=" in html and "bpz-header" not in html,"scoped stylesheet and no duplicate header")
                 integrated(body)
+                detail="pointzone.php?section=shop&it_id="+"8"*20
+                code,page,_=call(detail)
+                check(code==200 and 'id="sit_pvi"' in page and 'API fixture' in page,"product detail")
+                integrated(page)
+                check(call(detail,"guest")[0]==403,"guest denied detail")
+                check(call(detail+"x")[0]==404,"invalid product ID")
                 sections={"shop":"포인트 상점","auction":"포인트 경매","sharing":"포인트 나눔","events":"지부장 이벤트","profile":"프로필 꾸미기","honor":"명예의 전당","my":"나의 포인트존"}
                 for section,label in sections.items():
                     code,page,_=call("pointzone.php?section="+section)

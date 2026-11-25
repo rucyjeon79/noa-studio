@@ -40,7 +40,8 @@ try {
     $existing = $db->prepare('SELECT it_name,ca_id,it_price,it_use FROM yc5_item WHERE it_id=? FOR UPDATE');
     $add = $db->prepare("INSERT INTO yc5_item SET it_id=?,ca_id='z9',it_name=?,it_price=?,it_stock_qty=?,it_use=1,it_basic=?,it_explan='',it_explan2='',it_mobile_explan='',it_head_html='',it_tail_html='',it_mobile_head_html='',it_mobile_tail_html='',it_info_value='',it_use_avg=0,it_shop_memo=''");
     $created=0;
-    foreach ($items as $item) {
+    $photo=$db->prepare("UPDATE yc5_item SET it_img1=? WHERE it_id=? AND COALESCE(it_img1,'')=''");
+    foreach ($items as $index=>$item) {
         $existing->execute([$item['id']]);
         $row=$existing->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -49,6 +50,7 @@ try {
             $add->execute([$item['id'],$item['name'],$item['price'],$item['stock'],$item['desc']]);
             $created++;
         }
+        $photo->execute(['bpz-samples/sample-'.($index+1).'.jpg',$item['id']]);
     }
     $db->commit();
     echo json_encode(['verified'=>count($items),'created'=>$created]);

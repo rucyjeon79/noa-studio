@@ -9,6 +9,35 @@ from urllib.error import HTTPError
 import release_submenu_fix as remote
 from release_shared_layout import FILES as previous_layout
 
+catalog_baseline = {
+    'shop/index.php': ('5722aaa8929947222b67851ca01043ac9059893d',),
+    'lib/order-views.php': ('c1ef6a3c360e524613d605eb48f9a4e65cb3e451',),
+    'css/pointzone.css': ('497ee14fe3283051202f81e06a013cb3be5b4b52',),
+}
+
+def install_sample_photos(s):
+    data = remote.ROOT + '/data'
+    remote.directory(s, data)
+    for path in (data + '/item', data + '/item/bpz-samples'):
+        try:
+            remote.directory(s, path)
+        except FileNotFoundError:
+            s.mkdir(path, 0o755)
+            remote.directory(s, path)
+    for number in range(1, 8):
+        name = f'sample-{number}.jpg'
+        content = (Path(__file__).parent / 'catalog-images' / name).read_bytes()
+        target = data + '/item/bpz-samples/' + name
+        existing = remote.read(s, target, 500000)
+        if existing is None:
+            remote.write(s, target, content, 0o644)
+        elif existing != content:
+            raise RuntimeError('sample photo conflict: ' + name)
+        with urlopen('https://skhnslu-busan.com/data/item/bpz-samples/' + name, timeout=15) as response:
+            if response.read(500001) != content:
+                raise RuntimeError('published photo mismatch: ' + name)
+    print('POINTZONE_PUBLIC_SAMPLE_PHOTOS_VERIFIED', 7, flush=True)
+
 def release(s):
     remote.directory(s, remote.THEME)
     remote.directory(s, remote.PRIVATE)
@@ -26,7 +55,7 @@ def release(s):
             new = p.read_bytes()
             if old == new:
                 continue
-            allowed = {v for history in (previous_layout, remote.FILES) for v in history.get(rel, ())}
+            allowed = {v for history in (previous_layout, remote.FILES, catalog_baseline) for v in history.get(rel, ())}
             if old is not None and remote.blob(old) not in allowed:
                 raise RuntimeError('unrecognized deployed version: ' + rel)
             if old is not None:
@@ -41,6 +70,7 @@ def release(s):
             remote.directory(s, engine)
         except FileNotFoundError:
             s.mkdir(engine, 0o755)
+        install_sample_photos(s)
         changed = []
         try:
             for rel in sorted(plan, key=lambda key: (not key.startswith('lib/'), key=='shop/index.php', key)):
