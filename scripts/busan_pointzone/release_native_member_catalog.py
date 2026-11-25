@@ -33,6 +33,7 @@ def release(s):
     for rel in ('data','extend','theme/UXC_Flarumix','theme/UXC_Flarumix/mobile','theme/Busan_PointZone','shop','mobile/shop','skin/shop/basic','mobile/skin/shop/basic','busan-assistant'):
         remote.directory(s,remote.ROOT+'/'+rel)
     remote.directory(s,remote.PRIVATE)
+    # Validate original installed skin files, including the actual catalogue and detail skins.
     for prefix in ('skin/shop/basic','mobile/skin/shop/basic'):
         for filename in ('list.10.skin.php','item.form.skin.php','style.css'):
             if remote.read(s,remote.ROOT+'/'+prefix+'/'+filename,1000000) is None:raise RuntimeError('stock skin missing: '+prefix+'/'+filename)
@@ -87,7 +88,7 @@ def release(s):
             if remote.read(s,target,100000)!=old:raise RuntimeError('file changed concurrently: '+rel)
             changed.append(rel);remote.write(s,target,new,0o644)
             if remote.read(s,target,100000)!=new:raise RuntimeError('verify failed: '+rel)
-        for path in ('shop/list.php?ca_id=z9','shop/item.php?it_id=f1000000000000000001','adm/shop_admin/itemlist.php'):
+        for path in ('shop/list.php?ca_id=z9&device=pc','shop/list.php?ca_id=z9&device=mobile','shop/item.php?it_id=f1000000000000000001&device=pc','shop/item.php?it_id=f1000000000000000001&device=mobile','adm/shop_admin/itemlist.php'):
             check_guest(path,'login')
         for path in ('shop/orderform.php','shop/orderformupdate.php','shop/cartupdate.php'):
             check_guest(path,'locked')
@@ -101,6 +102,7 @@ def release(s):
             if old is None:s.remove(target)
             else:remote.write(s,target,old,0o644)
         if settings_changed:settings('restore',before)
+        print('BUSAN_NATIVE_MEMBER_ROLLBACK_VERIFIED',len(changed),flush=True)
         raise
     finally:
         try:s.remove(dest)
