@@ -2,7 +2,7 @@
 if(!defined('_GNUBOARD_'))exit;
 /* Only feature records; no direct writes to native points or member tables. */
 final class BusanActivitiesBridge {
-    public static function open():BusanPointZoneActivities{
+    private static function database():PDO{
         $engine=__DIR__.'/engine/pointzone-activities.php';
         if(!is_file($engine))throw new RuntimeException('activity package unavailable');
         require_once $engine;
@@ -15,7 +15,28 @@ final class BusanActivitiesBridge {
             foreach(['G5_MYSQL_HOST','G5_MYSQL_DB','G5_MYSQL_USER','G5_MYSQL_PASSWORD'] as $key)if(!defined($key))throw new RuntimeException('native db unavailable');
             $db=new PDO('mysql:host='.G5_MYSQL_HOST.';dbname='.G5_MYSQL_DB.';charset=utf8mb4',G5_MYSQL_USER,G5_MYSQL_PASSWORD,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_EMULATE_PREPARES=>false]);
         }
-        return new BusanPointZoneActivities($db);
+        return $db;
+    }
+    public static function open():BusanPointZoneActivities{
+        return new BusanPointZoneActivities(self::database());
+    }
+    public static function financialEnabled():bool{
+        if(!defined('BPZ_ISOLATED_FIXTURE')||BPZ_ISOLATED_FIXTURE!==true||getenv('BUSAN_FIXTURE_DB')!=='pointzone_fixture')return false;
+        return self::database()->query('SELECT DATABASE()')->fetchColumn()==='pointzone_fixture' && function_exists('insert_point');
+    }
+    public static function settlement():BusanActivitySettlement{
+        if(!self::financialEnabled())throw new DomainException('정산 기능은 운영 검증 전입니다.');
+        require_once __DIR__.'/engine/pointzone-activity-settlement.php';
+        return new BusanActivitySettlement(self::database());
+    }
+    public static function stringField(array $p,string $key):string{
+        if(!is_string($p[$key]??null))throw new DomainException('잘못된 입력');
+        return $p[$key];
+    }
+    public static function amount(array $p,string $key):int{
+        $v=self::stringField($p,$key);
+        if(!preg_match('/^[1-9][0-9]{0,9}$/D',$v)||(int)$v>2147483647)throw new DomainException('포인트 금액 오류');
+        return (int)$v;
     }
     public static function csrf():string{
         $token=get_session('ss_bpz_activity_csrf');
