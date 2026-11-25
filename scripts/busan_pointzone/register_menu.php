@@ -55,26 +55,42 @@ try{
         if(!in_array($existing['me_link'],[$url,$legacy],true)||$existing['me_name']!=='POINT ZONE')
             throw new RuntimeException('unrelated point zone menu');
     }
-    $top=pzm_q("SELECT me_id,me_code,me_name,me_link,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=2 ORDER BY me_order,me_id");
+    $top=pzm_q("SELECT me_id,me_code,me_name,me_link,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=2 ORDER BY me_order,me_id");
     $ordered=[];while($v=sql_fetch_array($top))$ordered[]=$v;
     $pos=null;foreach($ordered as $i=>$v)if((string)$v['me_code']===(string)$code)$pos=$i;
     if($pos===null)throw new RuntimeException('POINT ZONE root not located');
     if(!in_array($ordered[$pos]['me_link'],[$url,$legacy],true))throw new RuntimeException('POINT ZONE root URL mismatch');
     if((int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)throw new RuntimeException('POINT ZONE visibility disabled');
-    $needsOrder=false;
-    foreach(['me_use','me_mobile_use'] as $flag){
-        $visible=array_values(array_filter($ordered,static function($v)use($flag){return (int)$v[$flag]===1;}));
-        $names=array_map(static function($v){return strtoupper(trim($v['me_name']));},$visible);
-        $p=array_search('POINT ZONE',$names,true);$e=array_search('ETC',$names,true);
-        if($p===false||$e===false)throw new RuntimeException('ETC or POINT ZONE not visible: '.$flag);
-        if($p!==$e+1){
-            $others=array_values(array_filter($names,static function($n){return $n!=='POINT ZONE';}));
-            if(end($others)!=='ETC')throw new RuntimeException('ETC not final visible existing section: '.$flag);
-            $needsOrder=true;
-        }
+    // Find a position using only POINT ZONE's own numeric order. Preserve
+    // every other root's relative ordering and visibility on both devices.
+    $currentOrder=(int)$ordered[$pos]['me_order'];
+    $candidates=[$currentOrder,(int)$parent['me_order']];
+    foreach($ordered as $v){
+        $n=(int)$v['me_order'];$candidates[]=$n;
+        if($n<2147483647)$candidates[]=$n+1;
+        if($n>0)$candidates[]=$n-1;
     }
-    $newOrder=(int)$parent['me_order']+1;
-    if($needsOrder&&($newOrder<0||$newOrder>2147483647))throw new RuntimeException('menu order range');
+    $candidates=array_values(array_unique($candidates));
+    usort($candidates,static function($a,$b)use($currentOrder){return abs($a-$currentOrder)<=>abs($b-$currentOrder);});
+    $newOrder=null;
+    foreach($candidates as $candidate){
+        if($candidate<0||$candidate>2147483647)continue;
+        $trial=$ordered;$trial[$pos]['me_order']=$candidate;
+        usort($trial,static function($a,$b){return ((int)$a['me_order']<=>(int)$b['me_order'])?:((int)$a['me_id']<=>(int)$b['me_id']);});
+        $ok=true;
+        foreach(['me_use','me_mobile_use'] as $flag){
+            $visible=array_values(array_filter($trial,static function($v)use($flag){return (int)$v[$flag]===1;}));
+            $names=array_map(static function($v){return strtoupper(trim($v['me_name']));},$visible);
+            $p=array_search('POINT ZONE',$names,true);$e=array_search('ETC',$names,true);
+            if($p===false||$e===false||$p!==$e+1){$ok=false;break;}
+        }
+        if($ok){$newOrder=$candidate;break;}
+    }
+    if($newOrder===null){
+        $diagnostic=array_map(static function($v){return ['name'=>$v['me_name'],'id'=>(int)$v['me_id'],'order'=>(int)$v['me_order'],'pc'=>(int)$v['me_use'],'mobile'=>(int)$v['me_mobile_use']];},$ordered);
+        pzm_out(200,['status'=>'blocked','reason'=>'no safe POINT ZONE-only order','root_order'=>$diagnostic]);
+    }
+    $needsOrder=$newOrder!==$currentOrder;
     $desired=['shop'=>'포인트 상점','auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트',
               'profile'=>'프로필 꾸미기','honor'=>'명예의 전당','my'=>'나의 포인트존'];
     $children=pzm_q("SELECT me_id,me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code)." ORDER BY me_code,me_id");

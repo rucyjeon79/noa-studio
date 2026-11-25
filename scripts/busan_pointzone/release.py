@@ -47,7 +47,7 @@ def release(s):
             with urlopen(req,timeout=40) as res: return json.load(res)
         snapshot=call({'mode':'snapshot'})
         if snapshot.get('status')!='snapshot' or not isinstance(snapshot.get('snapshot'),dict):
-            raise RuntimeError('menu snapshot rejected: '+str(snapshot.get('reason','unknown')))
+            raise RuntimeError('menu snapshot rejected: '+str(snapshot.get('reason','unknown'))+' '+json.dumps(snapshot.get('root_order',[]),ensure_ascii=False))
         digest=snapshot.get('sha256','')
         if len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
             raise RuntimeError('invalid menu snapshot hash')
