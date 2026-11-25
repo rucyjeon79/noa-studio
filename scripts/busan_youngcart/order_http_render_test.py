@@ -48,7 +48,7 @@ def run():
         (root/"theme").mkdir()
         stage(root/"theme"/"Busan_PointZone")
         (root/"common.php").write_text(COMMON)
-        (root/"head.php").write_text("""<!doctype html><html><head><?php echo implode('', $GLOBALS['fixture_css']??[]); ?></head><body><header id="native-site-header">부산지부 ON</header><nav id="native-site-menu">기존 메뉴</nav><main id="contentsWrap">""")
+        (root/"head.php").write_text("""<!doctype html><html><head><?php $section='native'; $sections=[]; $base='native'; $viewRows=[]; $viewError=true; $rows=[]; $ready=false; $enabled=true; $error='native'; $csrf='native'; echo implode('', $GLOBALS['fixture_css']??[]); ?></head><body><header id="native-site-header">부산지부 ON</header><nav id="native-site-menu">기존 메뉴</nav><main id="contentsWrap">""")
         (root/"tail.php").write_text("""</main><footer id="native-site-footer">부산지부 ON</footer></body></html>""")
         with socket.socket() as s:
             s.bind(("127.0.0.1",0));port=s.getsockname()[1]
@@ -76,6 +76,14 @@ def run():
                     check(html.index('id="native-site-header"')<html.index('id="native-site-menu"')<html.index('id="contentsWrap"')<html.index('id="busan-pointzone"')<html.index('id="native-site-footer"'),"shared native layout order")
                     check("pointzone.css?v=" in html and "bpz-header" not in html,"scoped stylesheet and no duplicate header")
                 integrated(body)
+                sections={"shop":"포인트 상점","auction":"포인트 경매","sharing":"포인트 나눔","events":"지부장 이벤트","profile":"프로필 꾸미기","honor":"명예의 전당","my":"나의 포인트존"}
+                for section,label in sections.items():
+                    code,page,_=call("pointzone.php?section="+section)
+                    check(code==200,"submenu HTTP "+section)
+                    integrated(page)
+                    check(re.search(r'href="[^"]*\?section='+section+r'" aria-current="page"',page),"active submenu "+section)
+                    check("<h2>"+label in page,"correct submenu body "+section)
+                print("BUSAN_POINTZONE_ALL_SEVEN_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
                 check(code==200 and "장바구니 담기" in body and "<fieldset disabled>" in body,"disabled product action")
                 check("결제 확인 대기 주문" not in body,"member must not see admin UI")
