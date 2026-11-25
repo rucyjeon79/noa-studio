@@ -46,6 +46,26 @@ rejectExisting(fn()=>$s->purchase('api_pending',$pending,$req2),RuntimeException
 ckExisting($events('api_pending')===1&&$points->balance('api_pending')===700,'pending never replayed');
 $state=json_decode($db->query("SELECT receipt FROM bpz_order_receipt WHERE order_id='$pending'")->fetchColumn(),true);
 ckExisting($state['state']==='debit_pending','durable pending evidence');
+
+$is_member=true;$is_admin='';
+rejectExisting(fn()=>$s->reviewPending('api_pending',$pending),DomainException::class);
+$is_admin='super';
+$review=$s->reviewPending('api_pending',$pending);
+ckExisting($review['can_finalize']===true&&$review['delta']===-300&&$review['balance']===700,'existing debit evidence');
+rejectExisting(fn()=>$s->reviewPending('api_pending',$pending,$review['point_id']+1),DomainException::class);
+$recovered=$s->reviewPending('api_pending',$pending,$review['point_id']);
+ckExisting($recovered['state']==='paid'&&$events('api_pending')===1&&$points->balance('api_pending')===700,'recover shop only');
+$db->exec("CREATE TRIGGER bpz_api_fail_refund BEFORE UPDATE ON bpz_order_receipt FOR EACH ROW BEGIN IF JSON_UNQUOTE(JSON_EXTRACT(NEW.receipt,'$.state'))='cancelled' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture refund finalize failure'; END IF; END");
+rejectExisting(fn()=>$s->cancel('api_pending',$pending),PDOException::class);
+$db->exec('DROP TRIGGER bpz_api_fail_refund');
+ckExisting($points->balance('api_pending')===1000&&$events('api_pending')===2&&$stock()===4,'refund already applied and stock held');
+rejectExisting(fn()=>$s->cancel('api_pending',$pending),RuntimeException::class);
+$review=$s->reviewPending('api_pending',$pending);
+ckExisting($review['can_finalize']===true&&$review['delta']===300,'existing refund evidence');
+$recovered=$s->reviewPending('api_pending',$pending,$review['point_id']);
+ckExisting($recovered['state']==='cancelled'&&$stock()===5&&$events('api_pending')===2&&$points->balance('api_pending')===1000,'recover refund without new point event');
+rejectExisting(fn()=>$s->reviewPending('api_pending',$pending),DomainException::class);
+echo "BUSAN_EXISTING_POINT_PENDING_RECOVERY_OK\n";
 $engines=$db->query("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('g5_member','g5_point')")->fetchAll(PDO::FETCH_KEY_PAIR);
 ckExisting($engines===['g5_member'=>'MyISAM','g5_point'=>'MyISAM']||($engines['g5_member']==='MyISAM'&&$engines['g5_point']==='MyISAM'),'native engines unchanged during checkout');
 echo "BUSAN_EXISTING_POINT_API_MYISAM_OK\n";
