@@ -62,3 +62,11 @@
 - Live audit 45535376037: pinned SFTP authentication verified, 90 candidate source files inspected, 21 matches, no read errors, 13 omitted; remote CLI metadata did not return a usable receipt. Earlier live audit 45527741652 confirmed member/point MyISAM and yc5 native shop tables InnoDB. No exhaustive writer review yet.
 - `native-point-ledger.php` implements the shared native `g5_member.mb_point` and `g5_point` integration on one PDO transaction, based on official v5.6.4 schema and native functions. No second operating point balance. Native debit event and original lot allocations are retained in the order receipt. Reversal appends positive point entries with original expiry and does not double-release old allocations. Existing ledger discrepancy, overdue or inconsistent lots, nontransactional storage and duplicate debit fail closed. Reversal of already-expired allocations is held for explicit policy/implementation review, not silently credited or discarded.
 - Native adapter is wired to the isolated order transaction port and official schema fixture; run 45535758300 is the required native integration test receipt. Production port and its persistent order metadata, approved core-compatible shared writer locking, migration/backups and post-migration reconciliation remain required. Do not mark live checkout ready or apply DDL merely because isolated tests pass.
+
+## 최종 채택 방식 — 기존 포인트 유지 / 영카트 호환 (사용자 정정)
+이 절은 이전 직접 원장·InnoDB 전환 설계를 대체한다. 회원/포인트 스키마와 기존 코어는 변경하지 않는다. 영카트만 기존 insert_point() API를 호출한다. 이전 직접 원장 구현은 테스트 기록으로만 보존하고 배포 패키지에서 제외한다.
+- run 45536642666: 순정 그누보드 포인트 함수와 MyISAM 격리 환경에서 구매·반환·멱등성 검증 통과.
+- run 45537120512: 관리자 확인 대기 주문 복구 테스트 통과. 기존 포인트 원장에 검증된 거래가 있을 때 영카트 상태만 복구.
+- run 45537371523: 결제 요청 필드, CSRF, 회원/관리자 권한, PHP 문법 및 배포 패키지 검증 통과.
+- 추가 HTTP 렌더 테스트는 격리 MariaDB와 임시 native common bootstrap을 사용하며 실제 운영 회원 로그인 검증이 아니다.
+- 운영 원장 변경 없음. 결제 기능 잠금 유지. 독립 기존 포인트 쓰기 경로와 동시 차감 검증, 운영 설치 API 확인, 영카트 영수증 테이블 설치 및 화면 확인이 남아 있다. 이전 원장 전환 계획을 실행하지 않는다.
