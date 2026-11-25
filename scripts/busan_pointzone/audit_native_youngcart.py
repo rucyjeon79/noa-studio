@@ -1,5 +1,5 @@
 """Read-only, scoped native Youngcart compatibility audit on existing Busan host.
-No deployment, remote execution, DB connection, config secrets, or source dump.
+No deployment, remote execution, DB connection, secret output, or source dump.
 """
 import json,re,sys
 from pathlib import Path
@@ -8,6 +8,9 @@ import release_submenu_fix as remote
 
 FILES=(
  'config.php','common.php','shop.config.php','shop/_common.php',
+ 'adm/_common.php','adm/admin.menu400.php','shop/shop.head.php','shop/shop.tail.php',
+ 'mobile/shop/shop.head.php','mobile/shop/shop.tail.php','theme/UXC_Flarumix/theme.config.php',
+ 'lib/hook.lib.php',
  'shop/index.php','shop/list.php','shop/item.php','shop/cart.php','shop/cartupdate.php',
  'shop/orderform.php','shop/orderformupdate.php','shop/orderinquiry.php','shop/orderinquiryview.php','shop/orderinquirycancel.php',
  'shop/itemuse.php','shop/itemqa.php','lib/shop.lib.php','lib/common.lib.php',
@@ -56,6 +59,31 @@ def audit(s):
             row['mapping_keys']=sorted(set(re.findall(r"\$g5\s*\[\s*['\"](g5_shop_[a-z_]+_table)['\"]\s*\]",src)))
             row['uses_shop_prefix_constant']=bool(re.search(r'\bG5_SHOP_TABLE_PREFIX\b',src))
         result[path]=row
+    # dbconfig can contain credentials. Never publish its bytes, full hash or
+    # arbitrary lines. Parse only exact, enumerated shop config values.
+    cfg=remote.read(s,remote.ROOT+'/data/dbconfig.php',100000)
+    if cfg is None:raise RuntimeError('site database configuration missing')
+    src=cfg.decode('utf-8','replace')
+    flag=re.findall(r"define\s*\(\s*['\"]G5_USE_SHOP['\"]\s*,\s*(true|false|0|1)\s*\)",src,re.I)
+    prefix=re.findall(r"define\s*\(\s*['\"]G5_SHOP_TABLE_PREFIX['\"]\s*,\s*['\"](g5_shop_|yc5_)['\"]\s*\)",src)
+    keys={}
+    for k in ('default','category','item','item_option','cart','order','item_use','item_qa','wish','coupon','coupon_log','sendcost','personalpay','event','event_item'):
+        m=re.findall(r"\$g5\s*\[\s*['\"]g5_shop_"+k+r"_table['\"]\s*\]\s*=\s*([^;\r\n]{1,120});",src)
+        keys[k]=['yc5_literal' if re.fullmatch(r"['\"]yc5_"+k+r"['\"]",v.strip()) else 'g5_shop_literal' if re.fullmatch(r"['\"]g5_shop_"+k+r"['\"]",v.strip()) else 'prefix_constant' if re.fullmatch(r"G5_SHOP_TABLE_PREFIX\s*\.\s*['\"]"+k+r"['\"]",v.strip()) else 'other_expression' for v in m]
+    print('BUSAN_NATIVE_CONFIG_METADATA',json.dumps({'flag':flag,'prefix':prefix,'mapping':keys,'secret_output':False},ensure_ascii=False),flush=True)
+    # Non-secret source excerpts only: allowlisted lines establishing load order,
+    # native admin authentication, shop guards and theme choice. No raw config.
+    snippets={}
+    for rel in ('common.php','shop/_common.php','adm/shop_admin/_common.php','adm/_common.php','shop.config.php','shop/shop.head.php','shop/shop.tail.php','shop/index.php','mobile/shop/shop.head.php','mobile/shop/shop.tail.php'):
+        data=remote.read(s,remote.ROOT+'/'+rel,1000000)
+        if data is None:continue
+        src=data.decode('utf-8','replace').splitlines()
+        hit=[]
+        for i,l in enumerate(src):
+            if re.search(r'\bG5_USE_SHOP\b|shop\.config\.php|G5_EXTEND_PATH|common_header|admin_common|G5_(?:MOBILE_)?THEME_SHOP_PATH|auth_check_menu|is_admin|is_guest|G5_SHOP_PATH|G5_MSHOP_PATH',l) and not re.search(r'password|passwd|secret|token|api[_-]?key|G5_MYSQL',l,re.I):
+                hit.append({'line':i+1,'text':l.strip()[:240]})
+        snippets[rel]=hit[:40]
+    print('BUSAN_NATIVE_BOOTSTRAP',json.dumps(snippets,ensure_ascii=False),flush=True)
     print('BUSAN_NATIVE_YOUNGCART_AUDIT',json.dumps({'files':result,'remote_writes':0,'sql_accessed':False,'point_mutations':0},ensure_ascii=False),flush=True)
     required=['shop.config.php','shop/_common.php','shop/cartupdate.php','shop/orderform.php','shop/orderformupdate.php','lib/shop.lib.php','adm/shop_admin/itemformupdate.php','adm/shop_admin/orderformupdate.php']
     if any(result[k]['state']!='present' for k in required):raise RuntimeError('native source inventory incomplete')
