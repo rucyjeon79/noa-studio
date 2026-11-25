@@ -29,6 +29,7 @@ $base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 <section class="bpz-card">
 <h2><?php echo $section===''?'POINT ZONE 이용 안내':bpz_theme_escape($sections[$section][0]).' 준비 중'; ?></h2>
 <p>현금 결제 없이 포인트로만 운영합니다. 실제 상품 구매와 포인트 차감은 안전 검증 후 제공됩니다.</p>
+<?php if($section==='manage'&&($is_admin??'')==='super'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/catalog-admin.php'); ?>">상품·분류·재고 관리</a></p><?php } ?>
 <?php if($section==='my'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(G5_BBS_URL.'/point.php'); ?>">기존 포인트 내역 확인</a></p><?php } ?>
 <?php if($section!==''){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape($base); ?>">POINT ZONE 홈으로</a></p><?php } ?>
 </section>

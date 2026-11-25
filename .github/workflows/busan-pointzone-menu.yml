@@ -21,6 +21,7 @@ jobs:
         run: |
           find deploy/busan/youngcart/theme/Busan_PointZone -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l scripts/busan_pointzone/register_menu.php
+          php scripts/busan_youngcart/catalog_test.php
           python -m py_compile scripts/busan_pointzone/release.py
           python -m pip install -q paramiko==3.5.1
       - name: Register native menu below ETC and deploy theme entry only

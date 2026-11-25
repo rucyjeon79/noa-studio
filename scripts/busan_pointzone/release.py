@@ -16,8 +16,8 @@ def release(s):
     if not stat.S_ISDIR(s.lstat(ROOT+'/busan-assistant').st_mode):
         raise RuntimeError('unexpected assistant directory')
     theme=ROOT+'/theme/Busan_PointZone'
-    paths=['pointzone.php','theme.txt','css/pointzone.css','shop/index.php','shop/shop.head.php','shop/shop.tail.php','mobile/shop/index.php','mobile/shop/shop.head.php','mobile/shop/shop.tail.php']
-    for folder in ('','/css','/shop','/mobile','/mobile/shop'):
+    paths=['pointzone.php','theme.txt','css/pointzone.css','shop/index.php','shop/shop.head.php','shop/shop.tail.php','mobile/shop/index.php','mobile/shop/shop.head.php','mobile/shop/shop.tail.php','lib/catalog.php','catalog-admin.php']
+    for folder in ('','/css','/shop','/mobile','/mobile/shop','/lib'):
         dest=theme+folder
         try: s.mkdir(dest,0o755)
         except OSError: pass
@@ -28,12 +28,24 @@ def release(s):
         data=(SOURCE/rel).read_bytes()
         old=read(s,theme+'/'+rel,100000)
         if old is not None and old!=data:
-            raise RuntimeError('independent theme asset conflict: '+rel)
+            if rel!='shop/index.php' or old!=Path('scripts/busan_pointzone/previous-shop-index.php.txt').read_bytes():
+                raise RuntimeError('independent theme asset conflict: '+rel)
+            private='/hosting/rucyjeon79/busan-assistant-private'
+            if s.normalize(private)!=private or not stat.S_ISDIR(s.lstat(private).st_mode):
+                raise RuntimeError('private asset backup unavailable')
+            backup=private+'/pointzone-shop-index-'+hashlib.sha256(old).hexdigest()+'.bak'
+            saved=read(s,backup,100000)
+            if saved is None: write(s,backup,old,0o600)
+            elif saved!=old: raise RuntimeError('asset backup conflict')
+            if read(s,backup,100000)!=old: raise RuntimeError('backup verification failed')
     for rel in paths:
         data=(SOURCE/rel).read_bytes()
         dest=theme+'/'+rel
-        if read(s,dest,100000) is None: write(s,dest,data,0o644)
+        existing=read(s,dest,100000)
+        if existing is None or (rel=='shop/index.php' and existing==Path('scripts/busan_pointzone/previous-shop-index.php.txt').read_bytes()):
+            write(s,dest,data,0o644)
         if read(s,dest,100000)!=data: raise RuntimeError('theme asset verification failed')
+    print('BUSAN_POINTZONE_CATALOG_FILES_VERIFIED',len(paths))
     page=(SOURCE/'pointzone.php').read_bytes()
     token=secrets.token_hex(32)
     source=Path('scripts/busan_pointzone/register_menu.php').read_text().replace('__TOKEN_HASH__',hashlib.sha256(token.encode()).hexdigest()).encode()
