@@ -9,7 +9,7 @@ declare(strict_types=1);
  * to share the member lock and transaction protocol.
  */
 final class BusanNativePointLedger {
-    public function __construct(private PDO $db){}
+    public function __construct(private PDO $db,private int $pointTerm){if($pointTerm<0)throw new DomainException('invalid point term');}
     private function q(string $sql,array $args=[]):PDOStatement{
         $s=$this->db->prepare($sql);$s->execute($args);return $s;
     }
@@ -24,7 +24,8 @@ final class BusanNativePointLedger {
         $this->guard();
         $m=$this->q('SELECT mb_point,mb_leave_date,mb_intercept_date FROM g5_member WHERE mb_id=? FOR UPDATE',[$member])->fetch(PDO::FETCH_ASSOC);
         if(!$m||$m['mb_leave_date']!==''||$m['mb_intercept_date']!=='')throw new DomainException('member unavailable');
-        $rows=$this->q('SELECT po_id,po_point,po_use_point,po_expired,po_expire_date,po_rel_table,po_rel_id,po_rel_action FROM g5_point WHERE mb_id=? ORDER BY po_expire_date,po_id FOR UPDATE',[$member])->fetchAll(PDO::FETCH_ASSOC);
+        $sort=$this->pointTerm>0?'po_expire_date,po_id':'po_id';
+        $rows=$this->q('SELECT po_id,po_point,po_use_point,po_expired,po_expire_date,po_rel_table,po_rel_id,po_rel_action FROM g5_point WHERE mb_id=? ORDER BY '.$sort.' FOR UPDATE',[$member])->fetchAll(PDO::FETCH_ASSOC);
         $today=$this->now()->format('Y-m-d');$sum=0;$available=0;$lots=[];
         foreach($rows as $r){
             $p=(int)$r['po_point'];$u=(int)$r['po_use_point'];$flag=(int)$r['po_expired'];$sum+=$p;
@@ -33,7 +34,7 @@ final class BusanNativePointLedger {
             if($p===$u)continue;
             // The native expiry routine may modify the ledger. Never silently
             // reconcile it in a checkout; require the existing process first.
-            if($flag!==0||$r['po_expire_date']<$today)throw new DomainException('unreconciled point expiry');
+            if($flag!==0||$r['po_expire_date']<$today||($this->pointTerm===0&&$r['po_expire_date']!=='9999-12-31'))throw new DomainException('unreconciled point expiry');
             $available+=$p-$u;$lots[]=$r;
         }
         if($sum<0||$sum>2147483647||$sum!==(int)$m['mb_point']||$available!==$sum)
