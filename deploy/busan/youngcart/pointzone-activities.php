@@ -127,7 +127,7 @@ final class BusanPointZoneActivities {
     }
     public function participants(string $id):array{
         $this->actor();self::admin();$this->activity($id);
-        return $this->q("SELECT mb_id,amount,state,created_at FROM bpz_participation WHERE activity_id=? ORDER BY created_at,id LIMIT 200",[$id])->fetchAll(PDO::FETCH_ASSOC);
+        return $this->q("SELECT id,mb_id,amount,state,created_at FROM bpz_participation WHERE activity_id=? ORDER BY created_at,id LIMIT 200",[$id])->fetchAll(PDO::FETCH_ASSOC);
     }
     /** Candidate ranking: confirmed participation count, not point balances. */
     public function rankings():array{
