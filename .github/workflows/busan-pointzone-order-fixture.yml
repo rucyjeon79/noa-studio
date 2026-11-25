@@ -1,0 +1,44 @@
+name: Busan POINT ZONE isolated order SQL
+on:
+  push:
+    branches: [busan/pointzone-order-lifecycle-20261125]
+    paths:
+      - 'scripts/busan_youngcart/order*'
+      - 'deploy/busan/youngcart/order-lifecycle.php'
+      - '.github/workflows/busan-pointzone-order-fixture.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: fixture-only
+          MARIADB_DATABASE: pointzone_fixture
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PHP lint and contract test
+        run: |
+          set -euo pipefail
+          php -l deploy/busan/youngcart/order-lifecycle.php
+          php -l scripts/busan_youngcart/order_sql_fixture_port.php
+          php -l scripts/busan_youngcart/order_sql_fixture_test.php
+          php scripts/busan_youngcart/order_lifecycle_test.php
+      - name: Isolated MariaDB native checkout and reversal
+        env:
+          DB_CONTAINER: ${{ job.services.db.id }}
+          BUSAN_FIXTURE_DB: pointzone_fixture
+        run: |
+          set -euo pipefail
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; sed 's/`g5_shop_/`yc5_/g' deploy/busan/youngcart/schema/youngcart-v5.6.4-create-only.sql; cat scripts/busan_youngcart/order_fixture_schema.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/order_sql_fixture_test.php
