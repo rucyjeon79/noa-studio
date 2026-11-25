@@ -3,7 +3,8 @@ The synthetic common.php never leaves the temporary document root.
 The production purchase gate remains closed.
 """
 from pathlib import Path
-from urllib.request import Request,urlopen
+from urllib.request import Request,urlopen,build_opener,HTTPCookieProcessor
+from http.cookiejar import CookieJar
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 import os
@@ -56,10 +57,11 @@ def run():
         with (root/"server.log").open("w+") as log:
             proc=subprocess.Popen(["php","-S",f"127.0.0.1:{port}","-t",str(root)],stdout=log,stderr=log)
             base=f"http://127.0.0.1:{port}/theme/Busan_PointZone/"
+            openers={role:build_opener(HTTPCookieProcessor(CookieJar())) for role in ("member","super","guest","blocked")}
             def call(path,role="member",data=None):
                 req=Request(base+path,headers={"X-Fixture-Role":role},data=urlencode(data).encode() if data is not None else None)
                 try:
-                    with urlopen(req,timeout=5) as r:return r.status,r.read().decode(),r.headers
+                    with openers[role].open(req,timeout=5) as r:return r.status,r.read().decode(),r.headers
                 except HTTPError as e:return e.code,e.read().decode(),e.headers
             try:
                 for _ in range(50):
@@ -91,6 +93,13 @@ def run():
                     check(call("activity-admin.php?kind="+kind)[0]==403,"admin permission "+kind)
                     code,page,_=call("pointzone.php?section="+kind)
                     check(code==200 and "현재 등록된" in page,"empty activity "+kind)
+                # Use a real member-bound session token from the activity admin fixture.
+                code,page,_=call("activity-admin.php?kind=events","super")
+                token=re.search(r'name="csrf" value="([a-f0-9]{64})"',page).group(1)
+                for section,action in (("auction","bid"),("sharing","contribute"),("profile","claim")):
+                    data={"csrf":token,"activity_action":action,"activity_id":"a"*32,"request_id":"b"*32,"amount":"1","order_id":"123456789012397","enabled":"1"}
+                    check(call("pointzone.php?section="+section,"super",data)[0]==503,"financial route gate "+action)
+                print("BUSAN_POINTZONE_ACTIVITY_FINANCIAL_ROUTE_LOCK_OK")
                 print("BUSAN_POINTZONE_ACTIVITY_UI_OK")
                 print("BUSAN_POINTZONE_ALL_SEVEN_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
