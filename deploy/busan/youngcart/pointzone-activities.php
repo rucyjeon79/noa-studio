@@ -123,7 +123,7 @@ final class BusanPointZoneActivities {
         return $this->q("SELECT p.id,a.kind,a.title,p.amount,p.state,p.created_at FROM bpz_participation p JOIN bpz_activity a ON a.id=p.activity_id WHERE p.mb_id=? ORDER BY p.created_at DESC,p.id LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
     }
     public function entitlements():array{
-        return $this->q("SELECT e.id,a.title,e.order_id,e.starts_at,e.expires_at,CASE WHEN e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) THEN 1 ELSE 0 END AS active FROM bpz_entitlement e JOIN bpz_activity a ON a.id=e.activity_id WHERE e.mb_id=? ORDER BY e.starts_at DESC LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
+        return $this->q("SELECT e.id,a.title,e.order_id,e.starts_at,e.expires_at,CASE WHEN e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) AND o.od_status IN ('입금','완료') AND JSON_UNQUOTE(JSON_EXTRACT(r.receipt,'$.state'))='paid' THEN 1 ELSE 0 END AS active FROM bpz_entitlement e JOIN bpz_activity a ON a.id=e.activity_id LEFT JOIN yc5_order o ON o.od_id=e.order_id AND o.mb_id=e.mb_id LEFT JOIN bpz_order_receipt r ON r.order_id=o.od_id AND r.member_id=o.mb_id WHERE e.mb_id=? ORDER BY e.starts_at DESC LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
     }
     public function participants(string $id):array{
         $this->actor();self::admin();$this->activity($id);
@@ -132,7 +132,7 @@ final class BusanPointZoneActivities {
     /** Candidate ranking: confirmed participation count, not point balances. */
     public function rankings():array{
         $this->actor();
-        return $this->q("SELECT m.mb_nick AS nickname,COUNT(DISTINCT p.activity_id) AS activities FROM bpz_participation p JOIN g5_member m ON m.mb_id=p.mb_id WHERE p.state IN ('confirmed','awarded') AND m.mb_leave_date='' AND m.mb_intercept_date='' GROUP BY m.mb_id,m.mb_nick ORDER BY activities DESC,m.mb_id LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
+        return $this->q("SELECT m.mb_nick AS nickname,COUNT(DISTINCT p.activity_id) AS activities FROM bpz_participation p JOIN g5_member m ON m.mb_id=p.mb_id WHERE p.state IN ('confirmed','awarded') AND m.mb_nick<>'' AND m.mb_leave_date='' AND m.mb_intercept_date='' GROUP BY m.mb_id,m.mb_nick ORDER BY activities DESC,m.mb_id LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
     }
     public function equip(?string $entitlement):array{
         $m=$this->actor();
