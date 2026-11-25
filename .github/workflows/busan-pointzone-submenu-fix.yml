@@ -4,6 +4,7 @@ on:
     branches: [busan/pointzone-order-lifecycle-20261125]
     paths:
       - '.github/workflows/busan-pointzone-submenu-fix.yml'
+      - 'scripts/busan_pointzone/release_submenu_fix.py'
 concurrency:
   group: busan-pointzone-menu
   cancel-in-progress: false
