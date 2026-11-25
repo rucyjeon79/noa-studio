@@ -1,0 +1,32 @@
+name: Busan POINT ZONE menu and theme entry
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/busan/pointzone/**'
+      - 'scripts/busan_pointzone/**'
+      - '.github/workflows/busan-pointzone-menu.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-pointzone-menu, cancel-in-progress: false}
+jobs:
+  menu:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate point zone files
+        run: |
+          php -l deploy/busan/pointzone/pointzone.php
+          php -l scripts/busan_pointzone/register_menu.php
+          python -m py_compile scripts/busan_pointzone/release.py
+          python -m pip install -q paramiko==3.5.1
+      - name: Register native menu below ETC and deploy theme entry only
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: python scripts/busan_pointzone/release.py
