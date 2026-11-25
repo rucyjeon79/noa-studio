@@ -27,7 +27,23 @@ def digest(data):return hashlib.sha256(data).hexdigest()
 def directory(s,path):
     if s.normalize(path)!=path or not stat.S_ISDIR(s.lstat(path).st_mode):raise RuntimeError('unexpected directory')
 def release(s):
-    for p in (ROOT,THEME,THEME+'/shop',THEME+'/css',THEME+'/lib',PRIVATE):directory(s,p)
+    locations={'site_root':ROOT,'theme':THEME,'shop':THEME+'/shop','css':THEME+'/css','lib':THEME+'/lib','private_backup':PRIVATE}
+    checks={}
+    for label,p in locations.items():
+        try:directory(s,p);checks[label]='present'
+        except FileNotFoundError:checks[label]='missing'
+        except Exception as e:checks[label]=type(e).__name__
+    print('BUSAN_POINTZONE_DIRECTORY_AUDIT',json.dumps(checks,sort_keys=True),flush=True)
+    # Report only scoped guest URL behavior, never authenticated session contents.
+    for section in ('shop','auction','sharing','events','profile','honor','my'):
+        try:
+            req=Request('https://skhnslu-busan.com/theme/Busan_PointZone/pointzone.php?section='+section,headers={'User-Agent':'Busan-Pointzone-Healthcheck/1.0'})
+            with urlopen(req,timeout=8) as response:
+                body=response.read(100000).decode('utf-8','replace')
+                print('BUSAN_POINTZONE_GUEST_ROUTE',section,response.status,'login' if '로그인' in body or 'login.php' in response.url else 'other',flush=True)
+        except HTTPError as e:print('BUSAN_POINTZONE_GUEST_ROUTE',section,e.code,flush=True)
+        except Exception as e:print('BUSAN_POINTZONE_GUEST_ROUTE',section,type(e).__name__,flush=True)
+    if any(v!='present' for v in checks.values()):raise RuntimeError('verified directory unavailable; do not overwrite or recreate without evidence')
     # Native site layout and active theme must already exist; never edit them.
     for p in (ROOT+'/head.php',ROOT+'/tail.php',ROOT+'/theme/UXC_Flarumix/head.php',ROOT+'/theme/UXC_Flarumix/tail.php'):
         if read(s,p,500000) is None:raise RuntimeError('native site layout missing')
