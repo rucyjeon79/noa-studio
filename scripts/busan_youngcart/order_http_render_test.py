@@ -20,6 +20,8 @@ session_start();
 define('_GNUBOARD_',true);
 define('G5_URL','http://127.0.0.1:'.$_SERVER['SERVER_PORT']);
 define('G5_BBS_URL',G5_URL.'/bbs');
+define('G5_PATH',__DIR__);
+function add_stylesheet($tag,$priority){$GLOBALS['fixture_css'][]=$tag;}
 $db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=pointzone_fixture;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 if($db->query('SELECT DATABASE()')->fetchColumn()!=='pointzone_fixture')exit;
 $role=$_SERVER['HTTP_X_FIXTURE_ROLE']??'guest';
@@ -46,6 +48,8 @@ def run():
         (root/"theme").mkdir()
         stage(root/"theme"/"Busan_PointZone")
         (root/"common.php").write_text(COMMON)
+        (root/"head.php").write_text("""<!doctype html><html><head><?php echo implode('', $GLOBALS['fixture_css']??[]); ?></head><body><header id="native-site-header">부산지부 ON</header><nav id="native-site-menu">기존 메뉴</nav><main id="contentsWrap">""")
+        (root/"tail.php").write_text("""</main><footer id="native-site-footer">부산지부 ON</footer></body></html>""")
         with socket.socket() as s:
             s.bind(("127.0.0.1",0));port=s.getsockname()[1]
         with (root/"server.log").open("w+") as log:
@@ -67,14 +71,24 @@ def run():
                 code,body,headers=call("pointzone.php?section=shop")
                 check(code==200 and "상품 및 구매 안내" in body and "API fixture" in body,"real catalog render")
                 check("private" in headers.get("Cache-Control",""),"private cache")
+                def integrated(html):
+                    check(html.count("<html")==1 and html.count("</html>")==1,"single native document")
+                    check(html.index('id="native-site-header"')<html.index('id="native-site-menu"')<html.index('id="contentsWrap"')<html.index('id="busan-pointzone"')<html.index('id="native-site-footer"'),"shared native layout order")
+                    check("pointzone.css?v=" in html and "bpz-header" not in html,"scoped stylesheet and no duplicate header")
+                integrated(body)
                 code,body,_=call("checkout.php?item="+"8"*20)
                 check(code==200 and "장바구니 담기" in body and "<fieldset disabled>" in body,"disabled product action")
                 check("결제 확인 대기 주문" not in body,"member must not see admin UI")
+                integrated(body)
                 code,body,_=call("pointzone.php?section=my")
                 check(code==200 and "123456789012397" in body and "123456789012396" not in body,"member history isolated")
                 check(call("pointzone.php?section=manage")[0]==404,"admin page denied")
                 code,body,_=call("checkout.php","super")
                 check(code==200 and "결제 확인 대기 주문" in body and "주문 상태 복구" in body,"admin UI")
+                integrated(body)
+                code,body,_=call("catalog-admin.php","super")
+                check(code==200,"catalog admin render")
+                integrated(body)
                 check(call("pointzone.php?section=manage","super")[0]==200,"admin order page")
                 for role in ("member","super"):
                     for action in ("purchase","cancel","cart_set","cart_remove","review_pending","finish_pending"):
@@ -84,6 +98,7 @@ def run():
                 log.flush();log.seek(0)
                 check(not re.search(r"PHP (Fatal error|Warning|Parse error|Notice)",log.read()),"HTTP PHP runtime warnings")
                 print("BUSAN_POINTZONE_HTTP_RENDER_AND_LOCK_OK")
+                print("BUSAN_POINTZONE_SHARED_LAYOUT_OK")
             finally:
                 proc.terminate();proc.wait(timeout=5)
 if __name__=="__main__":run()
