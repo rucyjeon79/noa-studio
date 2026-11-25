@@ -39,6 +39,6 @@ ck($refund['returned_points']===240&&$balance()===500&&$stock()===5,'full revers
 ck($s->cancel('alice',$cart,'token',$c)===$refund&&$count('bpz_fixture_ledger')===2&&$balance()===500,'cancel replay');
 ck($db->query('SELECT od_status FROM yc5_order')->fetchColumn()==='취소','native order status');
 ck($db->query('SELECT ct_status FROM yc5_cart')->fetchColumn()==='취소','native cart status');
-$db->exec('ALTER TABLE bpz_fixture_member ENGINE=MyISAM');
+$db->exec('ALTER TABLE bpz_fixture_member MODIFY mb_id VARCHAR(191) NOT NULL, ENGINE=MyISAM');
 rejects(fn()=>$s->purchase('alice',$cart,'token',$r),'MyISAM blocked');
 echo "BUSAN_ORDER_SQL_FIXTURE_OK\n";
