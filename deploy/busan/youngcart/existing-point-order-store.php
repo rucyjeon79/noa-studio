@@ -39,6 +39,9 @@ final class BusanExistingPointOrderStore implements BusanPointOrderStore {
         if(!$r)throw new DomainException('order unavailable');
         return $this->decode($r['receipt']);
     }
+    public function pending(string $member,string $order):array{
+        return $this->tx(function()use($member,$order){return $this->load($member,$order);});
+    }
     private function save(array $o):void{
         $this->one('UPDATE bpz_order_receipt SET receipt=? WHERE order_id=? AND member_id=?',[$this->json($o),$o['order'],$o['member']]);
     }
