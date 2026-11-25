@@ -109,7 +109,19 @@ def run():
                 print("BUSAN_POINTZONE_ACTIVITY_UI_OK")
                 print("BUSAN_POINTZONE_ALL_SEVEN_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
-                check(code==200 and "장바구니 담기" in body and "<fieldset disabled>" in body,"disabled product action")
+                check(code==200 and "장바구니 담기" in body and '<fieldset><input type="hidden" name="csrf"' in body,"enabled cart action")
+                cart_token=re.search(r'name="csrf" value="([a-f0-9]{64})"',body).group(1)
+                payload={"action":"cart_set","csrf":cart_token,"item":"8"*20,"qty":"2"}
+                code,body,_=call("checkout.php","member",payload)
+                check(code==200 and "장바구니 변경 완료" in body and "600 P" in body,"real cart add")
+                check(call("checkout.php","member",dict(payload,csrf="fake"))[0]==400,"cart CSRF rejection")
+                check(call("checkout.php","member",dict(payload,qty="999"))[0]==400,"cart stock rejection")
+                check(call("checkout.php","member",dict(payload,amount="1"))[0]==400,"cart price spoof rejection")
+                code,body,_=call("checkout.php","member",dict(payload,qty="1"))
+                check(code==200 and "300 P" in body,"real cart update")
+                code,body,_=call("checkout.php","member",{"action":"cart_remove","csrf":cart_token,"item":"8"*20})
+                check(code==200 and "장바구니가 비어 있습니다." in body,"real cart remove")
+                print("BUSAN_POINTZONE_NATIVE_CART_HTTP_OK")
                 check("결제 확인 대기 주문" not in body,"member must not see admin UI")
                 integrated(body)
                 code,body,_=call("pointzone.php?section=my")
@@ -123,7 +135,7 @@ def run():
                 integrated(body)
                 check(call("pointzone.php?section=manage","super")[0]==200,"admin order page")
                 for role in ("member","super"):
-                    for action in ("purchase","cancel","cart_set","cart_remove","review_pending","finish_pending"):
+                    for action in ("purchase","cancel","review_pending","finish_pending"):
                         code,_,_=call("checkout.php",role,{"action":action,"csrf":"fake","enabled":"1"})
                         check(code==503,"server-side purchase gate")
                 check(call("checkout.php?enabled=1")[0]==200,"query cannot enable purchase")
