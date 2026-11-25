@@ -27,7 +27,8 @@ if(!defined('_GNUBOARD_'))exit;
 <?php if(in_array($bpz_section,['profile','my'],true)){ ?>
 <section class="bpz-card"><h2>보유 꾸미기 아이템</h2>
 <?php if($bpz_activityError){ ?><p>보유 내역을 조회할 수 없습니다.</p><?php }elseif(!$bpz_entitlementRows){ ?><p>보유한 아이템이 없습니다.</p><?php } ?>
-<?php foreach($bpz_entitlementRows as $bpz_er){ ?><article class="bpz-card"><h3><?php echo bpz_theme_escape($bpz_er['title']); ?></h3><p><?php echo bpz_theme_escape($bpz_er['expires_at']??'영구 소장'); ?> · <?php echo (int)$bpz_er['active']===1?'사용 가능':'사용 종료'; ?></p></article><?php } ?></section>
+<?php if($bpz_equipped!==null){ ?><p>현재 장착: <?php echo bpz_theme_escape($bpz_equipped['title']); ?></p><?php } ?>
+<?php foreach($bpz_entitlementRows as $bpz_er){ ?><article class="bpz-card"><h3><?php echo bpz_theme_escape($bpz_er['title']); ?></h3><p><?php echo bpz_theme_escape($bpz_er['expires_at']??'영구 소장'); ?> · <?php echo (int)$bpz_er['active']===1?'사용 가능':'사용 종료'; ?></p><?php if((int)$bpz_er['active']===1){ ?><form method="post" action="<?php echo bpz_theme_escape($bpz_base.'?section='.$bpz_section); ?>"><input type="hidden" name="csrf" value="<?php echo bpz_theme_escape($bpz_activityToken); ?>"><input type="hidden" name="activity_action" value="<?php echo ($bpz_equipped['id']??null)===$bpz_er['id']?'unequip':'equip'; ?>"><input type="hidden" name="entitlement_id" value="<?php echo bpz_theme_escape($bpz_er['id']); ?>"><button type="submit"><?php echo ($bpz_equipped['id']??null)===$bpz_er['id']?'해제':'장착'; ?></button></form><?php } ?></article><?php } ?></section>
 <?php } ?>
 <?php if($bpz_section==='my'){ ?>
 <section class="bpz-card"><h2>나의 입찰·나눔·이벤트 내역</h2>
