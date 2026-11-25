@@ -148,4 +148,31 @@ final class BusanPointZoneActivities {
         return $r?:null;
     }
 
+    /** Derive entitlement from a verified native paid order, not a supplied price.
+     * One entitlement per order/activity. Duration begins at native payment time. */
+    public function claimProfile(string $activity,string $order):array{
+        $m=$this->actor();self::id($activity);
+        if(!preg_match('/^[1-9][0-9]{14}$/D',$order))throw new DomainException('invalid order');
+        if(getenv('BUSAN_FIXTURE_DB')!=='pointzone_fixture'||$this->db->query('SELECT DATABASE()')->fetchColumn()!=='pointzone_fixture')throw new DomainException('profile fulfillment not released');
+        return $this->atomic(function()use($m,$activity,$order){
+            $a=$this->activity($activity,true);
+            if($a['kind']!=='profile'||!in_array($a['state'],['open','closed'],true))throw new DomainException('profile unavailable');
+            $r=$this->q("SELECT o.od_receipt_time,o.od_receipt_point,r.receipt FROM yc5_order o JOIN bpz_order_receipt r ON r.order_id=o.od_id AND r.member_id=o.mb_id WHERE o.od_id=? AND o.mb_id=? AND o.od_status IN ('입금','완료') AND o.od_settle_case='포인트' AND o.od_receipt_price=0 FOR UPDATE",[$order,$m])->fetch(PDO::FETCH_ASSOC);
+            if(!$r)throw new DomainException('paid order required');
+            $receipt=json_decode($r['receipt'],true,512,JSON_THROW_ON_ERROR);
+            if(($receipt['state']??null)!=='paid'||($receipt['member']??null)!==$m||($receipt['order']??null)!==$order||($receipt['amount']??null)!==(int)$r['od_receipt_point'])throw new DomainException('receipt conflict');
+            require_once __DIR__.'/existing-points.php';
+            $e=BusanExistingPoints::native()->evidence($m,$order,'purchase',-(int)$r['od_receipt_point']);
+            if(!$e||$e['id']!==($receipt['point_id']??null))throw new DomainException('native payment evidence required');
+            $line=$this->q("SELECT COUNT(*) FROM yc5_cart WHERE od_id=? AND mb_id=? AND it_id=? AND ct_qty=1 AND ct_status IN ('입금','완료') AND ct_stock_use=1",[$order,$m,$a['item_id']])->fetchColumn();
+            if((int)$line!==1)throw new DomainException('matching item required');
+            $old=$this->q('SELECT * FROM bpz_entitlement WHERE order_id=? AND activity_id=?',[$order,$activity])->fetch(PDO::FETCH_ASSOC);
+            if($old)return $old;
+            $starts=self::date($r['od_receipt_time']);$expiry=(int)$a['duration_days']===0?null:(new DateTimeImmutable($starts))->modify('+'.(int)$a['duration_days'].' days')->format('Y-m-d H:i:s');
+            $id=bin2hex(random_bytes(16));
+            $this->q('INSERT INTO bpz_entitlement(id,activity_id,mb_id,order_id,starts_at,expires_at) VALUES(?,?,?,?,?,?)',[$id,$activity,$m,$order,$starts,$expiry]);
+            return $this->q('SELECT * FROM bpz_entitlement WHERE id=?',[$id])->fetch(PDO::FETCH_ASSOC);
+        });
+    }
+
 }
