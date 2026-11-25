@@ -43,8 +43,18 @@ final class BusanActivitySettlement {
         $this->actor(true);
         return $this->tx(function()use($id){
             $a=$this->activity($id);
-            if($a['state']!=='draft'||($a['closes_at']!==null&&$a['closes_at']<=date('Y-m-d H:i:s'))||!in_array($a['kind'],['auction','sharing','events'],true))throw new DomainException('cannot publish');
+            if($a['state']!=='draft'||($a['closes_at']!==null&&$a['closes_at']<=date('Y-m-d H:i:s'))||!in_array($a['kind'],['auction','sharing','events','profile'],true))throw new DomainException('cannot publish');
+            if($a['kind']==='profile'&&(int)$this->q('SELECT COUNT(*) FROM yc5_item WHERE it_id=? AND it_use=1',[$a['item_id']])->fetchColumn()!==1)throw new DomainException('published product required');
             $this->q("UPDATE bpz_activity SET state='open' WHERE id=?",[$id]);return $this->activity($id);
+        });
+    }
+    public function close(string $id):array{
+        $this->actor(true);
+        return $this->tx(function()use($id){
+            $a=$this->activity($id);
+            if($a['state']!=='open'||$a['kind']==='auction')throw new DomainException('invalid close');
+            if((int)$this->q("SELECT COUNT(*) FROM bpz_participation WHERE activity_id=? AND state='pending'",[$id])->fetchColumn()>0)throw new RuntimeException('settlement pending');
+            $this->q("UPDATE bpz_activity SET state='closed' WHERE id=?",[$id]);return $this->activity($id);
         });
     }
     public function bid(string $id,string $request,int $amount):array{
