@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/busan_youngcart/order*'
       - 'deploy/busan/youngcart/order-lifecycle.php'
+      - 'deploy/busan/youngcart/theme/Busan_PointZone/**'
       - '.github/workflows/busan-pointzone-order-fixture.yml'
   workflow_dispatch:
 permissions:
@@ -42,3 +43,7 @@ jobs:
           set -euo pipefail
           { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; sed 's/`g5_shop_/`yc5_/g' deploy/busan/youngcart/schema/youngcart-v5.6.4-create-only.sql; cat scripts/busan_youngcart/order_fixture_schema.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
           php scripts/busan_youngcart/order_sql_fixture_test.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/lib/order-views.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/shop/index.php
+          php -l scripts/busan_youngcart/order_views_fixture_test.php
+          php scripts/busan_youngcart/order_views_fixture_test.php
