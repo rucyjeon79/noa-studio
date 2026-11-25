@@ -20,6 +20,7 @@ if(in_array($bpz_section,['shop','my','manage'],true)){
     catch(Throwable $e){$bpz_viewError=true;}
 }
 
+require dirname(__DIR__).'/lib/activities-controller.php';
 require __DIR__.'/shop.head.php';
 $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 ?>
@@ -34,9 +35,9 @@ $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 <?php } ?>
 </nav>
 <section class="bpz-card">
-<h2><?php echo $bpz_section===''?'POINT ZONE 이용 안내':bpz_theme_escape($bpz_sections[$bpz_section][0]).(in_array($bpz_section,['shop','my','manage'],true)?'':' 준비 중'); ?></h2>
+<h2><?php echo $bpz_section===''?'POINT ZONE 이용 안내':bpz_theme_escape($bpz_sections[$bpz_section][0]); ?></h2>
 <p>현금 결제 없이 포인트로만 운영합니다. 실제 상품 구매와 포인트 차감은 안전 검증 후 제공됩니다.</p>
-<?php if($bpz_section==='manage'&&($is_admin??'')==='super'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/catalog-admin.php'); ?>">상품·분류·재고 관리</a></p><?php } ?>
+<?php if($bpz_section==='manage'&&($is_admin??'')==='super'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/activity-admin.php'); ?>">경매·나눔·이벤트·꾸미기 관리</a></p><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/catalog-admin.php'); ?>">상품·분류·재고 관리</a></p><?php } ?>
 <?php if(in_array($bpz_section,['shop','my','manage'],true)){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/checkout.php'); ?>"><?php echo $bpz_section==='manage'?'결제 확인 대기 관리':'장바구니 및 결제'; ?></a></p><?php } ?>
 <?php if($bpz_section==='my'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(G5_BBS_URL.'/point.php'); ?>">기존 포인트 내역 확인</a></p><?php } ?>
 <?php if($bpz_section!==''){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape($bpz_base); ?>">POINT ZONE 홈으로</a></p><?php } ?>
@@ -71,4 +72,5 @@ $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 </section>
 <style>.bpz-order-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}.bpz-order-row{border:1px solid var(--line);border-radius:12px;padding:16px;overflow-wrap:anywhere}.bpz-order-row h3{margin-top:0}.bpz-order-row button:disabled{padding:10px 16px;cursor:not-allowed;opacity:.6}</style>
 <?php } ?>
+<?php require dirname(__DIR__).'/lib/activities-view.php'; ?>
 <?php require __DIR__.'/shop.tail.php'; ?>
