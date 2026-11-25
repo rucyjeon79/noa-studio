@@ -1,0 +1,86 @@
+name: Busan POINT ZONE submenu fix
+on:
+  push:
+    branches: [busan/pointzone-order-lifecycle-20261125]
+    paths:
+      - '.github/workflows/busan-pointzone-submenu-fix.yml'
+concurrency:
+  group: busan-pointzone-menu
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: fixture-only
+          MARIADB_DATABASE: pointzone_fixture
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: PHP lint and contract test
+        run: |
+          set -euo pipefail
+          php -l deploy/busan/youngcart/order-lifecycle.php
+          php -l scripts/busan_youngcart/order_sql_fixture_port.php
+          php -l scripts/busan_youngcart/order_sql_fixture_test.php
+          php scripts/busan_youngcart/order_lifecycle_test.php
+      - name: Isolated MariaDB native checkout and reversal
+        env:
+          DB_CONTAINER: ${{ job.services.db.id }}
+          BUSAN_FIXTURE_DB: pointzone_fixture
+        run: |
+          set -euo pipefail
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; sed 's/`g5_shop_/`yc5_/g' deploy/busan/youngcart/schema/youngcart-v5.6.4-create-only.sql; cat scripts/busan_youngcart/order_fixture_schema.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/order_sql_fixture_test.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/lib/order-views.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/shop/index.php
+          php -l scripts/busan_youngcart/order_views_fixture_test.php
+          php scripts/busan_youngcart/order_views_fixture_test.php
+          php -l deploy/busan/youngcart/native-point-ledger.php
+          php -l scripts/busan_youngcart/order_native_ledger_fixture_test.php
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; cat scripts/busan_youngcart/order_native_ledger_fixture_schema.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/order_native_ledger_fixture_test.php
+          php -l deploy/busan/youngcart/native-order-port.php
+          php -l scripts/busan_youngcart/order_native_port_candidate_test.php
+          cat deploy/busan/youngcart/schema/native-order-receipt-candidate.sql | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/order_native_port_candidate_test.php
+          php -l deploy/busan/youngcart/existing-points.php
+          php -l deploy/busan/youngcart/existing-point-settlement.php
+          php -l deploy/busan/youngcart/existing-point-order-store.php
+          php -l scripts/busan_youngcart/order_existing_native_functions_fixture.php
+          php -l scripts/busan_youngcart/order_existing_point_api_fixture_test.php
+          php scripts/busan_youngcart/order_existing_point_api_fixture_test.php
+          php -l deploy/busan/youngcart/theme/Busan_PointZone/checkout.php
+          php -l deploy/busan/youngcart/pointzone-actions.php
+          php scripts/busan_youngcart/order_http_actions_test.php
+          python scripts/busan_youngcart/order_theme_package_test.py
+          python scripts/busan_youngcart/order_http_render_test.py
+
+  release:
+    needs: isolated
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Apply tested page-state fix only
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python -m py_compile scripts/busan_pointzone/release_submenu_fix.py
+          python -m pip install -q paramiko==3.5.1
+          python scripts/busan_pointzone/release_submenu_fix.py
