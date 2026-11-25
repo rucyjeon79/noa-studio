@@ -6,10 +6,10 @@ $g5['title']='POINT ZONE 활동 운영센터';
 $bpz_kinds=['auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트','profile'=>'프로필 꾸미기'];
 $bpz_kind=$_GET['kind']??'events';
 if(!is_string($bpz_kind)||!isset($bpz_kinds[$bpz_kind])){http_response_code(404);exit;}
-$bpz_token=BusanActivitiesBridge::csrf();$bpz_rows=[];$bpz_error='';$bpz_ready=false;$bpz_edit=null;$bpz_people=[];
+$bpz_financialEnabled=false;$bpz_token=BusanActivitiesBridge::csrf();$bpz_rows=[];$bpz_error='';$bpz_ready=false;$bpz_edit=null;$bpz_people=[];
 $bpz_url=G5_URL.'/theme/Busan_PointZone/activity-admin.php?kind='.$bpz_kind;
 try{
-    $bpz_api=BusanActivitiesBridge::open();
+    $bpz_api=BusanActivitiesBridge::open();$bpz_financialEnabled=BusanActivitiesBridge::financialEnabled();
     $bpz_rows=$bpz_api->list($bpz_kind,true);$bpz_ready=true;
     if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         BusanActivitiesBridge::verify($_POST,$bpz_token);
@@ -21,8 +21,23 @@ try{
             if(!$bpz_found)throw new DomainException('invalid activity');
         }
         if($bpz_action==='save')$bpz_api->saveDraft(BusanActivitiesBridge::draft($_POST,$bpz_kind),$bpz_id===''?null:$bpz_id);
-        elseif($bpz_action==='publish'&&$bpz_id!=='')$bpz_api->publish($bpz_id);
-        elseif($bpz_action==='close'&&$bpz_id!=='')$bpz_api->close($bpz_id);
+        elseif($bpz_action==='publish'&&$bpz_id!==''){
+            if($bpz_financialEnabled)BusanActivitiesBridge::settlement()->publish($bpz_id);else $bpz_api->publish($bpz_id);
+        }elseif($bpz_action==='close'&&$bpz_id!==''){
+            if($bpz_financialEnabled){
+                $bpz_s=BusanActivitiesBridge::settlement();
+                if($bpz_kind==='auction')$bpz_s->closeAuction($bpz_id);else $bpz_s->close($bpz_id);
+            }else $bpz_api->close($bpz_id);
+        }elseif(in_array($bpz_action,['award','recover'],true)&&$bpz_id!==''){
+            if(!$bpz_financialEnabled){http_response_code(503);throw new DomainException('정산 잠금');}
+            $bpz_participant=BusanActivitiesBridge::stringField($_POST,'participant_id');
+            $bpz_personFound=false;foreach($bpz_api->participants($bpz_id) as $bpz_p)if($bpz_p['id']===$bpz_participant)$bpz_personFound=true;
+            if(!$bpz_personFound)throw new DomainException('participant mismatch');
+            $bpz_s=BusanActivitiesBridge::settlement();
+            if($bpz_action==='award'&&$bpz_kind==='events')$bpz_s->awardEvent($bpz_id,$bpz_participant);
+            elseif($bpz_action==='recover')$bpz_s->recover($bpz_participant,BusanActivitiesBridge::amount($_POST,'point_id'));
+            else throw new DomainException('invalid action');
+        }
         else throw new DomainException('invalid action');
         header('Location: '.$bpz_url,true,303);exit;
     }
@@ -57,8 +72,8 @@ function bpz_activity_field($name,$label,$value,$type='text',$required=true){
 <?php if(!$bpz_rows){ ?><p>등록된 활동이 없습니다.</p><?php } ?>
 <?php foreach($bpz_rows as $bpz_row){ ?><article class="bpz-card"><h3><?php echo bpz_theme_escape($bpz_row['title']); ?></h3><p><?php echo bpz_theme_escape(['draft'=>'초안','open'=>'진행','closed'=>'마감','cancelled'=>'취소'][$bpz_row['state']]??'확인 필요'); ?></p>
 <a class="bpz-link" href="<?php echo bpz_theme_escape($bpz_url.'&edit='.$bpz_row['id']); ?>">상세 및 참여자 확인</a>
-<?php if($bpz_row['kind']==='events'&&(int)$bpz_row['point_amount']===0&&in_array($bpz_row['state'],['draft','open'],true)){ ?><form method="post" action="<?php echo bpz_theme_escape($bpz_url); ?>"><?php bpz_activity_hidden($bpz_token,$bpz_row['state']==='draft'?'publish':'close',$bpz_row['id']); ?><button type="submit"><?php echo $bpz_row['state']==='draft'?'이벤트 공개':'이벤트 마감'; ?></button></form><?php } ?></article><?php } ?></section>
-<?php if($bpz_edit!==null){ ?><section class="bpz-card"><h2>참여자</h2><?php if(!$bpz_people){ ?><p>참여자가 없습니다.</p><?php } ?><?php foreach($bpz_people as $bpz_person){ ?><p><?php echo bpz_theme_escape($bpz_person['mb_id'].' · '.$bpz_person['state'].' · '.$bpz_person['created_at']); ?></p><?php } ?></section><?php } ?>
+<?php if(in_array($bpz_row['state'],['draft','open'],true)){ ?><form method="post" action="<?php echo bpz_theme_escape($bpz_url); ?>"><?php bpz_activity_hidden($bpz_token,$bpz_row['state']==='draft'?'publish':'close',$bpz_row['id']); ?><button type="submit"<?php if(!$bpz_financialEnabled&&!($bpz_row['kind']==='events'&&(int)$bpz_row['point_amount']===0))echo ' disabled'; ?>><?php echo $bpz_row['state']==='draft'?'공개':($bpz_kind==='auction'?'마감 및 낙찰':'마감'); ?></button></form><?php } ?></article><?php } ?></section>
+<?php if($bpz_edit!==null){ ?><section class="bpz-card"><h2>참여자</h2><?php if(!$bpz_people){ ?><p>참여자가 없습니다.</p><?php } ?><?php foreach($bpz_people as $bpz_person){ ?><p><?php echo bpz_theme_escape($bpz_person['mb_id'].' · '.$bpz_person['state'].' · '.$bpz_person['created_at']); ?></p><?php if(($bpz_kind==='events'&&$bpz_person['state']==='confirmed'&&(int)$bpz_edit['point_amount']>0)||$bpz_person['state']==='pending'){ ?><form method="post" action="<?php echo bpz_theme_escape($bpz_url); ?>"><?php bpz_activity_hidden($bpz_token,$bpz_person['state']==='pending'?'recover':'award',$bpz_edit['id']); ?><input type="hidden" name="participant_id" value="<?php echo bpz_theme_escape($bpz_person['id']); ?>"><fieldset<?php if(!$bpz_financialEnabled)echo ' disabled'; ?>><?php if($bpz_person['state']==='pending'){ ?><label>검증된 원장 거래번호<input type="number" name="point_id" min="1" required></label><?php } ?><button type="submit"><?php echo $bpz_person['state']==='pending'?'원장 확인 후 복구':'포상 지급'; ?></button></fieldset></form><?php } ?><?php } ?></section><?php } ?>
 <?php } ?>
 <section class="bpz-card"><a class="bpz-link" href="<?php echo bpz_theme_escape(G5_URL.'/theme/Busan_PointZone/pointzone.php?section=manage'); ?>">통합 운영센터</a></section>
 <style>#busan-pointzone .bpz-activity-form{display:grid;gap:12px}#busan-pointzone .bpz-activity-form label{display:grid;gap:4px}#busan-pointzone .bpz-activity-form :is(input,textarea,button){width:100%;min-height:44px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}</style>
