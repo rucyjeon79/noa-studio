@@ -1,0 +1,4 @@
+name=Busan_PointZone
+version=0.1.0-development
+purpose=Youngcart point-only shop theme
+status=staged; no live activation

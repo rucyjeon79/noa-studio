@@ -21,6 +21,7 @@ jobs:
         run: |
           php -l scripts/busan_youngcart/audit.php
           php -l deploy/busan/youngcart/point-contract.php
+          find deploy/busan/youngcart/theme/Busan_PointZone -name '*.php' -exec php -l {} \;
           php scripts/busan_youngcart/contract_test.php
           python -m py_compile scripts/busan_youngcart/audit.py
           python -m pip install -q paramiko==3.5.1

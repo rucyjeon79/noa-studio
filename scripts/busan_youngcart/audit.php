@@ -28,6 +28,31 @@ foreach(['g5_shop_item_table','g5_shop_cart_table','g5_shop_order_table','g5_sho
     }
     $tables[$key]=['exists'=>!empty($info['engine']),'engine'=>$info['engine']??null,'columns'=>$cols];
 }
+// Discover only expected Youngcart table names from the known member-table prefix.
+$schemaCandidates=[];
+$memberTable=$g5['member_table']??'';
+if(is_string($memberTable)&&preg_match('/^([A-Za-z0-9_]+)member$/D',$memberTable,$match)){
+    foreach(['item','cart','order','default','item_option'] as $suffix){
+        $candidate=$match[1].'shop_'.$suffix;
+        $safe=sql_real_escape_string($candidate);
+        $info=sql_fetch("SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='$safe' LIMIT 1",false);
+        $schemaCandidates[$suffix]=['exists'=>!empty($info['engine']),'engine'=>$info['engine']??null];
+    }
+}
+$themePaths=[];
+foreach(['theme/basic/shop/index.php','theme/basic/shop/shop.head.php','theme/basic/shop/shop.tail.php','theme/basic/mobile/shop/index.php','theme/basic/skin/shop/basic','theme/basic/mobile/skin/shop/basic'] as $p){
+    $themePaths[$p]=file_exists($root.'/'.$p);
+}
+$hookHints=[];
+foreach(['common.php','shop.config.php','shop/_common.php','shop/index.php'] as $p){
+    $body=is_file($root.'/'.$p)?file_get_contents($root.'/'.$p):'';
+    $hookHints[$p]=[
+       'theme_shop_constant'=>strpos($body,'G5_THEME_SHOP_PATH')!==false,
+       'theme_path_constant'=>strpos($body,'G5_THEME_PATH')!==false,
+       'has_replace_hook'=>strpos($body,'run_replace(')!==false,
+       'has_event_hook'=>strpos($body,'run_event(')!==false
+    ];
+}
 $flags=[];
 if(!empty($tables['g5_shop_default_table']['exists'])){
     $keys=['de_card_use','de_bank_use','de_vbank_use','de_iche_use','de_hp_use','de_easy_pay_use','de_kakaopay_use','de_point_use','de_delivery_use'];
@@ -40,5 +65,5 @@ if(!empty($tables['g5_shop_default_table']['exists'])){
 echo json_encode(['status'=>'verified','gnuboard_version'=>defined('G5_GNUBOARD_VER')?G5_GNUBOARD_VER:null,
  'youngcart_version'=>defined('G5_YOUNGCART_VER')?G5_YOUNGCART_VER:null,
  'shop_enabled'=>defined('G5_USE_SHOP')?(bool)G5_USE_SHOP:null,
- 'points_enabled'=>(bool)($config['cf_use_point']??false),'files'=>$files,'tables'=>$tables,'payment_flags'=>$flags,
+ 'points_enabled'=>(bool)($config['cf_use_point']??false),'files'=>$files,'tables'=>$tables,'payment_flags'=>$flags,'schema_candidates'=>$schemaCandidates,'native_theme_files'=>$themePaths,'hook_hints'=>$hookHints,
  'mutations'=>0],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
