@@ -79,3 +79,5 @@ jobs:
           php scripts/busan_youngcart/order_activities_test.php
           php -l deploy/busan/youngcart/pointzone-activity-settlement.php
           php scripts/busan_youngcart/order_activity_settlement_test.php
+          php -l scripts/busan_youngcart/order_sample_products_test.php
+          php scripts/busan_youngcart/order_sample_products_test.php
