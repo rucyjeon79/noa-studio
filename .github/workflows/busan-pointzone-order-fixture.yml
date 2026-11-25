@@ -7,6 +7,7 @@ on:
       - 'deploy/busan/youngcart/order-lifecycle.php'
       - 'deploy/busan/youngcart/native-point-ledger.php'
       - 'deploy/busan/youngcart/native-order-port.php'
+      - 'deploy/busan/youngcart/existing-point*.php'
       - 'deploy/busan/youngcart/schema/native-order-receipt-candidate.sql'
       - 'deploy/busan/youngcart/theme/Busan_PointZone/**'
       - '.github/workflows/busan-pointzone-order-fixture.yml'
@@ -58,3 +59,9 @@ jobs:
           php -l scripts/busan_youngcart/order_native_port_candidate_test.php
           cat deploy/busan/youngcart/schema/native-order-receipt-candidate.sql | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
           php scripts/busan_youngcart/order_native_port_candidate_test.php
+          php -l deploy/busan/youngcart/existing-points.php
+          php -l deploy/busan/youngcart/existing-point-settlement.php
+          php -l deploy/busan/youngcart/existing-point-order-store.php
+          php -l scripts/busan_youngcart/order_existing_native_functions_fixture.php
+          php -l scripts/busan_youngcart/order_existing_point_api_fixture_test.php
+          php scripts/busan_youngcart/order_existing_point_api_fixture_test.php
