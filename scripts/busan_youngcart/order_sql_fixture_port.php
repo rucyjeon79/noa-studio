@@ -1,13 +1,14 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/../../deploy/busan/youngcart/order-lifecycle.php';
+require_once __DIR__.'/../../deploy/busan/youngcart/native-point-ledger.php';
 /** SQL fixture port only. Synthetic balances never replace the live GnuBoard ledger.
  * No live routes or production credentials. Real shared-ledger expiry/allocation
  * and existing writers must be audited before implementing a production port.
  */
 final class BusanSqlFixturePort implements BusanOrderTransactionPort {
     public bool $failAfterDebit=false,$failAfterReversal=false;
-    public function __construct(private PDO $db){
+    public function __construct(private PDO $db,private ?BusanNativePointLedger $native=null){
         if(getenv('BUSAN_FIXTURE_DB')!=='pointzone_fixture' ||
            $db->query('SELECT DATABASE()')->fetchColumn()!=='pointzone_fixture')
             throw new DomainException('fixture database only');
@@ -29,6 +30,7 @@ final class BusanSqlFixturePort implements BusanOrderTransactionPort {
         if($this->db->inTransaction())throw new DomainException('nested transaction');
         $required=['bpz_fixture_member','bpz_fixture_request','bpz_fixture_order','bpz_fixture_ledger',
                    'yc5_cart','yc5_order','yc5_item','yc5_category','yc5_item_option'];
+        if($this->native!==null)$required=array_merge($required,['g5_member','g5_point']);
         $rows=$this->q('SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()')->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach($required as $t)if(strtoupper((string)($rows[$t]??''))!=='INNODB')
             throw new DomainException('fixture nontransactional or missing table: '.$t);
@@ -42,6 +44,7 @@ final class BusanSqlFixturePort implements BusanOrderTransactionPort {
         return $r['receipt']===null?null:$this->decode($r['receipt']);
     }
     public function lockMemberBalance(string $member):int{
+        if($this->native!==null)return $this->native->lockBalance($member);
         $r=$this->row('SELECT balance FROM bpz_fixture_member WHERE mb_id=? FOR UPDATE',[$member]);
         if($r===null)throw new DomainException('unknown fixture member');return (int)$r['balance'];
     }
@@ -67,8 +70,12 @@ final class BusanSqlFixturePort implements BusanOrderTransactionPort {
         return $lines;
     }
     public function writePurchase(string $member,string $cart,string $requestId,array $lines,int $total):array{
-        $this->one('UPDATE bpz_fixture_member SET balance=balance-? WHERE mb_id=? AND balance>=?',[$total,$member,$total]);
-        $this->q("INSERT INTO bpz_fixture_ledger(order_id,kind,member_id,delta) VALUES (?,'debit',?,?)",[$cart,$member,-$total]);
+        $nativeDebit=null;
+        if($this->native!==null)$nativeDebit=$this->native->debit($member,$cart,$total);
+        else{
+            $this->one('UPDATE bpz_fixture_member SET balance=balance-? WHERE mb_id=? AND balance>=?',[$total,$member,$total]);
+            $this->q("INSERT INTO bpz_fixture_ledger(order_id,kind,member_id,delta) VALUES (?,'debit',?,?)",[$cart,$member,-$total]);
+        }
         if($this->failAfterDebit)throw new RuntimeException('injected fixture debit failure');
         foreach($lines as $l){
             $this->one('UPDATE yc5_item SET it_stock_qty=it_stock_qty-? WHERE it_id=? AND it_stock_qty>=?',[$l['qty'],$l['item'],$l['qty']]);
@@ -76,6 +83,7 @@ final class BusanSqlFixturePort implements BusanOrderTransactionPort {
         }
         $this->q("INSERT INTO yc5_order (od_id,mb_id,od_memo,od_cart_count,od_cart_price,od_receipt_point,od_shop_memo,od_mod_history,od_status,od_settle_case,od_cash,od_cash_no,od_cash_info,od_time,od_receipt_time) VALUES (?,?,'',?,?,?,'','','입금','포인트',0,'','',NOW(),NOW())",[$cart,$member,count($lines),$total,$total]);
         $receipt=['member'=>$member,'cart'=>$cart,'order'=>$cart,'debited_points'=>$total,'debit_id'=>$requestId,'state'=>'paid','fulfilled'=>false];
+        if($nativeDebit!==null)$receipt['native_debit']=$nativeDebit;
         $json=$this->json($receipt);
         $this->q('INSERT INTO bpz_fixture_order(order_id,member_id,request_id,debit_points,receipt) VALUES (?,?,?,?,?)',[$cart,$member,$requestId,$total,$json]);
         $this->one('UPDATE bpz_fixture_request SET receipt=? WHERE request_id=? AND receipt IS NULL',[$json,$requestId]);
@@ -95,16 +103,21 @@ final class BusanSqlFixturePort implements BusanOrderTransactionPort {
     }
     public function writeCancellation(array $order):array{
         $id=$order['order'];$member=$order['member'];$total=$order['debited_points'];
-        $debit=$this->row("SELECT delta,member_id FROM bpz_fixture_ledger WHERE order_id=? AND kind='debit' FOR UPDATE",[$id]);
-        if(!$debit||$debit['member_id']!==$member||(int)$debit['delta']!==-$total)throw new DomainException('debit mismatch');
+        if($this->native===null){
+            $debit=$this->row("SELECT delta,member_id FROM bpz_fixture_ledger WHERE order_id=? AND kind='debit' FOR UPDATE",[$id]);
+            if(!$debit||$debit['member_id']!==$member||(int)$debit['delta']!==-$total)throw new DomainException('debit mismatch');
+        }elseif(($order['native_debit']['amount']??null)!==$total)throw new DomainException('native debit receipt mismatch');
         $rows=$this->q('SELECT ct_id,it_id,ct_qty,ct_price,ct_status,ct_stock_use,mb_id FROM yc5_cart WHERE od_id=? ORDER BY it_id,ct_id FOR UPDATE',[$id])->fetchAll(PDO::FETCH_ASSOC);
         $sum=0;foreach($rows as $r){
             if($r['mb_id']!==$member||$r['ct_status']!=='입금'||(int)$r['ct_stock_use']!==1||(int)$r['ct_qty']<1||(int)$r['ct_price']<1)throw new DomainException('cancel cart mismatch');
             $sum+=(int)$r['ct_qty']*(int)$r['ct_price'];
         }
         if($sum!==$total)throw new DomainException('cancel amount mismatch');
-        $this->q("INSERT INTO bpz_fixture_ledger(order_id,kind,member_id,delta) VALUES (?,'reversal',?,?)",[$id,$member,$total]);
-        $this->one('UPDATE bpz_fixture_member SET balance=balance+? WHERE mb_id=? AND balance<=?',[$total,$member,2147483647-$total]);
+        if($this->native!==null)$this->native->reverse($member,$id,$order['native_debit']);
+        else{
+            $this->q("INSERT INTO bpz_fixture_ledger(order_id,kind,member_id,delta) VALUES (?,'reversal',?,?)",[$id,$member,$total]);
+            $this->one('UPDATE bpz_fixture_member SET balance=balance+? WHERE mb_id=? AND balance<=?',[$total,$member,2147483647-$total]);
+        }
         if($this->failAfterReversal)throw new RuntimeException('injected fixture reversal failure');
         foreach($rows as $r){
             $this->one('UPDATE yc5_item SET it_stock_qty=it_stock_qty+? WHERE it_id=? AND it_stock_qty<=?',[(int)$r['ct_qty'],$r['it_id'],2147483647-(int)$r['ct_qty']]);
