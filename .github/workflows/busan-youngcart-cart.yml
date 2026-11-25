@@ -1,0 +1,42 @@
+name: Busan Youngcart native cart integration tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/busan/youngcart/native-cart.php'
+      - 'deploy/busan/youngcart/checkout-readiness.php'
+      - 'deploy/busan/youngcart/point-contract.php'
+      - 'deploy/busan/youngcart/schema/**'
+      - 'scripts/busan_youngcart/native_cart_test.php'
+      - '.github/workflows/busan-youngcart-cart.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  fixture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: fixture-only
+          MARIADB_DATABASE: pointzone_fixture
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Load isolated native schema and run real SQL tests
+        env:
+          DB_CONTAINER: ${{ job.services.db.id }}
+          BUSAN_FIXTURE_DB: pointzone_fixture
+        run: |
+          set -euo pipefail
+          php -l deploy/busan/youngcart/native-cart.php
+          php -l deploy/busan/youngcart/checkout-readiness.php
+          php -l scripts/busan_youngcart/native_cart_test.php
+          { printf "SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION';\n"; sed 's/`g5_shop_/`yc5_/g' deploy/busan/youngcart/schema/youngcart-v5.6.4-create-only.sql; } | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          php scripts/busan_youngcart/native_cart_test.php
