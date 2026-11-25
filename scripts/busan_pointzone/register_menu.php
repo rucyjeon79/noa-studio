@@ -56,11 +56,44 @@ try{
     $top=pzm_q("SELECT me_id,me_code,me_name,me_link,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=2 ORDER BY me_order,me_id");
     $ordered=[];while($v=sql_fetch_array($top))$ordered[]=$v;
     $pos=null;foreach($ordered as $i=>$v)if($v['me_code']===$code)$pos=$i;
-    $child=sql_fetch("SELECT me_name,me_link,me_use,me_mobile_use FROM $mt WHERE me_code=".pzm_v($code.'10')." LIMIT 1",false);
     if($pos===null||$pos===0||strtoupper(trim($ordered[$pos-1]['me_name']))!=='ETC'||
-       $ordered[$pos]['me_link']!==$url||(int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1||
-       ($child['me_name']??'')!=='포인트 상점'||($child['me_link']??'')!==$url||(int)$child['me_use']!==1||(int)$child['me_mobile_use']!==1)
+       $ordered[$pos]['me_link']!==$url||(int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)
         throw new RuntimeException('menu verification failed');
+    $desired=['shop'=>'포인트 상점','auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트',
+              'profile'=>'프로필 꾸미기','honor'=>'명예의 전당','my'=>'나의 포인트존'];
+    $children=pzm_q("SELECT me_id,me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code));
+    $byCode=[];while($row=sql_fetch_array($children)){
+        if(isset($byCode[$row['me_code']]))throw new RuntimeException('duplicate submenu code');
+        $byCode[$row['me_code']]=$row;
+    }
+    $plan=[];$i=0;
+    foreach($desired as $key=>$name){
+        $childCode=$code.(string)(10+$i*10);
+        $target=$url.'?section='.$key;$old=$byCode[$childCode]??null;
+        if($old&&($old['me_name']!==$name||($old['me_link']!==$target&&!($key==='shop'&&$old['me_link']===$url))))
+            throw new RuntimeException('submenu conflict');
+        $plan[]=[$childCode,$target,$name,$i,$old];$i++;
+    }
+    foreach($plan as [$childCode,$target,$name,$order,$old]){
+        if(!$old){
+            pzm_q("INSERT INTO $mt (me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use) VALUES (".pzm_v($childCode).",".pzm_v($name).",".pzm_v($target).",'self',$order,1,1)");
+            $changed++;
+        }elseif($old['me_link']!==$target||(int)$old['me_order']!==$order||(int)$old['me_use']!==1||(int)$old['me_mobile_use']!==1||$old['me_target']!=='self'){
+            pzm_q("UPDATE $mt SET me_link=".pzm_v($target).",me_target='self',me_order=$order,me_use=1,me_mobile_use=1 WHERE me_id=".(int)$old['me_id']);
+            $changed++;
+        }
+    }
+    $verified=[];
+    $result=pzm_q("SELECT me_code,me_name,me_link,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code)." ORDER BY me_order,me_id");
+    while($row=sql_fetch_array($result)){
+        foreach($plan as [$childCode,$target,$name,$order,$old]){
+            if($row['me_code']!==$childCode)continue;
+            if($row['me_name']!==$name||$row['me_link']!==$target||(int)$row['me_order']!==$order||(int)$row['me_use']!==1||(int)$row['me_mobile_use']!==1)
+                throw new RuntimeException('submenu verification failed');
+            $verified[]=$name;
+        }
+    }
+    if($verified!==array_values($desired))throw new RuntimeException('submenu ordering verification failed');
     if($changed&&function_exists('run_event'))run_event('admin_menu_list_update');
-    pzm_out(200,['status'=>$changed?'applied':'already_current','after'=>'ETC','menu'=>'POINT ZONE','submenu'=>'포인트 상점','url'=>$url,'desktop'=>true,'mobile'=>true,'mutations'=>$changed]);
+    pzm_out(200,['status'=>$changed?'applied':'already_current','after'=>'ETC','menu'=>'POINT ZONE','submenus'=>$verified,'url'=>$url,'desktop'=>true,'mobile'=>true,'mutations'=>$changed]);
 }catch(Throwable $e){pzm_out(409,['status'=>'blocked','reason'=>$e instanceof RuntimeException?$e->getMessage():'runtime error']);}

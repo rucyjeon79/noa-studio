@@ -19,7 +19,17 @@ def release(s):
     if old is None:
         write(s, TARGET, page, 0o644)
     elif old != page:
-        raise RuntimeError('point zone page already exists with different content')
+        digest=hashlib.sha256(old).hexdigest()
+        if digest!='76c892d801068b228ca5c8feece9ac49ea35543af1974c4a718e33d6369bd3cd':
+            raise RuntimeError('point zone page already exists with different content')
+        private='/hosting/rucyjeon79/busan-assistant-private'
+        if s.normalize(private)!=private or not stat.S_ISDIR(s.lstat(private).st_mode):
+            raise RuntimeError('private backup unavailable')
+        backup=private+'/pointzone-page-before-submenus-'+digest+'.php.bak'
+        before=read(s,backup,100000)
+        if before is None: write(s,backup,old,0o600)
+        elif before!=old: raise RuntimeError('backup conflict')
+        write(s,TARGET,page,0o644)
     token=secrets.token_hex(32)
     source=Path('scripts/busan_pointzone/register_menu.php').read_text().replace('__TOKEN_HASH__',hashlib.sha256(token.encode()).hexdigest()).encode()
     name='pointzone-menu-'+secrets.token_hex(16)+'.php'
@@ -33,7 +43,7 @@ def release(s):
         except HTTPError as error:
             print('POINTZONE_MENU_BLOCKED',error.code,error.read(300).decode(errors='replace'))
             raise RuntimeError('menu registration rejected') from None
-        if result.get('status') not in ('applied','already_current') or result.get('after')!='ETC' or result.get('menu')!='POINT ZONE' or not result.get('desktop') or not result.get('mobile'):
+        if result.get('status') not in ('applied','already_current') or result.get('after')!='ETC' or result.get('menu')!='POINT ZONE' or result.get('submenus')!=['포인트 상점','포인트 경매','포인트 나눔','지부장 이벤트','프로필 꾸미기','명예의 전당','나의 포인트존'] or not result.get('desktop') or not result.get('mobile'):
             raise RuntimeError('unverified menu result')
         print('BUSAN_POINTZONE_MENU',json.dumps(result,ensure_ascii=False))
     finally:
