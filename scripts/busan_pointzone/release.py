@@ -8,28 +8,33 @@ from busan_readonly_check import configuration, fingerprint, PORT, ROOT
 from busan_news.release import read, write
 
 ORIGIN = 'https://skhnslu-busan.com'
-TARGET = ROOT + '/theme/UXC_Flarumix/pointzone.php'
+TARGET = ROOT + '/theme/Busan_PointZone/pointzone.php'
+SOURCE = Path('deploy/busan/youngcart/theme/Busan_PointZone')
 def release(s):
-    if s.normalize(ROOT) != ROOT or s.normalize(str(Path(TARGET).parent)) != str(Path(TARGET).parent):
+    if s.normalize(ROOT)!=ROOT or s.normalize(ROOT+'/theme')!=ROOT+'/theme':
         raise RuntimeError('unexpected site root')
     if not stat.S_ISDIR(s.lstat(ROOT+'/busan-assistant').st_mode):
         raise RuntimeError('unexpected assistant directory')
-    page = Path('deploy/busan/pointzone/pointzone.php').read_bytes()
-    old = read(s, TARGET, 100000)
-    if old is None:
-        write(s, TARGET, page, 0o644)
-    elif old != page:
-        digest=hashlib.sha256(old).hexdigest()
-        if digest!='76c892d801068b228ca5c8feece9ac49ea35543af1974c4a718e33d6369bd3cd':
-            raise RuntimeError('point zone page already exists with different content')
-        private='/hosting/rucyjeon79/busan-assistant-private'
-        if s.normalize(private)!=private or not stat.S_ISDIR(s.lstat(private).st_mode):
-            raise RuntimeError('private backup unavailable')
-        backup=private+'/pointzone-page-before-submenus-'+digest+'.php.bak'
-        before=read(s,backup,100000)
-        if before is None: write(s,backup,old,0o600)
-        elif before!=old: raise RuntimeError('backup conflict')
-        write(s,TARGET,page,0o644)
+    theme=ROOT+'/theme/Busan_PointZone'
+    paths=['pointzone.php','theme.txt','css/pointzone.css','shop/index.php','shop/shop.head.php','shop/shop.tail.php','mobile/shop/index.php','mobile/shop/shop.head.php','mobile/shop/shop.tail.php']
+    for folder in ('','/css','/shop','/mobile','/mobile/shop'):
+        dest=theme+folder
+        try: s.mkdir(dest,0o755)
+        except OSError: pass
+        if s.normalize(dest)!=dest or not stat.S_ISDIR(s.lstat(dest).st_mode):
+            raise RuntimeError('unexpected independent theme directory')
+    # Check every existing file before writing any. No unrelated assets touched.
+    for rel in paths:
+        data=(SOURCE/rel).read_bytes()
+        old=read(s,theme+'/'+rel,100000)
+        if old is not None and old!=data:
+            raise RuntimeError('independent theme asset conflict: '+rel)
+    for rel in paths:
+        data=(SOURCE/rel).read_bytes()
+        dest=theme+'/'+rel
+        if read(s,dest,100000) is None: write(s,dest,data,0o644)
+        if read(s,dest,100000)!=data: raise RuntimeError('theme asset verification failed')
+    page=(SOURCE/'pointzone.php').read_bytes()
     token=secrets.token_hex(32)
     source=Path('scripts/busan_pointzone/register_menu.php').read_text().replace('__TOKEN_HASH__',hashlib.sha256(token.encode()).hexdigest()).encode()
     name='pointzone-menu-'+secrets.token_hex(16)+'.php'

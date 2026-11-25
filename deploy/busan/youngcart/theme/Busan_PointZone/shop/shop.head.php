@@ -15,7 +15,7 @@ function bpz_theme_escape($value){return htmlspecialchars((string)$value,ENT_QUO
 <link rel="stylesheet" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/css/pointzone.css'); ?>">
 </head><body>
 <header class="bpz-header"><div class="bpz-wrap bpz-header-row">
-<a class="bpz-brand" href="<?php echo bpz_theme_escape(G5_SHOP_URL.'/'); ?>">BUSAN POINT ZONE</a>
+<a class="bpz-brand" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/pointzone.php'); ?>">BUSAN POINT ZONE</a>
 <a href="<?php echo bpz_theme_escape(G5_URL.'/'); ?>">부산지부 ON</a>
 </div></header>
 <main class="bpz-wrap bpz-main">

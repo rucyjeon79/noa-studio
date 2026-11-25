@@ -15,7 +15,8 @@ function pzm_v($s){return "'".sql_real_escape_string((string)$s)."'";}
 try{
     $mt=$g5['menu_table']??'';
     if(!preg_match('/^[A-Za-z0-9_]{1,90}$/D',$mt))throw new RuntimeException('invalid menu table');
-    $path='/theme/UXC_Flarumix/pointzone.php';
+    $path='/theme/Busan_PointZone/pointzone.php';
+    $legacy=G5_URL.'/theme/UXC_Flarumix/pointzone.php';
     if(!is_file(G5_PATH.$path))throw new RuntimeException('point zone page missing');
     $url=G5_URL.$path;
     $lock=sql_fetch("SELECT GET_LOCK('busan_pointzone_menu_v1',10) AS ok",false);
@@ -50,14 +51,14 @@ try{
         $changed=2;
     }else{
         $existing=$matches[0];$code=$existing['me_code'];
-        if($existing['me_link']!==$url||$existing['me_name']!=='POINT ZONE')
+        if(!in_array($existing['me_link'],[$url,$legacy],true)||$existing['me_name']!=='POINT ZONE')
             throw new RuntimeException('unrelated point zone menu');
     }
     $top=pzm_q("SELECT me_id,me_code,me_name,me_link,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=2 ORDER BY me_order,me_id");
     $ordered=[];while($v=sql_fetch_array($top))$ordered[]=$v;
     $pos=null;foreach($ordered as $i=>$v)if($v['me_code']===$code)$pos=$i;
     if($pos===null||$pos===0||strtoupper(trim($ordered[$pos-1]['me_name']))!=='ETC'||
-       $ordered[$pos]['me_link']!==$url||(int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)
+       !in_array($ordered[$pos]['me_link'],[$url,$legacy],true)||(int)$ordered[$pos]['me_use']!==1||(int)$ordered[$pos]['me_mobile_use']!==1)
         throw new RuntimeException('menu verification failed');
     $desired=['shop'=>'포인트 상점','auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트',
               'profile'=>'프로필 꾸미기','honor'=>'명예의 전당','my'=>'나의 포인트존'];
@@ -70,9 +71,22 @@ try{
     foreach($desired as $key=>$name){
         $childCode=$code.(string)(10+$i*10);
         $target=$url.'?section='.$key;$old=$byCode[$childCode]??null;
-        if($old&&($old['me_name']!==$name||($old['me_link']!==$target&&!($key==='shop'&&$old['me_link']===$url))))
+        if($old&&($old['me_name']!==$name||(!in_array($old['me_link'],[$target,$legacy.'?section='.$key],true)&&!($key==='shop'&&in_array($old['me_link'],[$url,$legacy],true)))))
             throw new RuntimeException('submenu conflict');
         $plan[]=[$childCode,$target,$name,$i,$old];$i++;
+    }
+    if($matches&&$ordered[$pos]['me_link']===$legacy){
+        $private=realpath(dirname(G5_PATH).'/busan-assistant-private');
+        if(!$private||!is_dir($private)||!is_writable($private))throw new RuntimeException('menu backup unavailable');
+        $backup=$private.'/pointzone-menu-before-native-theme.json';
+        if(!file_exists($backup)){
+            $json=json_encode(['root'=>$matches[0],'children'=>array_values($byCode)],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
+            $fp=fopen($backup,'x');if(!$fp)throw new RuntimeException('menu backup failed');
+            try{if(fwrite($fp,$json)!==strlen($json))throw new RuntimeException('menu backup incomplete');}finally{fclose($fp);}
+            chmod($backup,0600);
+        }
+        pzm_q("UPDATE $mt SET me_link=".pzm_v($url)." WHERE me_id=".(int)$ordered[$pos]['me_id']." AND me_link=".pzm_v($legacy));
+        $changed++;
     }
     foreach($plan as [$childCode,$target,$name,$order,$old]){
         if(!$old){
@@ -94,6 +108,8 @@ try{
         }
     }
     if($verified!==array_values($desired))throw new RuntimeException('submenu ordering verification failed');
+    $rootcheck=sql_fetch("SELECT me_link FROM $mt WHERE me_code=".pzm_v($code)." LIMIT 1",false);
+    if(($rootcheck['me_link']??'')!==$url)throw new RuntimeException('independent theme link not verified');
     if($changed&&function_exists('run_event'))run_event('admin_menu_list_update');
     pzm_out(200,['status'=>$changed?'applied':'already_current','after'=>'ETC','menu'=>'POINT ZONE','submenus'=>$verified,'url'=>$url,'desktop'=>true,'mobile'=>true,'mutations'=>$changed]);
 }catch(Throwable $e){pzm_out(409,['status'=>'blocked','reason'=>$e instanceof RuntimeException?$e->getMessage():'runtime error']);}
