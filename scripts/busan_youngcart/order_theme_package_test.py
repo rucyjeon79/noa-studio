@@ -7,7 +7,7 @@ import subprocess
 
 root=Path(__file__).resolve().parents[2]
 source=root/"deploy/busan/youngcart"
-engine_files=["point-contract.php","checkout-readiness.php","native-cart.php","existing-points.php","existing-point-settlement.php","existing-point-order-store.php","pointzone-actions.php"]
+engine_files=["point-contract.php","checkout-readiness.php","native-cart.php","existing-points.php","existing-point-settlement.php","existing-point-order-store.php","pointzone-actions.php","pointzone-activities.php"]
 
 def stage(dest):
     if dest.exists():
