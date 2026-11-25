@@ -12,6 +12,7 @@ import shlex
 import socket
 import stat
 import sys
+import time
 import paramiko
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -26,8 +27,8 @@ PATTERNS = {
 }
 SKIP = {"data", "vendor", "node_modules", "cache", "backup", "backups", "uploads", "logs", "secrets", "private", "config", "install"}
 SENSITIVE = re.compile(r"(?:^|[._-])(?:dbconfig|config|credentials|secret|token|password|key|auth)(?:[._-]|$)", re.I)
-MAX_FILES = 3000
-MAX_BYTES = 48 * 1024 * 1024
+MAX_FILES = 180
+MAX_BYTES = 12 * 1024 * 1024
 MAX_FILE = 1024 * 1024
 
 class AuditBlocked(Exception):
@@ -61,12 +62,19 @@ def run_php(transport):
 def inventory(sftp):
     hits, errors, omitted = [], [], []
     scanned = total = 0
+    deadline = time.monotonic() + 70
     # Start with native point library and known application source areas.
-    queue = ["lib", "bbs", "extend", "adm", "busan-assistant", "theme/UXC_Flarumix", "theme/Busan_PointZone", "shop", "plugin"]
+    queue = ["extend", "busan-assistant", "lib", "bbs", "theme/Busan_PointZone", "theme/UXC_Flarumix", "adm", "shop", "plugin"]
+    priority = ['lib/common.lib.php','bbs/point.php','bbs/write_update.php','bbs/write_comment_update.php','bbs/delete.php','bbs/delete_comment.php','bbs/login_check.php','bbs/register_form_update.php','adm/point_list.php','adm/point_update.php','adm/point_list_delete.php']
+    visited = set()
     root_entries = sftp.listdir_attr(ROOT)
     root_files = [e for e in root_entries if stat.S_ISREG(e.st_mode) and e.filename.endswith(".php")]
     def inspect(rel, attr):
         nonlocal scanned, total
+        if rel in visited:return
+        visited.add(rel)
+        if time.monotonic() >= deadline:
+            omitted.append(rel);return
         name = PurePosixPath(rel).name
         if name.startswith(".") or SENSITIVE.search(name) or not re.search(r"\.(?:php[0-9]?|inc|phtml)$", name, re.I):
             return
@@ -87,10 +95,18 @@ def inventory(sftp):
                 hits.append({"path":rel, "sha256":hashlib.sha256(body).hexdigest(), "matches":matched})
         except OSError:
             errors.append(rel)
+    for rel in priority:
+        if time.monotonic() >= deadline:break
+        try:
+            attr=sftp.lstat(ROOT+'/'+rel)
+            if stat.S_ISREG(attr.st_mode) and sftp.normalize(ROOT+'/'+rel)==ROOT+'/'+rel:
+                inspect(rel,attr)
+        except OSError:errors.append(rel)
     for e in root_files:
+        if time.monotonic() >= deadline:break
         inspect(e.filename,e)
     while queue:
-        if scanned >= MAX_FILES or total >= MAX_BYTES:
+        if scanned >= MAX_FILES or total >= MAX_BYTES or time.monotonic() >= deadline:
             omitted.extend(queue); break
         rel = queue.pop(0)
         try:
@@ -103,6 +119,8 @@ def inventory(sftp):
         except OSError:
             errors.append(rel); continue
         for e in sorted(entries,key=lambda x:x.filename):
+            if time.monotonic() >= deadline:
+                omitted.append(rel);break
             n = e.filename
             if n in {".",".."} or "/" in n or n.startswith(".") or n.lower() in SKIP or SENSITIVE.search(n):
                 continue
@@ -150,6 +168,7 @@ def main():
                         "errors":len(writers["errors"]),
                         "omitted":len(writers["omitted"]),
                         "native_library":any(x["path"]=="lib/common.lib.php" for x in writers["matches"]),
+                        "priority_matches":[x["path"] for x in writers["matches"][:40]],
                         "coverage_complete":False,
                         "checkout_ready":False,
                     }), flush=True)
