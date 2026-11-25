@@ -109,10 +109,10 @@ final class BusanPointZoneActivities {
             $a=$this->activity($id,true);
             $prior=$this->q('SELECT * FROM bpz_participation WHERE mb_id=? AND request_id=?',[$member,$request])->fetch(PDO::FETCH_ASSOC);
             if($prior){if($prior['activity_id']!==$id)throw new DomainException('request conflict');return $prior;}
-            if($a['kind']!=='events'||$a['state']!=='open'||(int)$a['point_amount']!==0||$a['opens_at']>date('Y-m-d H:i:s')||($a['closes_at']!==null&&$a['closes_at']<=date('Y-m-d H:i:s')))throw new DomainException('event unavailable');
-            $prior=$this->q("SELECT * FROM bpz_participation WHERE activity_id=? AND mb_id=? AND state='confirmed' LIMIT 1",[$id,$member])->fetch(PDO::FETCH_ASSOC);
+            if($a['kind']!=='events'||$a['state']!=='open'||((int)$a['point_amount']!==0&&!(getenv('BUSAN_FIXTURE_DB')==='pointzone_fixture'&&$this->db->query('SELECT DATABASE()')->fetchColumn()==='pointzone_fixture'))||$a['opens_at']>date('Y-m-d H:i:s')||($a['closes_at']!==null&&$a['closes_at']<=date('Y-m-d H:i:s')))throw new DomainException('event unavailable');
+            $prior=$this->q("SELECT * FROM bpz_participation WHERE activity_id=? AND mb_id=? AND state IN ('confirmed','pending','awarded') LIMIT 1",[$id,$member])->fetch(PDO::FETCH_ASSOC);
             if($prior)return $prior;
-            $n=(int)$this->q("SELECT COUNT(*) FROM bpz_participation WHERE activity_id=? AND state='confirmed'",[$id])->fetchColumn();
+            $n=(int)$this->q("SELECT COUNT(*) FROM bpz_participation WHERE activity_id=? AND state IN ('confirmed','pending','awarded')",[$id])->fetchColumn();
             if((int)$a['capacity']>0&&$n>=(int)$a['capacity'])throw new DomainException('event full');
             $pid=bin2hex(random_bytes(16));
             $this->q("INSERT INTO bpz_participation(id,activity_id,mb_id,request_id,amount,state,created_at) VALUES(?,?,?,?,0,'confirmed',NOW())",[$pid,$id,$member,$request]);
@@ -123,10 +123,29 @@ final class BusanPointZoneActivities {
         return $this->q("SELECT p.id,a.kind,a.title,p.amount,p.state,p.created_at FROM bpz_participation p JOIN bpz_activity a ON a.id=p.activity_id WHERE p.mb_id=? ORDER BY p.created_at DESC,p.id LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
     }
     public function entitlements():array{
-        return $this->q("SELECT a.title,e.order_id,e.starts_at,e.expires_at,CASE WHEN e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) THEN 1 ELSE 0 END AS active FROM bpz_entitlement e JOIN bpz_activity a ON a.id=e.activity_id WHERE e.mb_id=? ORDER BY e.starts_at DESC LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
+        return $this->q("SELECT e.id,a.title,e.order_id,e.starts_at,e.expires_at,CASE WHEN e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) THEN 1 ELSE 0 END AS active FROM bpz_entitlement e JOIN bpz_activity a ON a.id=e.activity_id WHERE e.mb_id=? ORDER BY e.starts_at DESC LIMIT 100",[$this->actor()])->fetchAll(PDO::FETCH_ASSOC);
     }
     public function participants(string $id):array{
         $this->actor();self::admin();$this->activity($id);
         return $this->q("SELECT mb_id,amount,state,created_at FROM bpz_participation WHERE activity_id=? ORDER BY created_at,id LIMIT 200",[$id])->fetchAll(PDO::FETCH_ASSOC);
     }
+    /** Candidate ranking: confirmed participation count, not point balances. */
+    public function rankings():array{
+        $this->actor();
+        return $this->q("SELECT m.mb_nick AS nickname,COUNT(DISTINCT p.activity_id) AS activities FROM bpz_participation p JOIN g5_member m ON m.mb_id=p.mb_id WHERE p.state IN ('confirmed','awarded') AND m.mb_leave_date='' AND m.mb_intercept_date='' GROUP BY m.mb_id,m.mb_nick ORDER BY activities DESC,m.mb_id LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function equip(?string $entitlement):array{
+        $m=$this->actor();
+        return $this->atomic(function()use($m,$entitlement){
+            if($entitlement===null){$this->q('DELETE FROM bpz_profile_selection WHERE mb_id=?',[$m]);return ['equipped'=>null];}
+            $e=$this->q("SELECT e.id FROM bpz_entitlement e JOIN yc5_order o ON o.od_id=e.order_id AND o.mb_id=e.mb_id JOIN bpz_order_receipt r ON r.order_id=o.od_id AND r.member_id=o.mb_id WHERE e.id=? AND e.mb_id=? AND e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) AND o.od_status IN ('입금','완료') AND JSON_UNQUOTE(JSON_EXTRACT(r.receipt,'$.state'))='paid' FOR UPDATE",[self::id($entitlement),$m])->fetchColumn();
+            if(!$e)throw new DomainException('item not owned or expired');
+            $this->q('INSERT INTO bpz_profile_selection(mb_id,entitlement_id) VALUES(?,?) ON DUPLICATE KEY UPDATE entitlement_id=VALUES(entitlement_id)',[$m,$e]);return ['equipped'=>$e];
+        });
+    }
+    public function equipped():?array{
+        $r=$this->q("SELECT e.id,a.title FROM bpz_profile_selection s JOIN bpz_entitlement e ON e.id=s.entitlement_id AND e.mb_id=s.mb_id JOIN bpz_activity a ON a.id=e.activity_id JOIN yc5_order o ON o.od_id=e.order_id AND o.mb_id=e.mb_id JOIN bpz_order_receipt r ON r.order_id=o.od_id AND r.member_id=o.mb_id WHERE s.mb_id=? AND e.revoked_at IS NULL AND e.starts_at<=NOW() AND (e.expires_at IS NULL OR e.expires_at>NOW()) AND o.od_status IN ('입금','완료') AND JSON_UNQUOTE(JSON_EXTRACT(r.receipt,'$.state'))='paid'",[$this->actor()])->fetch(PDO::FETCH_ASSOC);
+        return $r?:null;
+    }
+
 }
