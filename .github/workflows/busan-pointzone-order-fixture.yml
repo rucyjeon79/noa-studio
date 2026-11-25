@@ -72,7 +72,7 @@ jobs:
           php -l deploy/busan/youngcart/pointzone-actions.php
           php scripts/busan_youngcart/order_http_actions_test.php
           python scripts/busan_youngcart/order_theme_package_test.py
-          python scripts/busan_youngcart/order_http_render_test.py
           cat deploy/busan/youngcart/schema/pointzone-activities.sql | docker exec -i "$DB_CONTAINER" mariadb -uroot -pfixture-only pointzone_fixture
+          python scripts/busan_youngcart/order_http_render_test.py
           php -l deploy/busan/youngcart/pointzone-activities.php
           php scripts/busan_youngcart/order_activities_test.php
