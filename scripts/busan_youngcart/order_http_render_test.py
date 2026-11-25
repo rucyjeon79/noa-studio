@@ -21,6 +21,7 @@ define('_GNUBOARD_',true);
 define('G5_URL','http://127.0.0.1:'.$_SERVER['SERVER_PORT']);
 define('G5_BBS_URL',G5_URL.'/bbs');
 define('G5_PATH',__DIR__);
+define('BPZ_ISOLATED_FIXTURE',true);
 function add_stylesheet($tag,$priority){$GLOBALS['fixture_css'][]=$tag;}
 $db=new PDO('mysql:host=127.0.0.1;port=3306;dbname=pointzone_fixture;charset=utf8mb4','root','fixture-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 if($db->query('SELECT DATABASE()')->fetchColumn()!=='pointzone_fixture')exit;
@@ -83,6 +84,14 @@ def run():
                     integrated(page)
                     check(re.search(r'href="[^"]*\?section='+section+r'" aria-current="page"',page),"active submenu "+section)
                     check("<h2>"+label in page,"correct submenu body "+section)
+                for kind in ("auction","sharing","events","profile"):
+                    code,page,_=call("activity-admin.php?kind="+kind,"super")
+                    check(code==200 and "초안 저장" in page and "등록된 활동이 없습니다." in page,"empty admin "+kind)
+                    integrated(page)
+                    check(call("activity-admin.php?kind="+kind)[0]==403,"admin permission "+kind)
+                    code,page,_=call("pointzone.php?section="+kind)
+                    check(code==200 and "현재 등록된" in page,"empty activity "+kind)
+                print("BUSAN_POINTZONE_ACTIVITY_UI_OK")
                 print("BUSAN_POINTZONE_ALL_SEVEN_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
                 check(code==200 and "장바구니 담기" in body and "<fieldset disabled>" in body,"disabled product action")
