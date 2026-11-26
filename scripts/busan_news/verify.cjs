@@ -14,10 +14,14 @@ async function verifyArticleShare(page, article, width) {
     const r=el.getBoundingClientRect();
     const author=el.closest('[data-bn-reporter-card="1"]');
     const name=author?.querySelector('.bn-reporter')?.getBoundingClientRect();
-    return r.left>=0 && r.right<=innerWidth && !!author && !!name
-      && el.dataset.bnReporterShare==='1' && r.top>=name.bottom-3
-      && Math.abs(r.left-name.left)<=38;
-  }),'share action is below the reporter name inside the author card');
+    const card=author?.getBoundingClientRect();
+    return r.left>=0 && r.right<=innerWidth && !!author && !!name && !!card
+      && el.dataset.bnReporterShare==='1' && author.classList.contains('bn-reporter-share-right')
+      && r.left>=name.right && card.right-r.right>=0 && card.right-r.right<=25
+      && r.top>=card.top-1 && r.bottom<=card.bottom+1
+      && Math.abs((r.top+r.bottom)/2-(card.top+card.bottom)/2)<=4
+      && !author.querySelector('.bn-reporter-share-slot');
+  }),'share action is right aligned in the compact author card');
   assert.equal(await page.locator('.boardViewHeader .bn-article-share').count(),0,'no duplicated upper share action');
   await page.locator('.boardViewWrap').screenshot({path:'/tmp/busan-news-share-'+width+'.png'});
 

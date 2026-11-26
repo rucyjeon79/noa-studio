@@ -73,18 +73,25 @@
           return s.display!=='none'&&s.visibility!=='hidden'&&box.width>2&&box.height>2;
         });
       }).sort((a,b)=>Math.abs(a.getBoundingClientRect().top-n.bottom)-Math.abs(b.getBoundingClientRect().top-n.bottom));
-    button.classList.add('bn-reporter-share');
+    // Remove the former empty member action and its now-empty row only.
+    // Never remove author, metadata, category or real controls.
     if(blanks.length){
-      blanks[0].replaceWith(button);
-    }else{
-      // Some themes omit the old member control entirely. Keep the same
-      // placement immediately below the name without modifying other metadata.
-      const anchor=name.closest('.sv_wrap')||name;
-      const slot=document.createElement('div');
-      slot.className='bn-reporter-share-slot';
-      anchor.insertAdjacentElement('afterend',slot);
-      slot.append(button);
+      let parent=blanks[0].parentElement;
+      blanks[0].remove();
+      for(let depth=0;parent&&parent!==identity&&depth<3;depth++){
+        if(parent.contains(name)||parent.contains(identity.querySelector('.bn-theme-avatar'))
+          ||(parent.textContent||'').trim()||parent.querySelector('a,button,input,img,svg,i,canvas,[role="button"]'))break;
+        const next=parent.parentElement;
+        parent.remove();parent=next;
+      }
     }
+    // Preserve the theme's existing padding and reserve only the right-side
+    // width necessary for a 44px touch target. No separate action row.
+    const padding=parseFloat(getComputedStyle(identity).paddingInlineEnd)||0;
+    identity.style.setProperty('--bn-author-share-padding',Math.max(padding,12)+52+'px');
+    identity.classList.add('bn-reporter-share-right');
+    button.classList.add('bn-reporter-share');
+    identity.append(button);
     button.dataset.bnReporterShare='1';
   }
   function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();}
