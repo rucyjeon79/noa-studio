@@ -117,6 +117,45 @@ add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2
 
 // Presentation only: preserve the stored article, ID, author and reward ledger.
 // Only our signed-format, plain-paragraph rights notes are transformed.
+// Select a local explanatory illustration from the actual card's topic.
+function busan_rights_visual_key($title,$body,$kind){
+    $rules=[
+      'evacuate'=>'대피|안전한 장소|이동시켜|안전 확보|긴급.*신고',
+      'pay'=>'성과급|상여금|급여|임금|수당|통상임금|최저임금|지급.?비율|퇴직금|정산',
+      'time'=>'근로시간|연장근무|초과근무|퇴근|출근|당직|휴게|휴식|야간|근무시간',
+      'leave'=>'연차|휴가|휴직|병가',
+      'injury'=>'산재|재해|부상|치료|요양|보상|사고',
+      'safety'=>'작업중지|위험|안전|사다리|감전|보호구|전기설비|추락',
+      'record'=>'기록|증거|메신저|보고|문서|자료|사진|개인정보',
+      'union'=>'노동조합|노조|조합원|단체교섭|단결|조직부장|조합 활동|부당노동행위',
+      'contract'=>'해고|징계|인사|계약|전보|평가|권고사직',
+      'law'=>'법률|법령|판례|법적|근로기준법|산업안전보건법|처벌',
+      'check'=>'체크리스트|점검|확인할 것|확인 사항|유의사항|대응 방법|조치'
+    ];
+    $clean=static function($s){return html_entity_decode(strip_tags($s),ENT_QUOTES,'UTF-8');};
+    foreach([$clean($title),$clean($body)] as $text){
+        foreach($rules as $key=>$pattern)if(preg_match('/'.$pattern.'/u',$text))return $key;
+    }
+    if(strpos($kind,'example')!==false)return 'example';
+    if(strpos($kind,'check')!==false)return 'check';
+    if(strpos($kind,'answer')!==false)return 'answer';
+    if(strpos($kind,'question')!==false||strpos($kind,'topic-qa')!==false)return 'question';
+    return 'guide';
+}
+function busan_rights_add_visuals($html){
+    // These two renderers emit non-nested card containers. Only the generated
+    // opening classes are augmented; neither the source text nor DB is changed.
+    $pattern='~<div class="(bn-rights-(?:section-card|topic) bn-rights-[a-z-]+)">(.*?)</div>~su';
+    $hasCards=preg_match('~<div class="bn-rights-topic bn-rights-topic-(?:qa|heading)"~',$html);
+    $out=preg_replace_callback($pattern,static function($m)use($hasCards){
+        if($hasCards&&strpos($m[1],'topic-intro')!==false)return $m[0];
+        $title=preg_match('~<h3\b[^>]*>(.*?)</h3>~su',$m[2],$h)?$h[1]:'';
+        $key=busan_rights_visual_key($title,$m[2],$m[1]);
+        return '<div class="'.$m[1].' bn-rights-visual bn-rights-visual-'.$key.'">'.$m[2].'</div>';
+    },$html);
+    return is_string($out)?$out:$html;
+}
+
 function busan_rights_format_body($html){
     if(!is_string($html)||!preg_match('~^(?:<p>[^<]*</p>\s*){6}$~uD',$html))return $html;
     preg_match_all('~<p>([^<]*)</p>~u',$html,$m);
@@ -150,7 +189,7 @@ function busan_rights_format_body($html){
     $out.=$section('example','실제 상황 예시',$exampleHtml.'</ol>');
     if($follow)$out.=$section('check','기록·상담 시 유의사항',$items(implode(' ',$follow)));
     $out.='<div class="bn-rights-disclaimer"><p>'.$p[5].'</p></div></div>';
-    return $out;
+    return busan_rights_add_visuals($out);
 }
 // Format the original plain text before Gnuboard adds BR tags and theme wrappers.
 // No database write; actual native article permission checks remain in effect.
@@ -203,7 +242,7 @@ function busan_rights_plain_body($raw){
     $flush();$endlist();
     if($kind==='')return $raw;
     $out.='</div></div>';
-    return $out;
+    return busan_rights_add_visuals($out);
 }
 function busan_rights_prepare_body($header,$board){
     global $write;
@@ -226,7 +265,7 @@ function busan_rights_prepare_body($header,$board){
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=15">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=16">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.

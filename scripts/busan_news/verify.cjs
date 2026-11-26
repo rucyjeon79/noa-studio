@@ -43,6 +43,14 @@ async function verifyRightsLayout(browser) {
       assert.equal(await compact.evaluate(el=>el.textContent.replace(/\s/g,'')),before);
       assert(await compact.evaluate(el=>el.getBoundingClientRect().height<440),'excess vertical whitespace');
       console.log('PASS rights legacy compact Q&A and whitespace regression',width);
+      await page.setContent('<div id="bo_v_con"><div class="bn-rights-guide"><div class="bn-rights-topic bn-rights-topic-qa bn-rights-visual bn-rights-visual-pay"><h3>성과급 지급 기준</h3><p>본문 설명입니다.</p></div><div class="bn-rights-topic bn-rights-topic-qa bn-rights-visual bn-rights-visual-safety"><h3>작업 안전 확인</h3><p>본문 설명입니다.</p></div></div></div>');
+      await page.addStyleTag({content:css});
+      const marks=await page.locator('.bn-rights-visual').evaluateAll(els=>els.map(el=>{const s=getComputedStyle(el,'::before');return {image:s.backgroundImage,width:parseFloat(s.width),height:parseFloat(s.height)};}));
+      assert.equal(marks.length,2);
+      assert(marks.every(m=>m.image.includes('data:image/svg+xml')&&m.width>=48&&m.width<=56&&m.width===m.height),'local contextual images not visible');
+      assert.notEqual(marks[0].image,marks[1].image,'different topics must use different images');
+      assert(await page.locator('#bo_v_con').evaluate(el=>el.scrollWidth<=el.clientWidth+2),'visual card overflow');
+      console.log('PASS contextual rights illustrations and mobile bounds',width);
     } finally {await page.close();}
   }
 }

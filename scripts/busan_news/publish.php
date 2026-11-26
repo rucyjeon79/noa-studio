@@ -301,7 +301,7 @@ function bnrights_layout_audit(){
     $board=sql_fetch("SELECT bo_subject,bo_list_level,bo_read_level FROM $bt WHERE bo_table='note'",false);
     if(str_replace(' ','',trim($board['bo_subject']??''))!=='권리노트')throw new RuntimeException('rights board audit identity invalid');
     $q=bnq("SELECT wr_id,wr_content,wr_6,wr_option,wr_name,wr_is_comment FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
-    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'server_render_verified'=>0,'server_render_failed_ids'=>[],'question_group_audit'=>[],'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
+    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'server_render_verified'=>0,'server_render_failed_ids'=>[],'question_group_audit'=>[],'visual_audit'=>[],'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
     while($r=sql_fetch_array($q)){
         $body=(string)$r['wr_content'];$report['total']++;
         $report[$r['wr_6']==='bn-rights-note-v1'?'new_format':'legacy']++;
@@ -328,6 +328,13 @@ function bnrights_layout_audit(){
                 $actual=substr_count($rendered,'bn-rights-topic-qa');
                 $report['question_group_audit'][]=['id'=>(int)$r['wr_id'],'expected'=>$expected,'actual'=>$actual];
                 $ok=$ok&&$expected===$actual;
+            }
+            if($ok){
+                $cards=substr_count($rendered,'bn-rights-section-card ')+substr_count($rendered,'bn-rights-topic bn-rights-topic-qa')+substr_count($rendered,'bn-rights-topic bn-rights-topic-heading');
+                if(!$cards)$cards=substr_count($rendered,'bn-rights-topic bn-rights-topic-intro');
+                $visuals=preg_match_all('/\bbn-rights-visual-(?:evacuate|pay|time|leave|injury|safety|record|union|contract|law|check|example|question|answer|guide)\b/',$rendered,$visualMatches);
+                $report['visual_audit'][]=['id'=>(int)$r['wr_id'],'cards'=>$cards,'illustrations'=>$visuals];
+                $ok=$cards>0&&$visuals===$cards;
             }
             if($ok)$report['server_render_verified']++;
             else $report['server_render_failed_ids'][]=(int)$r['wr_id'];

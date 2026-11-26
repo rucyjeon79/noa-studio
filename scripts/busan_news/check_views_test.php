@@ -122,3 +122,11 @@ ensure(substr_count($numberedHtml,'bn-rights-topic-qa')===3,'numbered Q&A lost')
 ensure(strpos($numberedHtml,'작업중지권은 일을 멈추는 걸로 끝나지 않습니다.')!==false,'short introduction still fragmented');
 ensure($normalize($numbered)===$normalize($numberedHtml),'numbered rights wording changed');
 echo "PASS numbered Q1/Q2/Q3 and joined introduction\n";
+
+ensure(busan_rights_visual_key('Q1. 성과급 지급은?','징계 규정','topic-qa')==='pay','payment topic mismatch');
+ensure(busan_rights_visual_key('Q2. 안전한 장소로 대피','작업중지','topic-qa')==='evacuate','evacuation topic mismatch');
+ensure(busan_rights_visual_key('Q3. 연차 휴가','기록','topic-qa')==='leave','leave topic mismatch');
+$visual=busan_rights_plain_body("도입입니다.\nQ1. 성과급 기준은?\nA. 설명입니다.\nQ2. 사다리 안전은?\nA. 설명입니다.");
+ensure(substr_count($visual,'bn-rights-visual ')===2,'one illustration per question card');
+ensure(strpos($visual,'bn-rights-visual-pay')!==false&&strpos($visual,'bn-rights-visual-safety')!==false,'specific visual topics missing');
+echo "PASS contextual rights illustrations and one image per card\n";
