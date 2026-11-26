@@ -14,7 +14,9 @@
   const fragment = template.content.cloneNode(true);
   const button = fragment.querySelector('.bn-article-share');
   const feedback = fragment.querySelector('.bn-share-feedback');
-  const data = {title:button.dataset.title, text:button.dataset.title, url:button.dataset.url};
+  // Android share targets may concatenate title and text (e.g. KakaoTalk).
+  // Send the article title in text only, with its canonical URL.
+  const data = {text:button.dataset.title, url:button.dataset.url};
   const noun = button.dataset.kind === 'post' ? '게시글' : '기사';
   actions.prepend(fragment);
   let feedbackTimer;

@@ -100,8 +100,8 @@ async function verifyArticleShare(page, article, width) {
   assert.equal(await button.isDisabled(),true,'prevent duplicate share while the sheet is open');
   await button.evaluate(el=>el.click());
   assert.deepEqual(await page.evaluate(()=>window.__bnShares),[
-    {data:{title:article.title,text:article.title,url:article.url},active:true}
-  ],'native share gets title and a clean canonical URL in the tap gesture');
+    {data:{text:article.title,url:article.url},active:true}
+  ],'native share gets exactly one title in text and a clean canonical URL in the tap gesture');
   await page.evaluate(()=>window.__bnFinishShare());
   await page.waitForFunction(()=>!document.querySelector('.bn-article-share').disabled);
 

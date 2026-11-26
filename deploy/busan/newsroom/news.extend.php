@@ -314,7 +314,7 @@ function busan_news_article_share() {
       </button>
       <span id="bn-share-feedback" class="bn-share-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></span>
     </template>
-    <script src="<?=$escape(G5_URL.'/busan-assistant/newsroom/share.js?v=3')?>" defer></script>
+    <script src="<?=$escape(G5_URL.'/busan-assistant/newsroom/share.js?v=4')?>" defer></script>
     <?php
 }
 add_event('tail_sub', 'busan_news_article_share');
