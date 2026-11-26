@@ -167,3 +167,10 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 #bo_v_con .bn-rights-compact-text .bn-rights-compact-list{list-style:none;padding:0;margin:6px 0;display:grid;gap:5px}
 #bo_v_con .bn-rights-compact-text .bn-rights-compact-list li{margin:0;padding:0;line-height:1.6}
 @media(max-width:480px){#bo_v_con .bn-rights-compact-text{gap:12px}#bo_v_con .bn-rights-topic-qa,#bo_v_con .bn-rights-topic-heading{padding:10px}}
+
+/* Server-rendered legacy notes need no client initialization to be readable. */
+#bo_v_con .bn-rights-compact-text .bn-rights-topic{height:auto!important;min-height:0!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic :is(h3,p,ul,li){min-height:0!important;height:auto!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic h3{font-size:16px!important;line-height:1.45!important;margin:0 0 8px!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic p{line-height:1.65!important;margin:0 0 7px!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic > :last-child{margin-bottom:0!important}

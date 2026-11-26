@@ -300,14 +300,33 @@ function bnrights_layout_audit(){
     $bt=$g5['board_table'];$wt=$g5['write_prefix'].'note';
     $board=sql_fetch("SELECT bo_subject,bo_list_level,bo_read_level FROM $bt WHERE bo_table='note'",false);
     if(str_replace(' ','',trim($board['bo_subject']??''))!=='권리노트')throw new RuntimeException('rights board audit identity invalid');
-    $q=bnq("SELECT wr_id,wr_content,wr_6 FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
-    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
+    $q=bnq("SELECT wr_id,wr_content,wr_6,wr_option,wr_name,wr_is_comment FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
+    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'server_render_verified'=>0,'server_render_failed_ids'=>[],'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
     while($r=sql_fetch_array($q)){
         $body=(string)$r['wr_content'];$report['total']++;
         $report[$r['wr_6']==='bn-rights-note-v1'?'new_format':'legacy']++;
         foreach(['paragraphs'=>'p|div','line_breaks'=>'br','headings'=>'h[1-6]|strong|b','lists'=>'ul|ol|dl','tables'=>'table','interactive_fallback'=>'script|style|form|iframe|object|embed|template'] as $key=>$tags)
             if(preg_match('~<(?:'.$tags.')\b~i',$body))$report[$key]++;
         if($body===strip_tags($body))$report['plain_text']++;
+        // Exercise the same deployed view hook and native HTML converter on every
+        // actual database row, without exposing its contents in the release log.
+        $originalWrite=$GLOBALS['write']??null;
+        try{
+            $GLOBALS['write']=$r;
+            if(function_exists('busan_rights_prepare_body'))busan_rights_prepare_body('', ['bo_table'=>'note']);
+            $out=$GLOBALS['write']['wr_content']??'';
+            $rendered=($out!==$body && function_exists('conv_content'))?conv_content($out,1):$out;
+            $ok=$out!==$body&&strpos($rendered,'bn-rights-guide')!==false
+                &&strpos($GLOBALS['write']['wr_option']??'','html1')!==false;
+            if($ok&&$r['wr_6']!=='bn-rights-note-v1'){
+                $normalize=static function($s){return preg_replace('/[\s\x{00A0}]+/u','',html_entity_decode($s,ENT_QUOTES,'UTF-8'));};
+                $ok=$normalize(strip_tags($rendered))===$normalize($body)
+                    &&strpos($rendered,'bn-rights-compact-text')!==false
+                    &&!preg_match('~<br\s*/?>\s*<br\s*/?>~i',$rendered);
+            }
+            if($ok)$report['server_render_verified']++;
+            else $report['server_render_failed_ids'][]=(int)$r['wr_id'];
+        }finally{$GLOBALS['write']=$originalWrite;}
     }
     return $report;
 }

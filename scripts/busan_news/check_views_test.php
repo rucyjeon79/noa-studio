@@ -100,3 +100,18 @@ foreach($rights as $a){
 $legacy='<p>기존 조합원 글</p><p><strong>기존 내용</strong></p>';
 ensure(busan_rights_format_body($legacy)===$legacy,'legacy content must remain intact');
 echo "PASS rights-note structured rendering, complete text retention and legacy fallback\n";
+
+$raw="첫 안내입니다.\r\n\r\n\r\n두번째 안내입니다.\n\nQ. 질문 하나?\n\n답변입니다.\n\n- 지급 기준 0%\n\n- 지급 기준 50%\n\nQ. 질문 둘?\n\nA. 두번째 답변입니다.\n";
+$formatted=busan_rights_plain_body($raw);
+ensure(substr_count($formatted,'bn-rights-topic-qa')===2,'plain Q&A groups failed');
+ensure(substr_count($formatted,'bn-rights-topic-intro')===1,'plain intro split');
+ensure(strpos($formatted,'<br')===false,'plain redundant linebreaks retained');
+$normalize=static function($s){return preg_replace('/\s+/u','',html_entity_decode(strip_tags($s),ENT_QUOTES,'UTF-8'));};
+ensure($normalize($raw)===$normalize($formatted),'legacy source text changed');
+$write=['wr_content'=>$raw,'wr_option'=>'','wr_is_comment'=>0,'wr_6'=>'','wr_name'=>'기존 작성자'];
+busan_rights_prepare_body('', ['bo_table'=>'note']);
+ensure($write['wr_content']===$formatted&&$write['wr_option']==='html1','server legacy view hook failed');
+$write=['wr_content'=>$raw,'wr_option'=>'secret','wr_is_comment'=>0];
+busan_rights_prepare_body('', ['bo_table'=>'note']);
+ensure($write['wr_content']===$raw,'secret legacy text changed');
+echo "PASS server-rendered plain rights Q&A, no duplicated breaks, original wording retained\n";

@@ -152,18 +152,69 @@ function busan_rights_format_body($html){
     $out.='<div class="bn-rights-disclaimer"><p>'.$p[5].'</p></div></div>';
     return $out;
 }
+// Format the original plain text before Gnuboard adds BR tags and theme wrappers.
+// No database write; actual native article permission checks remain in effect.
+function busan_rights_plain_body($raw){
+    if(!is_string($raw)||!trim($raw)||$raw!==strip_tags($raw))return $raw;
+    $lines=preg_split('/\R/u',$raw);
+    if(!is_array($lines))return $raw;
+    $out='<div class="bn-rights-guide bn-rights-legacy bn-rights-compact-text">';
+    $kind='';$list=false;
+    $esc=static function($s){
+        $text=htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+        return function_exists('url_auto_link')?url_auto_link($text):$text;
+    };
+    $endlist=static function()use(&$out,&$list){if($list){$out.='</ul>';$list=false;}};
+    $start=static function($type,$title='')use(&$out,&$kind,$endlist,$esc){
+        $endlist();if($kind!=='')$out.='</div>';
+        $kind=$type;$out.='<div class="bn-rights-topic bn-rights-topic-'.$type.'">';
+        if($title!=='')$out.='<h3 class="bn-rights-topic-title">'.$esc($title).'</h3>';
+    };
+    foreach($lines as $line){
+        $line=trim($line);
+        if($line===''||preg_match('/^[\s\x{00A0}]+$/u',$line))continue;
+        $question=preg_match('/^(?:Q\s*[.:：]|질문\s*[:：]|문\s*[:：])/iu',$line);
+        // Do not turn numbered payment rates or answers into standalone boxes.
+        $heading=preg_match('/^(?:■|◆|▶|【)/u',$line)&&mb_strlen($line)<=85;
+        if($question){$start('qa',$line);continue;}
+        if($heading){$start('heading',$line);continue;}
+        if($kind==='')$start('intro');
+        if(preg_match('/^(?:[-–—•ㆍ·▪✓✔]\s*|☞\s*)/u',$line)){
+            if(!$list){$out.='<ul class="bn-rights-compact-list">';$list=true;}
+            $out.='<li>'.$esc($line).'</li>';continue;
+        }
+        $endlist();
+        $class=preg_match('/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/iu',$line)?'bn-rights-compact-answer':
+          (preg_match('/^(?:예시|사례|현장 사례)\s*[:：]/u',$line)?'bn-rights-compact-example':'');
+        $out.='<p'.($class!==''?' class="'.$class.'"':'').'>'.$esc($line).'</p>';
+    }
+    $endlist();
+    if($kind==='')return $raw;
+    $out.='</div></div>';
+    return $out;
+}
 function busan_rights_prepare_body($header,$board){
     global $write;
-    if(($board['bo_table']??'')!=='note'||($write['wr_6']??'')!=='bn-rights-note-v1'
-        ||($write['wr_name']??'')!=='챗지기자'||!empty($write['wr_is_comment'])
+    if(($board['bo_table']??'')!=='note'||empty($write['wr_content'])||!empty($write['wr_is_comment'])
         ||strpos($write['wr_option']??'','secret')!==false)return $header;
-    $write['wr_content']=busan_rights_format_body($write['wr_content']??'');
+    $raw=$write['wr_content'];
+    if(($write['wr_6']??'')==='bn-rights-note-v1'&&($write['wr_name']??'')==='챗지기자'){
+        $formatted=busan_rights_format_body($raw);
+    }elseif(!preg_match('/(?:^|,)html[12](?:,|$)/', $write['wr_option']??'') || $raw===strip_tags($raw)){
+        $formatted=busan_rights_plain_body($raw);
+    }else return $header;
+    if($formatted!==$raw){
+        $write['wr_content']=$formatted;
+        $options=array_filter(explode(',',(string)($write['wr_option']??'')),static function($v){return $v!==''&&!in_array($v,['html1','html2'],true);});
+        $options[]='html1';
+        $write['wr_option']=implode(',',$options);
+    }
     return $header;
 }
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=13">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=14">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
