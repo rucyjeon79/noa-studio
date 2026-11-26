@@ -352,6 +352,27 @@ function bnrights_layout_audit(){
     }
     return $report;
 }
+// A separate schedule-only operation. The outer publisher advisory lock
+// serializes this with other importer requests; no news or menu rewrite.
+function bnrights_daily($input){
+    global $g5;
+    if(!array_is_list($input)||count($input)!==1)throw new RuntimeException('daily rights requires one candidate');
+    $a=$input[0];$now=new DateTimeImmutable('now',new DateTimeZone('Asia/Seoul'));
+    $day=$now->format('Y-m-d');
+    if(($a['publish_date']??'')!==$day||$now->format('H:i')<'08:00')throw new RuntimeException('daily rights outside release window');
+    if(!preg_match('/^[a-z0-9-]{4,80}$/D',$a['slug']??''))throw new RuntimeException('daily rights slug invalid');
+    $wt=$g5['write_prefix'].'note';
+    $key=hash('sha256','busan-rights-note:'.$a['slug']);
+    $same=sql_fetch("SELECT wr_id,wr_3,wr_5 FROM $wt WHERE wr_is_comment=0 AND wr_3=".bnvalue($key)." LIMIT 1",false);
+    $first=$day.' 00:00:00';$next=$now->modify('+1 day')->format('Y-m-d').' 00:00:00';
+    $count=bncount($wt,"wr_is_comment=0 AND wr_name=".bnvalue('챗지기자')." AND wr_datetime>=".bnvalue($first)." AND wr_datetime<".bnvalue($next));
+    if($count>0&&empty($same['wr_id']))return ['status'=>'already_published_today','date'=>$day,'created'=>0];
+    if(!empty($same['wr_id'])&&($same['wr_5']??'')!=='bn-point-pending-v1')return ['status'=>'already_published','date'=>$day,'created'=>0,'id'=>(int)$same['wr_id']];
+    $result=bnrights_publish($input);
+    $row=$result['rows'][0]??[];
+    if(empty($row['id'])||empty($result['permissions_preserved']))throw new RuntimeException('daily rights receipt missing');
+    return ['status'=>$row['status']??'unknown','date'=>$day,'created'=>!empty($row['created'])?1:0,'id'=>(int)$row['id'],'write_point'=>$result['write_point'],'permissions_preserved'=>true];
+}
 function bnrights_publish($input){
     global $g5,$config;
     if(!bnactive())throw new RuntimeException('newsroom split not active');
@@ -583,7 +604,7 @@ try{
     $input=json_decode(file_get_contents('php://input',false,null,0,500000),true,32,JSON_THROW_ON_ERROR);
     if(!is_array($input)||count($input)>100)throw new RuntimeException('invalid batch');
     $mode=$_SERVER['HTTP_X_BUSAN_NEWS_DEPLOY_MODE']??'';
-    $rightsMode=!defined('BUSAN_ACCOUNT_NEWS')&&$mode==='rights';
+    $rightsMode=!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['rights','rights-daily'],true);
     if(!$rightsMode)foreach($input as $a)bnvalidate($a);
     if (defined('BUSAN_ACCOUNT_NEWS')) {
         if (!array_is_list($input) || count($input)>7) throw new RuntimeException('edition size');
@@ -593,7 +614,8 @@ try{
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
     if($rightsMode){
         $stage='rights';
-        echo json_encode(['ok'=>true,'rights'=>bnrights_publish($input)],JSON_UNESCAPED_UNICODE);
+        if($mode==='rights-daily')echo json_encode(['ok'=>true,'daily'=>bnrights_daily($input)],JSON_UNESCAPED_UNICODE);
+        else echo json_encode(['ok'=>true,'rights'=>bnrights_publish($input)],JSON_UNESCAPED_UNICODE);
         exit;
     }
     if(!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['preflight','menu','split'],true)){
