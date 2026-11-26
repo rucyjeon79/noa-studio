@@ -19,13 +19,30 @@ async function verifyRightsLayout(browser) {
         const before=await page.locator('#bo_v_con').evaluate(el=>({text:el.textContent,links:[...el.querySelectorAll('a')].map(a=>a.getAttribute('href')),tags:el.querySelectorAll('table,li,br,img').length}));
         await page.addScriptTag({content:js});
         const after=await page.locator('#bo_v_con').evaluate(el=>({text:el.textContent,links:[...el.querySelectorAll('a')].map(a=>a.getAttribute('href')),tags:el.querySelectorAll('table,li,br,img').length}));
-        assert.deepEqual(after,before,'legacy rights words, links and structural nodes must remain');
-        assert(await page.locator('.bn-rights-legacy .bn-rights-section-card').count()>0,'legacy cards missing');
+        const compact=await page.locator('.bn-rights-compact-text').count();
+        if(compact){
+          assert.equal(after.text.replace(/\s/g,''),before.text.replace(/\s/g,''),'plain rights text retained');
+          assert.deepEqual(after.links,before.links);
+        }else assert.deepEqual(after,before,'legacy rights words, links and structural nodes must remain');
+        assert(await page.locator('.bn-rights-legacy :is(.bn-rights-section-card,.bn-rights-topic)').count()>0,'legacy sections missing');
         assert(await page.locator('#bo_v_con').evaluate(el=>el.scrollWidth<=el.clientWidth+2),'rights content overflows viewport');
         await page.addScriptTag({content:js});
         assert.equal(await page.locator('.bn-rights-legacy').count(),1,'formatting must be idempotent');
       }
-      console.log('PASS rights legacy card layout and unchanged text/links',width);
+      // Reproduce native nl2br output seen in the real legacy notebook.
+      const raw='첫 안내 문장입니다.<br>\n<br>\n<br>\n두 번째 안내입니다.<br>\n<br>\n<br>\nQ. 첫 번째 질문인가요?<br>\n<br>\n<br>\n첫 번째 답변입니다.<br>\n<br>\n- 기준 항목 하나<br>\n<br>\n- 기준 항목 둘<br>\n<br>\nQ. 두 번째 질문인가요?<br>\n<br>\n두 번째 답변입니다.<br>\n<br>\n';
+      await page.setContent('<template id="bn-rights-reading-marker"></template><div id="bo_v_con">'+raw+'</div>');
+      await page.addStyleTag({content:css});
+      const before=await page.locator('#bo_v_con').evaluate(el=>el.textContent.replace(/\s/g,''));
+      await page.addScriptTag({content:js});
+      const compact=page.locator('.bn-rights-compact-text');
+      assert.equal(await compact.count(),1);
+      assert.equal(await compact.locator('.bn-rights-topic-intro').count(),1);
+      assert.equal(await compact.locator('.bn-rights-topic-qa').count(),2);
+      assert.equal(await compact.locator('br').count(),0,'native duplicate line breaks remain');
+      assert.equal(await compact.evaluate(el=>el.textContent.replace(/\s/g,'')),before);
+      assert(await compact.evaluate(el=>el.getBoundingClientRect().height<440),'excess vertical whitespace');
+      console.log('PASS rights legacy compact Q&A and whitespace regression',width);
     } finally {await page.close();}
   }
 }

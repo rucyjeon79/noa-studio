@@ -16,8 +16,59 @@
     if(/^(?:■|◆|▶|【|\d{1,2}[.)]\s|[①-⑳])/.test(text)&&text.length<85)return 'heading';
     return '';
   };
+  // The original fifteen posts are plain text rendered by the native board
+  // with BR plus newline. Normalize display whitespace once, not twice.
+  function formatPlain(root){
+    if(root.querySelector('*:not(br):not(div):not(p):not(span)'))return false;
+    if([...root.querySelectorAll('div,p,span')].some(el=>el.id||el.querySelector('a,img,table')||el.hasAttribute('style')))return false;
+    const collect=node=>{
+      if(node.nodeType===3)return node.nodeValue;
+      if(node.nodeType!==1)return '';
+      if(node.tagName==='BR')return '\n';
+      const text=[...node.childNodes].map(collect).join('');
+      return /^(P|DIV)$/.test(node.tagName)?'\n'+text+'\n':text;
+    };
+    const raw=[...root.childNodes].map(collect).join('');
+    const lines=raw.replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+    if(!lines.length)return false;
+    const guide=document.createElement('div');guide.className='bn-rights-guide bn-rights-legacy bn-rights-compact-text';
+    let section=null,paragraph=null,list=null;
+    const create=(tag,cls,text)=>{
+      const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;
+    };
+    const start=(kind,title)=>{
+      section=create('section','bn-rights-topic bn-rights-topic-'+kind);
+      if(title)section.append(create('h3','bn-rights-topic-title',title));
+      guide.append(section);paragraph=null;list=null;
+    };
+    for(const line of lines){
+      const question=/^(?:Q\s*[.:：]|질문\s*[:：]|문\s*[:：])/i.test(line);
+      const heading=/^(?:■|◆|▶|【|[①-⑳]|\d{1,2}[.)]\s)/.test(line)&&line.length<=75;
+      const example=/^(?:예시|사례|현장 사례)\s*[:：]/.test(line);
+      const answer=/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/i.test(line);
+      const bullet=/^(?:[-–—•ㆍ·▪✓✔]\s*|☞\s*)/.test(line);
+      if(question){start('qa',line);continue;}
+      if(heading){start('heading',line);continue;}
+      if(!section)start('intro');
+      if(bullet){
+        if(!list){list=create('ul','bn-rights-compact-list');section.append(list);}
+        // Preserve all original characters, including the author's bullet.
+        list.append(create('li','',line));paragraph=null;continue;
+      }
+      list=null;
+      if(answer||example){paragraph=null;}
+      // One short paragraph per original nonempty line, not a separate card.
+      paragraph=create('p',answer?'bn-rights-compact-answer':example?'bn-rights-compact-example':'',line);
+      section.append(paragraph);
+    }
+    // Fail closed if normalization would lose any non-whitespace content.
+    const normalized=s=>s.replace(/\s|\u00a0/g,'');
+    if(normalized(guide.textContent)!==normalized(raw))return false;
+    root.replaceChildren(guide);root.dataset.bnRightsFormatted='1';return true;
+  }
   function format(root){
     if(!root||root.querySelector('.bn-rights-guide,.bn-rights-legacy')||root.querySelector(blocked))return false;
+    if(formatPlain(root))return true;
     // Follow the actual editor wrapper, but never unwrap tables or media.
     let target=root;
     for(let i=0;i<4;i++){
@@ -42,7 +93,7 @@
       if(blank(node)||node.nodeType===8){(card||guide).append(node);continue;}
       const type=classify(node);
       if(type){start(type);if(node.nodeType===1)node.classList.add('bn-rights-original-heading');}
-      else if(!card||count>=3||(kind==='plain'&&count>0&&isBlock(node)))start();
+      else if(!card)start();
       card.append(node);
       if(isBlock(node)||node.nodeType===1&&node.tagName==='BR')count++;
     }

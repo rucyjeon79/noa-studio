@@ -149,3 +149,21 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 #bo_v_con .bn-rights-legacy pre{white-space:pre-wrap}
 #bo_v_con .bn-rights-legacy .bn-rights-lines{line-height:1.9}
 #bo_v_con .bn-rights-legacy .bn-rights-section-card:has(table){overflow-x:auto}
+
+/* Compact text reading: no blank-line duplication, no box per sentence. */
+#bo_v_con .bn-rights-legacy .bn-rights-section-card{white-space:normal;height:auto!important;min-height:0!important}
+#bo_v_con .bn-rights-compact-text{display:grid;gap:16px;white-space:normal}
+#bo_v_con .bn-rights-topic{min-width:0;box-sizing:border-box;display:block;white-space:normal}
+#bo_v_con .bn-rights-topic-qa,#bo_v_con .bn-rights-topic-heading{
+  border-inline-start:3px solid var(--bb-accent,#176a80);
+  padding:11px 12px;border-radius:0 8px 8px 0;
+  background:var(--bb-surface,transparent);
+}
+#bo_v_con .bn-rights-topic-title{font-size:16px;line-height:1.45;font-weight:750;color:var(--bb-accent,#176a80);margin:0 0 8px!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic p{margin:0 0 7px!important;padding:0;white-space:normal;line-height:1.65}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic > :last-child{margin-bottom:0!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-compact-answer{font-weight:600}
+#bo_v_con .bn-rights-compact-text .bn-rights-compact-example{font-weight:600}
+#bo_v_con .bn-rights-compact-text .bn-rights-compact-list{list-style:none;padding:0;margin:6px 0;display:grid;gap:5px}
+#bo_v_con .bn-rights-compact-text .bn-rights-compact-list li{margin:0;padding:0;line-height:1.6}
+@media(max-width:480px){#bo_v_con .bn-rights-compact-text{gap:12px}#bo_v_con .bn-rights-topic-qa,#bo_v_con .bn-rights-topic-heading{padding:10px}}
