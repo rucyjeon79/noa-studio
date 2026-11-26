@@ -85,14 +85,18 @@ def run():
                 integrated(page)
                 check(call(detail,"guest")[0]==403,"guest denied detail")
                 check(call(detail+"x")[0]==404,"invalid product ID")
-                sections={"shop":"포인트 상점","auction":"포인트 경매","sharing":"포인트 나눔","events":"지부장 이벤트","profile":"프로필 꾸미기","honor":"명예의 전당","my":"나의 포인트존"}
+                sections={"shop":"포인트 상점","events":"지부장 이벤트","profile":"프로필 꾸미기","honor":"명예의 전당","my":"나의 포인트존"}
                 for section,label in sections.items():
                     code,page,_=call("pointzone.php?section="+section)
                     check(code==200,"submenu HTTP "+section)
                     integrated(page)
                     check(re.search(r'href="[^"]*\?section='+section+r'" aria-current="page"',page),"active submenu "+section)
                     check("<h2>"+label in page,"correct submenu body "+section)
-                for kind in ("auction","sharing","events","profile"):
+                for removed in ("auction","sharing"):
+                    check(call("pointzone.php?section="+removed)[0]==404,"retired member route "+removed)
+                    check(call("activity-admin.php?kind="+removed,"super")[0]==404,"retired admin route "+removed)
+                    check(call("pointzone.php?section="+removed,"member",{"activity_action":"bid"})[0]==404,"retired POST "+removed)
+                for kind in ("events","profile"):
                     code,page,_=call("activity-admin.php?kind="+kind,"super")
                     check(code==200 and "초안 저장" in page and "등록된 활동이 없습니다." in page,"empty admin "+kind)
                     integrated(page)
@@ -102,12 +106,12 @@ def run():
                 # Use a real member-bound session token from the activity admin fixture.
                 code,page,_=call("activity-admin.php?kind=events","super")
                 token=re.search(r'name="csrf" value="([a-f0-9]{64})"',page).group(1)
-                for section,action in (("auction","bid"),("sharing","contribute"),("profile","claim")):
+                for section,action in (("profile","claim"),):
                     data={"csrf":token,"activity_action":action,"activity_id":"a"*32,"request_id":"b"*32,"amount":"1","order_id":"123456789012397","enabled":"1"}
                     check(call("pointzone.php?section="+section,"super",data)[0]==503,"financial route gate "+action)
                 print("BUSAN_POINTZONE_ACTIVITY_FINANCIAL_ROUTE_LOCK_OK")
                 print("BUSAN_POINTZONE_ACTIVITY_UI_OK")
-                print("BUSAN_POINTZONE_ALL_SEVEN_SUBMENUS_OK")
+                print("BUSAN_POINTZONE_FIVE_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
                 check(code==200 and "장바구니 담기" in body and '<fieldset><input type="hidden" name="csrf"' in body,"enabled cart action")
                 cart_token=re.search(r'name="csrf" value="([a-f0-9]{64})"',body).group(1)
