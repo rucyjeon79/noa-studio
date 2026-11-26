@@ -1,5 +1,7 @@
 """Read-only diagnostics of real menu renderers; do not expose member or session data."""
-import hmac,re,json
+import hmac,re,json,secrets
+from pathlib import Path
+from urllib.parse import urlsplit,parse_qs
 from urllib.request import Request,urlopen
 import release_submenu_fix as remote
 from html.parser import HTMLParser
@@ -12,9 +14,40 @@ class Links(HTMLParser):
     def handle_endtag(self,tag):
         if tag=='a' and self.current:
             href,label=self.current
-            if any(x in href for x in ('honor.php','pointzone.php')) or any(x in label.casefold() for x in ('we run together','인사이트','명예의 전당','point zone')):self.links.append([href.split('?')[0],label.strip()[:80]])
+            if any(x in href for x in ('honor.php','pointzone.php')) or any(x in label.casefold() for x in ('we run together','인사이트','명예의 전당','point zone','권리노트','뉴스')):self.links.append([urlsplit(href).path,parse_qs(urlsplit(href).query).get('bo_table',[]),label.strip()[:80]])
             self.current=None
 def audit(s):
+    # Snapshot only the menu table via the existing authenticated release worker.
+    token=secrets.token_hex(32)
+    code=Path('scripts/busan_pointzone/register_honor_menu.php').read_text().replace('__TOKEN_HASH__',remote.digest(token.encode())).encode()
+    name='pointzone-insight-audit-'+secrets.token_hex(16)+'.php'
+    dest=remote.ROOT+'/busan-assistant/'+name
+    try:
+        with s.open(dest,'wx') as f:f.write(code)
+        s.chmod(dest,0o644)
+        req=Request('https://skhnslu-busan.com/busan-assistant/'+name,data=b'{"mode":"snapshot"}',headers={'X-Busan-Pointzone':token,'Content-Type':'application/json'})
+        with urlopen(req,timeout=25) as r: result=json.load(r)
+        if result.get('status')!='snapshot':raise RuntimeError('menu snapshot failed')
+        rows=result['rows']
+        roots=[x for x in rows if len(x['me_code'])==2]
+        insight=[x for x in roots if '인사이트' in x['me_name'] or 'insight' in x['me_name'].lower()]
+        def safe(x):
+            p=urlsplit(x['me_link'])
+            q=parse_qs(p.query)
+            return {'code':x['me_code'],'name':x['me_name'],'order':x['me_order'],'pc':x['me_use'],'mobile':x['me_mobile_use'],'path':p.path,'board':q.get('bo_table',[]),'target':x['me_target']}
+        current=[safe(x) for x in rows if any(x['me_code'].startswith(y['me_code']) for y in insight)]
+        print('BUSAN_INSIGHT_CURRENT',json.dumps(current,ensure_ascii=False),flush=True)
+        for item in sorted(s.listdir_attr(remote.PRIVATE),key=lambda x:x.st_mtime,reverse=True):
+            if not re.fullmatch(r'pointzone-honor-menu-[a-f0-9]{64}\.json',item.filename):continue
+            old=json.loads(remote.read(s,remote.PRIVATE+'/'+item.filename,100000))
+            if not isinstance(old,list) or any(x.get('me_name')=='명예의 전당' and len(x['me_code'])==2 for x in old):continue
+            before=[safe(x) for x in old if any(x['me_code'].startswith(y['me_code']) for y in insight)]
+            print('BUSAN_INSIGHT_BEFORE',json.dumps(before,ensure_ascii=False),flush=True)
+            break
+        print('BUSAN_INSIGHT_RELATED',json.dumps([safe(x) for x in rows if any(w in x['me_name'] for w in ('뉴스','권리노트','인사이트'))],ensure_ascii=False),flush=True)
+    finally:
+        try:s.remove(dest)
+        except FileNotFoundError:pass
     root=remote.ROOT+'/theme/UXC_Flarumix'
     remote.directory(s,root)
     count=0
