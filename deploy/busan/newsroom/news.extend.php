@@ -32,7 +32,7 @@ function busan_news_reporter_sideview($items,$context){
     if(!busan_news_is_board($context['bo_table']??'')||trim(strip_tags($context['name']??''))!=='챗지기자')return $items;
     return ['name_tag_open'=>'<span class="bn-reporter" title="부산지부 AI 기자 · ChatGPT 활용">',
         'name_tag_close'=>'</span>',
-        'name_tag'=>['<span class="bn-reporter-avatar" aria-hidden="true">AI</span><span>챗지기자</span>'],
+        'name_tag'=>['<span class="bn-reporter-avatar"><img src="'.htmlspecialchars(G5_URL.'/busan-assistant/newsroom/reporter-logo.svg',ENT_QUOTES,'UTF-8').'" alt="ChatGPT" width="28" height="28"></span><span>챗지기자</span>'],
         'menus'=>[]];
 }
 add_replace('member_sideview_items','busan_news_reporter_sideview',99,2);
@@ -114,7 +114,7 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=5">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=6">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 function busan_news_article_share() {
@@ -140,3 +140,10 @@ function busan_news_article_share() {
 }
 add_event('tail_sub', 'busan_news_article_share');
 
+
+function busan_news_reporter_assets(){
+    global $bo_table;
+    if(!busan_news_is_board($bo_table??''))return;
+    echo '<script src="'.htmlspecialchars(G5_URL.'/busan-assistant/newsroom/reporter.js?v=1',ENT_QUOTES,'UTF-8').'" defer></script>';
+}
+add_event('tail_sub','busan_news_reporter_assets');

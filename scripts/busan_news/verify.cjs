@@ -176,6 +176,29 @@ async function assertMoves(page) {
         assert.equal(articleResponse.headers()['x-busan-news-view'], 'excluded');
         const sectionNames={busan_news_company:'회사·그룹 소식',busan_news_union:'노동조합 소식',busan_news_law:'노동법·판례',busan_news_world:'세계 노동 동향'};
         await page.getByRole('heading',{name:sectionNames[article.board]||'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
+        const reporter=page.locator('.boardViewWrap .bn-reporter').first();
+        await reporter.waitFor({state:'visible'});
+        const authorCard=page.locator('[data-bn-reporter-card="1"]').first();
+        try {
+          await authorCard.waitFor({state:'visible',timeout:8000});
+          const avatar=authorCard.locator('img.bn-theme-avatar');
+          assert.equal(await avatar.count(),1,'replace the actual theme profile photo');
+          assert(await avatar.evaluate(img=>img.complete&&img.naturalWidth>0&&img.src.endsWith('/reporter-logo.svg')),'reporter image must load');
+          assert.equal(await reporter.locator('.bn-reporter-avatar').count(),0,'only one reporter logo');
+          assert.equal(await authorCard.getByText('메시지 보내기',{exact:true}).count(),0,'chair messaging must not appear on a reporter card');
+          assert.equal(await authorCard.locator('a[href*="/profile.php"],a[href*="/memo_form.php"]').count(),0,'no real member profile or memo link');
+          console.log('PASS reporter theme avatar and identity controls',width);
+        } catch(error) {
+          console.log('REPORTER_DOM_DIAGNOSTIC',JSON.stringify(await reporter.evaluate(el=>{
+            const out=[];
+            for(let p=el,i=0;p&&i<7;p=p.parentElement,i++){
+              out.push({tag:p.tagName,classes:String(p.className),imgs:[...p.querySelectorAll('img')].slice(0,5).map(x=>({class:String(x.className),parent:String(x.parentElement?.className),width:x.offsetWidth,height:x.offsetHeight,sourceKind:/member_image|member|profile/i.test(x.getAttribute('src')||'')?'member':'other'})),controls:[...p.querySelectorAll('a,button')].slice(0,15).map(x=>({class:String(x.className),message:/메시지|쪽지/.test(x.textContent||''),profile:/profile|memo/.test(x.getAttribute('href')||'')}))});
+              if(p.matches('.boardViewWrap,body'))break;
+            }
+            return out;
+          })));
+          throw error;
+        }
         const card=page.locator('#bo_v_con a.bn-source-card');
         await card.waitFor({state:'visible'});
         assert.equal(await card.count(),1);

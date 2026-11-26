@@ -69,3 +69,7 @@
 .bn-hub-list small{font-size:12px;opacity:.72}
 .bn-hub-more{display:inline-block;margin-top:14px;font-size:13px;font-weight:700}
 @media(max-width:760px){.bn-hub-grid{grid-template-columns:1fr}}
+
+.bn-reporter-avatar{background:#fff;padding:5px;box-sizing:border-box}
+.bn-reporter-avatar img{display:block;width:100%;height:100%;object-fit:contain}
+img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;border-radius:50%!important;padding:10px!important;box-sizing:border-box!important}
