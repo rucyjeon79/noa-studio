@@ -4,11 +4,13 @@ $bpz_sections=[
  'shop'=>['포인트 상점','상품 및 꾸미기 아이템 구매','◈'],
  'events'=>['지부장 이벤트','활동 포상 및 포인트 환원','✦'],
  'profile'=>['프로필 꾸미기','기간제 및 영구 소장 아이템','☆'],
- 'honor'=>['명예의 전당','누적 활동 및 기여도 순위','♜'],
  'my'=>['나의 포인트존','구매·보유 아이템 및 이용내역','▤']
 ];
 if(($is_admin??'')==='super')$bpz_sections['manage']=['통합 운영센터','상품·이벤트·거래 운영 관리','⚙'];
 $bpz_section=$_GET['section']??'';
+if($bpz_section==='honor'&&($_SERVER['REQUEST_METHOD']??'GET')==='GET'){
+    header('Location: '.G5_URL.'/theme/Busan_PointZone/honor.php',true,302);exit;
+}
 if(!is_string($bpz_section)||($bpz_section!==''&&!isset($bpz_sections[$bpz_section]))){http_response_code(404);exit;}
 $g5['title']=$bpz_section===''?'POINT ZONE':$bpz_sections[$bpz_section][0].' · POINT ZONE';
 require_once dirname(__DIR__).'/lib/order-views.php';
