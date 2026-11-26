@@ -75,7 +75,7 @@ def release(s):
         result=call({'mode':'apply','expected_sha256':digest})
         if result.get('status')=='blocked':
             raise RuntimeError('menu migration blocked: '+str(result.get('reason','unknown')))
-        if result.get('status') not in ('applied','already_current') or result.get('after')!='ETC' or result.get('menu')!='POINT ZONE' or result.get('submenus')!=['포인트 상점','지부장 이벤트','프로필 꾸미기','명예의 전당','나의 포인트존'] or not result.get('desktop') or not result.get('mobile'):
+        if result.get('status') not in ('applied','already_current') or result.get('after')!='ETC' or result.get('menu')!='POINT ZONE' or result.get('submenus')!=['포인트 상점','지부장 이벤트','프로필 꾸미기','나의 포인트존'] or not result.get('desktop') or not result.get('mobile'):
             raise RuntimeError('unverified menu result')
         print('BUSAN_POINTZONE_MENU',json.dumps(result,ensure_ascii=False))
     finally:
