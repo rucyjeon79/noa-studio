@@ -1,0 +1,26 @@
+name: Busan insight render audit
+on:
+  push:
+    branches: [busan/pointzone-order-lifecycle-20261125]
+    paths:
+      - '.github/workflows/busan-insight-render-audit.yml'
+      - 'scripts/busan_pointzone/audit_insight_render.py'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Inspect live menu rendering
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          python -m pip install -q paramiko==3.5.1
+          python scripts/busan_pointzone/audit_insight_render.py
