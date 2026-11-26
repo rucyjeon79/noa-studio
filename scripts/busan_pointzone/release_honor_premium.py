@@ -5,7 +5,7 @@ from urllib.request import Request,urlopen
 import release_submenu_fix as remote
 from release_native_catalog_admin import lint,response
 BASE=Path('deploy/busan/youngcart/theme/Busan_PointZone')
-FILES={'css/honor.css':None,'honor.php':'dd54730e33b945e728a5a8767c9a1c7e074c612b'}
+FILES={'css/honor.css':'8410d37dd453d55e09e54efb26ba5d5d7197e664','honor.php':'edbaddaef3628e4bcb9c72ea91ace21db9044616'}
 def fixture():
     with tempfile.TemporaryDirectory() as d:
         root=Path(d);theme=root/'theme/Busan_PointZone';theme.mkdir(parents=True)
