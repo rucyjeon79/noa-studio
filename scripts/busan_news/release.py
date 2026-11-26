@@ -116,6 +116,21 @@ def main(s):
         with s.open(dest, 'wx') as f:
             f.write(worker)
         s.chmod(dest, 0o644)
+        # Diagnose the exact schema and normalize navigation before the historic
+        # reward/import phase. No points or article rows are changed by these calls.
+        for mode in ('preflight','menu'):
+            req = urllib.request.Request(ORIGIN+'/busan-assistant/'+probe, data=b'[]',
+                headers={'X-Busan-News':token,'Content-Type':'application/json',
+                         'X-Busan-News-Deploy-Mode':mode})
+            try:
+                with urllib.request.urlopen(req,timeout=90) as response:
+                    result=json.load(response)
+            except urllib.error.HTTPError as e:
+                print('BUSAN_NEWS_DEPLOY_ERROR',mode,e.code,e.headers.get('X-Busan-News-Stage'),e.headers.get('X-Busan-News-Reason'))
+                raise RuntimeError('News '+mode+' failed') from None
+            if not result.get('ok') or not isinstance(result.get('inventory'),dict):
+                raise RuntimeError('News '+mode+' receipt invalid')
+            print('BUSAN_NEWS_'+mode.upper(),json.dumps(result['inventory'],ensure_ascii=False,sort_keys=True))
         for name, data in todo or [(None, b'[]')]:
             req = urllib.request.Request(ORIGIN+'/busan-assistant/'+probe, data=data,
                 headers={'X-Busan-News':token, 'Content-Type':'application/json'})
@@ -123,7 +138,7 @@ def main(s):
                 with urllib.request.urlopen(req,timeout=90) as response:
                     result=json.load(response)
             except urllib.error.HTTPError as e:
-                print('Importer HTTP',e.code,e.read(320).decode(errors='replace'))
+                print('Importer HTTP',e.code,'stage',e.headers.get('X-Busan-News-Stage'),'reason',e.headers.get('X-Busan-News-Reason'))
                 raise RuntimeError('News import failed') from None
             if not result.get('ok'):
                 raise RuntimeError('News importer returned an invalid result')

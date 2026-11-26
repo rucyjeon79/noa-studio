@@ -16,7 +16,7 @@ function bnset($fields){$out=[];foreach($fields as $k=>$v){if(!preg_match('/^[a-
 function bnsetup() {
     global $g5;
     $bt=$g5['board_table']; $mt=$g5['menu_table']; $wt=$g5['write_prefix'].BN_BOARD;
-    $parent=sql_fetch("SELECT me_code FROM $mt WHERE LENGTH(me_code)=2 AND LOWER(TRIM(me_name))='we run together' LIMIT 1",false);
+    $parent=sql_fetch("SELECT me_code FROM $mt WHERE LENGTH(me_code)=2 AND REPLACE(LOWER(TRIM(me_name)),' ','')='weruntogether' LIMIT 1",false);
     if(empty($parent['me_code'])||!preg_match('/^[0-9a-z]{2}$/iD',$parent['me_code'])) throw new RuntimeException('We Run Together menu missing');
     $board=sql_fetch("SELECT * FROM $bt WHERE bo_table='busan_news'",false);
     if($board && $board['bo_10']!==BN_MARK)throw new RuntimeException('unrelated board with this ID');
@@ -47,19 +47,55 @@ function bnsetup() {
         if($updates)bnq("UPDATE $bt SET ".bnset($updates)." WHERE bo_table='busan_news' AND bo_10='".BN_MARK."'");
     }
     bnq("CREATE TABLE IF NOT EXISTS `$wt` LIKE `{$g5['write_prefix']}notice`");
-    $prefix=$parent['me_code'];$url='https://skhnslu-busan.com/bbs/board.php?bo_table=busan_news';
-    $existing=sql_fetch("SELECT me_id,me_name FROM $mt WHERE LEFT(me_code,2)=".bnvalue($prefix)." AND me_link=".bnvalue($url),false);
-    if(empty($existing['me_id'])){
-        $last=sql_fetch("SELECT MAX(RIGHT(me_code,2)) AS code,MAX(me_order) AS ord FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".bnvalue($prefix),false);
-        $suffix=base_convert((int)base_convert($last['code']?:'00',36,10)+36,10,36);
-        if(strlen($suffix)!==2)throw new RuntimeException('menu group full');
-        bnq("INSERT INTO $mt SET ".bnset(['me_code'=>$prefix.$suffix,'me_name'=>BN_TITLE,'me_link'=>$url,'me_target'=>'self','me_order'=>(int)$last['ord']+1,'me_use'=>1,'me_mobile_use'=>1]));
-    }elseif($existing['me_name']==='챗지기자 뉴스'){
-        bnq("UPDATE $mt SET me_name=".bnvalue(BN_TITLE)." WHERE me_id=".(int)$existing['me_id']." AND me_name=".bnvalue($existing['me_name']));
-    }else{
-        return;
+    // Keep exactly one top-level newsroom. Never remove an unrelated menu.
+    $url='https://skhnslu-busan.com/bbs/board.php?bo_table=busan_news';
+    $roots=[];$sub=[];$used=[];$ordered=[];$conflict=false;
+    $q=bnq("SELECT me_id,me_code,me_name,me_link,me_order,me_use,me_mobile_use FROM $mt ORDER BY me_order,me_id");
+    while($m=sql_fetch_array($q)){
+        $code=(string)$m['me_code'];$used[substr($code,0,2)]=true;
+        if(strlen($code)===2)$ordered[]=$m;
+        if(!in_array(trim($m['me_name']),[BN_TITLE,'챗지기자 뉴스'],true))continue;
+        $link=parse_url((string)$m['me_link']);$args=[];
+        if(is_array($link))parse_str($link['query']??'',$args);
+        $same=is_array($link)&&($link['path']??'')==='/bbs/board.php'
+            && in_array(strtolower($link['host']??''),['','skhnslu-busan.com','www.skhnslu-busan.com'],true)
+            && $args===['bo_table'=>BN_BOARD];
+        if(!$same){$conflict=true;continue;}
+        if(strlen($code)===2)$roots[]=$m;
+        elseif(strlen($code)===4)$sub[]=$m;
+        else $conflict=true;
+    }
+    if($conflict||count($roots)>1)throw new RuntimeException('newsroom menu conflict');
+    $root=$roots[0]??null;
+    if(!$root){
+        $code='';
+        for($i=36;$i<1296;$i++){
+            $candidate=str_pad(base_convert((string)$i,10,36),2,'0',STR_PAD_LEFT);
+            if(!isset($used[$candidate])){$code=$candidate;break;}
+        }
+        if($code==='')throw new RuntimeException('no unused top menu code');
+        bnq("INSERT INTO $mt SET ".bnset(['me_code'=>$code,'me_name'=>BN_TITLE,'me_link'=>$url,'me_target'=>'self','me_order'=>0,'me_use'=>1,'me_mobile_use'=>1]));
+        $root=['me_id'=>(int)sql_insert_id(),'me_code'=>$code,'me_order'=>0];
+    }
+    $rootid=(int)$root['me_id'];if($rootid<1)throw new RuntimeException('invalid newsroom menu id');
+    $order=[];$found=false;
+    foreach($ordered as $m){
+        if((int)$m['me_id']===$rootid)continue;
+        $order[]=$m;
+        if($m['me_code']===$parent['me_code']){$order[]=$root;$found=true;}
+    }
+    if(!$found)throw new RuntimeException('newsroom parent order missing');
+    bnq("UPDATE $mt SET ".bnset(['me_name'=>BN_TITLE,'me_link'=>$url,'me_use'=>1,'me_mobile_use'=>1])." WHERE me_id=$rootid");
+    foreach($order as $i=>$m){
+        $ord=($i+1)*10;
+        if((int)$m['me_order']!==$ord)bnq("UPDATE $mt SET me_order=$ord WHERE me_id=".(int)$m['me_id']." AND LENGTH(me_code)=2");
+    }
+    foreach($sub as $m){
+        // A four-character native menu is a leaf. Only the exact old newsroom link is removed.
+        bnq("DELETE FROM $mt WHERE me_id=".(int)$m['me_id']." AND me_code=".bnvalue($m['me_code'])." AND me_name=".bnvalue($m['me_name'])." AND me_link=".bnvalue($m['me_link']));
     }
     if(function_exists('run_event'))run_event('admin_menu_list_update');
+
 }
 function bnvalidate($a){
     if(!is_array($a)||!in_array($a['topic']??0,range(1,7),true)||!is_array($a['body']??null)||count($a['body'])<2||count($a['body'])>5)throw new RuntimeException('invalid article');
@@ -171,6 +207,45 @@ function bnretro($admin,$write_point){
     return $receipt;
 }
 
+/* Authenticated deployment-only inventory: no article bodies or member IDs. */
+function bnpreflight(){
+    global $g5,$config;
+    $bt=$g5['board_table'];$mt=$g5['menu_table'];$wt=$g5['write_prefix'].BN_BOARD;
+    $board=sql_fetch("SELECT bo_10,bo_write_point,bo_use_good,bo_count_write,bo_count_comment FROM $bt WHERE bo_table='busan_news'",false);
+    $result=['board_exists'=>!empty($board),'owned'=>($board['bo_10']??'')===BN_MARK,
+       'write_point'=>(int)($board['bo_write_point']??0),'good_enabled'=>(int)($board['bo_use_good']??0),
+       'points_enabled'=>!empty($config['cf_use_point']),'good_hook'=>function_exists('bp_on_good'),
+       'topics'=>[],'related_counts'=>[],'engines'=>[],'menu'=>[],'target_boards'=>[]];
+    $tables=['write'=>$wt,'board'=>$bt,'menu'=>$mt,'new'=>$g5['board_new_table'],'good'=>$g5['board_good_table'],'point'=>$g5['point_table']];
+    foreach(['board_file_table','scrap_table'] as $key)if(!empty($g5[$key]))$tables[$key]=$g5[$key];
+    foreach($tables as $kind=>$table){
+        if(!preg_match('/^[A-Za-z0-9_]{1,90}$/D',$table))throw new RuntimeException('invalid inventory table');
+        $status=sql_fetch("SHOW TABLE STATUS WHERE Name=".bnvalue($table),false);
+        $result['engines'][$kind]=$status['Engine']??null;
+        if(in_array($kind,['new','good','board_file_table','scrap_table'],true)&&!empty($status)){
+            $n=sql_fetch("SELECT COUNT(*) AS n FROM `$table` WHERE bo_table='busan_news'",false);
+            $result['related_counts'][$kind]=isset($n['n'])?(int)$n['n']:null;
+        }
+    }
+    if($result['engines']['write']){
+        $rows=bnq("SELECT wr_2 AS topic,COUNT(*) AS articles,SUM(wr_name='챗지기자' AND CHAR_LENGTH(wr_3)=64 AND CHAR_LENGTH(wr_4)=64) AS reporter_posts,SUM(wr_5='bn-point-pending-v1') AS pending_points FROM `$wt` WHERE wr_is_comment=0 GROUP BY wr_2");
+        while($x=sql_fetch_array($rows))$result['topics'][]=['topic'=>preg_match('/^[1-7]$/D',(string)$x['topic'])?(int)$x['topic']:0,'articles'=>(int)$x['articles'],'reporter_posts'=>(int)$x['reporter_posts'],'pending_points'=>(int)$x['pending_points']];
+        $n=sql_fetch("SELECT COUNT(*) AS n FROM `$wt` WHERE wr_is_comment<>0",false);
+        $result['related_counts']['comments']=(int)($n['n']??0);
+    }
+    $q=bnq("SELECT me_code,me_name,me_order,me_link FROM $mt ORDER BY me_order,me_id");
+    while($m=sql_fetch_array($q)){
+        if(in_array(trim($m['me_name']),[BN_TITLE,'챗지기자 뉴스'],true)||strtolower(str_replace(' ','',trim($m['me_name'])))==='weruntogether'){
+            $result['menu'][]=['code'=>$m['me_code'],'name'=>$m['me_name'],'order'=>(int)$m['me_order'],'is_news_link'=>strpos($m['me_link'],'bo_table=busan_news')!==false];
+        }
+    }
+    foreach(['busan_news_company','busan_news_union','busan_news_law','busan_news_world'] as $id){
+        $x=sql_fetch("SELECT bo_10 FROM $bt WHERE bo_table=".bnvalue($id),false);
+        $t=sql_fetch("SHOW TABLE STATUS WHERE Name=".bnvalue($g5['write_prefix'].$id),false);
+        $result['target_boards'][$id]=['board_exists'=>!empty($x),'owned'=>($x['bo_10']??'')===BN_MARK,'table_exists'=>!empty($t)];
+    }
+    return $result;
+}
 $stage='input';
 try{
     $input=json_decode(file_get_contents('php://input',false,null,0,500000),true,32,JSON_THROW_ON_ERROR);
@@ -182,6 +257,14 @@ try{
     }
     $stage='lock'; $lock=sql_fetch("SELECT GET_LOCK('busan_news_publish_v1',15) AS ok",false);
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
+    $mode=$_SERVER['HTTP_X_BUSAN_NEWS_DEPLOY_MODE']??'';
+    if(!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['preflight','menu'],true)){
+        if($input!==[])throw new RuntimeException('deployment inventory requires empty input');
+        $stage=$mode;
+        if($mode==='menu')bnsetup();
+        echo json_encode(['ok'=>true,'inventory'=>bnpreflight()],JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $stage='setup';if (!defined('BUSAN_ACCOUNT_NEWS')) bnsetup();
     // Resolve the site's configured super administrator, never a display nickname.
     $admin_id=(string)($config['cf_admin']??'');
@@ -197,4 +280,11 @@ try{
     bnq("UPDATE {$g5['board_table']} SET bo_count_write=(SELECT COUNT(*) FROM `{$g5['write_prefix']}busan_news` WHERE wr_is_comment=0) WHERE bo_table='busan_news'");
     if(function_exists('delete_cache_latest'))delete_cache_latest('busan_news');
     echo json_encode(['ok'=>true,'rows'=>$rows,'historical_points'=>$retro]);
-}catch(Throwable $e){http_response_code(409);echo json_encode(['error'=>$stage.': '.($e instanceof RuntimeException?$e->getMessage():get_class($e))]);}
+}catch(Throwable $e){
+    if(!defined('BUSAN_ACCOUNT_NEWS')){
+        header('X-Busan-News-Stage: '.$stage);
+        $reason=$e instanceof RuntimeException?$e->getMessage():get_class($e);
+        if(preg_match('/^[A-Za-z0-9 _-]{1,100}$/D',$reason))header('X-Busan-News-Reason: '.$reason);
+    }
+    http_response_code(409);echo json_encode(['error'=>$stage.': '.($e instanceof RuntimeException?$e->getMessage():get_class($e))]);
+}
