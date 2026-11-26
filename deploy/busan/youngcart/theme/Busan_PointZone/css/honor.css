@@ -55,3 +55,55 @@
 @media(max-width:900px){#bhof .bh-showcase{grid-template-columns:160px 1fr}#bhof .bh-rewards{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}#bhof .bh-rewards h3{grid-column:1/-1}#bhof .bh-nav{grid-template-columns:repeat(3,minmax(0,1fr))}#bhof .bh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#bhof .bh-grid>:last-child{grid-column:1/-1}}
 @media(max-width:560px){#bhof{border-radius:12px}#bhof .bh-stage{padding:25px 12px 20px}#bhof .bh-showcase{grid-template-columns:1fr;text-align:center;gap:14px;margin-top:22px;padding:18px 12px}#bhof .bh-emblem{max-width:155px}#bhof .bh-feature h2{font-size:23px}#bhof .bh-line{background:linear-gradient(90deg,transparent,#b49357,transparent)}#bhof .bh-rewards{grid-template-columns:1fr;text-align:left;padding:10px}#bhof .bh-rewards h3{text-align:left}#bhof .bh-process{grid-template-columns:1fr}#bhof .bh-nav{grid-template-columns:repeat(2,minmax(0,1fr))}#bhof .bh-nav a{min-height:65px}#bhof .bh-nav .bh-symbol{width:23px;height:23px}#bhof .bh-grid{grid-template-columns:1fr}#bhof .bh-grid>:last-child{grid-column:auto}#bhof .bh-content{gap:14px}#bhof .bh-badges svg{max-width:85px}}
 @media(prefers-reduced-motion:reduce){#bhof *{transition:none!important;animation:none!important}}
+
+/* Follow the site's live theme tokens. The awards stage remains a cinematic
+   dark-gold feature in either mode; the surrounding UI inherits the site. */
+#bhof{
+  --bh-site-bg:var(--bb-bg,#0b0d15);
+  --bh-site-surface:var(--bb-surface,var(--bb-card-bg,#171a24));
+  --bh-site-text:var(--bb-text,#f9f3e8);
+  --bh-site-muted:var(--bb-muted,#c6c0b7);
+  --bh-site-border:var(--bb-border,#655338);
+  --bh-gold-text:color-mix(in srgb,var(--bh-site-text) 78%,#b8893c);
+  --bh-gold-border:color-mix(in srgb,var(--bh-site-border) 68%,#c39b57);
+  background:var(--bh-site-bg);
+  color:var(--bh-site-text);
+  border-color:var(--bh-gold-border);
+  border-radius:var(--bb-radius,18px);
+  box-shadow:0 12px 32px #0002;
+}
+#bhof .bh-content{background:var(--bh-site-bg);color:var(--bh-site-text)}
+#bhof .bh-content .bh-panel{
+  background:linear-gradient(150deg,color-mix(in srgb,var(--bh-site-surface) 96%,#d7ad5c),var(--bh-site-surface) 75%);
+  border-color:var(--bh-gold-border);
+  color:var(--bh-site-text);
+  border-radius:var(--bb-radius,13px)
+}
+#bhof .bh-content :is(h2,h3,.bh-step strong,.bh-badges strong,.bh-empty strong,.bh-profile-example strong){color:var(--bh-gold-text)}
+#bhof .bh-content :is(.bh-panel p,.bh-panel li,.bh-badges small){color:var(--bh-site-muted)}
+#bhof .bh-content .bh-symbol{color:var(--bh-gold-text);filter:none}
+#bhof .bh-nav a{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--bh-site-surface) 95%,#c9a15e),var(--bh-site-surface));
+  border-color:var(--bh-gold-border);color:var(--bh-site-text)
+}
+#bhof .bh-nav strong{color:var(--bh-gold-text)}
+#bhof .bh-nav small{color:var(--bh-site-muted)}
+#bhof .bh-nav a:is(:hover,:focus-visible,[aria-current=page]){
+  background:linear-gradient(135deg,color-mix(in srgb,var(--bh-site-surface) 78%,#d4ac5f),var(--bh-site-surface));
+  border-color:#c39b57;
+  box-shadow:inset 0 0 0 1px #c39b5755
+}
+#bhof .bh-content :is(.bh-empty,.bh-profile-example){
+  background:color-mix(in srgb,var(--bh-site-surface) 90%,var(--bh-site-bg));
+  border-color:var(--bh-gold-border)
+}
+#bhof .bh-content .bh-avatar{background:var(--bh-site-bg);border-color:#c39b57}
+#bhof .bh-content .bh-status{color:var(--bh-gold-text);background:color-mix(in srgb,var(--bh-site-surface) 85%,#d4ac5f)}
+#bhof .bh-footer{color:var(--bh-site-muted);background:var(--bh-site-surface);border-color:var(--bh-gold-border)}
+#bhof .bh-stage{color-scheme:dark;color:#f9f3e8}
+#bhof .bh-stage .bh-eyebrow{color:#e2bc70}
+#bhof .bh-stage .bh-feature p{color:#c6c0b7}
+#bhof .bh-stage :is(h2,h3){color:#fff0b8}
+#bhof .bh-stage .bh-reward{color:#fff0b8}
+#bhof .bh-stage .bh-symbol{color:#e2bc70}
+#bhof a:focus-visible{outline:2px solid #b8893c;outline-offset:3px}
