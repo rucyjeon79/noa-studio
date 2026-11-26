@@ -222,3 +222,8 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 .bn-insight-header h1{font-size:clamp(25px,5vw,38px);font-weight:800;letter-spacing:-.035em;line-height:1.15;margin:0 0 8px}
 .bn-insight-tagline{font-size:clamp(15px,3.5vw,18px);font-weight:700;line-height:1.5;margin:0 0 10px}
 .bn-insight-header .bn-hub-intro{font-size:13px;line-height:1.6;margin:0;opacity:.78}
+
+/* Edited field guides use the same semantic cards, with sensible rhythm. */
+#bo_v_con .bn-rights-guide .bn-rights-section-card p+p{margin-top:8px!important}
+#bo_v_con .bn-rights-guide .bn-rights-section-card p{white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
+#bo_v_con .bn-rights-guide .bn-rights-disclaimer p+p{margin-top:6px!important}

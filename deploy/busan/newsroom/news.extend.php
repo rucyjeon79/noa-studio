@@ -267,16 +267,82 @@ function busan_rights_plain_body($raw,$article=''){
     $out.='</div></div>';
     return busan_rights_add_visuals($out,$article);
 }
+// Native editors can save the same article as plain text, BRs, paragraphs
+// or divs. Normalize only text-like markup; rich media and links stay intact.
+function busan_rights_editor_text($raw){
+    if(!is_string($raw)||!trim($raw))return null;
+    if($raw===strip_tags($raw))return $raw;
+    if(preg_match('~<(?!/?(?:p|div|br|span|strong|b|em|i|u)\b)[^>]+>~iu',$raw))return null;
+    if(preg_match('~\bbn-rights-(?:guide|section-card|topic)\b~',$raw))return null;
+    $raw=preg_replace('~<br\b[^>]*>|</?(?:p|div)\b[^>]*>~iu',"\n",$raw);
+    return html_entity_decode(strip_tags($raw),ENT_QUOTES|ENT_HTML5,'UTF-8');
+}
+function busan_rights_edited_guide($raw,$article=''){
+    $text=busan_rights_editor_text($raw);
+    if($text===null)return $raw;
+    $lines=preg_split('/\R/u',str_replace("\xc2\xa0",' ',$text),-1,PREG_SPLIT_NO_EMPTY);
+    $lines=array_values(array_filter(array_map('trim',$lines),static function($s){return $s!=='';}));
+    $q=0;$a=0;
+    foreach($lines as $line){
+        if(busan_rights_question_line($line))$q++;
+        if(preg_match('/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/iu',$line))$a++;
+    }
+    // A single-question field guide uses distinct semantic cards.
+    // Multi-question notes retain the existing grouped Q&A layout.
+    if($q!==1||$a!==1)return $raw;
+    $esc=static function($s){
+        $s=htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+        $s=preg_replace('/\*\*([^*\r\n]+)\*\*/u','<strong>$1</strong>',$s);
+        return function_exists('url_auto_link')?url_auto_link($s):$s;
+    };
+    $groups=[];$kind='check';
+    foreach($lines as $line){
+        if(busan_rights_question_line($line))$kind='question';
+        elseif(preg_match('/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/iu',$line))$kind='answer';
+        elseif(preg_match('/^(?:예시|사례|현장 사례)\s*[:：]/u',$line))$kind='example';
+        elseif(preg_match('/^(?:작성\s*[:：]|출처\s*[:：]|근거\s*[:：])/u',$line))$kind='source';
+        elseif(preg_match('/^(?:체크리스트|확인할 것|기록·상담 시 유의사항|대응 방법)\s*[:：]?/u',$line))$kind='check';
+        elseif(in_array($kind,['question','answer','example'],true))$kind='check';
+        $last=count($groups)-1;
+        if($last<0||$groups[$last][0]!==$kind)$groups[]=[$kind,[]];
+        $groups[count($groups)-1][1][]=$line;
+    }
+    $out='<div class="bn-rights-guide"><div class="bn-rights-kicker">현장 권리노트 · 실무 가이드</div>';
+    $labels=['question'=>'이런 상황이라면?','answer'=>'핵심 답변','check'=>'현장에서 확인할 것','example'=>'실제 상황 예시','source'=>'작성·참고 정보'];
+    foreach($groups as [$type,$items]){
+        if($type==='source'){
+            $out.='<div class="bn-rights-disclaimer">';
+            foreach($items as $line)$out.='<p>'.$esc($line).'</p>';
+            $out.='</div>';continue;
+        }
+        $out.='<div class="bn-rights-section-card bn-rights-'.$type.'"><h3>'.$labels[$type].'</h3>';
+        foreach($items as $line){
+            // Keep original punctuation and every edited word. Slash-delimited
+            // examples remain one paragraph rather than silently dropping separators.
+            $out.='<p>'.$esc($line).'</p>';
+        }
+        $out.='</div>';
+    }
+    $out.='</div>';
+    return busan_rights_add_visuals($out,$article);
+}
 function busan_rights_prepare_body($header,$board){
     global $write;
     if(($board['bo_table']??'')!=='note'||empty($write['wr_content'])||!empty($write['wr_is_comment'])
         ||strpos($write['wr_option']??'','secret')!==false)return $header;
-    $raw=$write['wr_content'];
-    if(($write['wr_6']??'')==='bn-rights-note-v1'&&($write['wr_name']??'')==='챗지기자'){
+    $raw=$write['wr_content'];$subject=$write['wr_subject']??'';
+    $formatted=$raw;
+    // Native editing may clear custom wr_6 or change the displayed author.
+    // The recognizable article title also identifies a field guide.
+    $fieldGuide=($write['wr_6']??'')==='bn-rights-note-v1'||preg_match('/^\s*\[현장 권리노트\]/u',$subject);
+    if($fieldGuide){
         $formatted=busan_rights_format_body($raw);
-    }elseif(!preg_match('/(?:^|,)html[12](?:,|$)/', $write['wr_option']??'') || $raw===strip_tags($raw)){
-        $formatted=busan_rights_plain_body($raw,$write['wr_subject']??'');
-    }else return $header;
+        if($formatted===$raw)$formatted=busan_rights_edited_guide($raw,$subject);
+    }
+    if($formatted===$raw){
+        $text=busan_rights_editor_text($raw);
+        if($text!==null)$formatted=busan_rights_plain_body($text,$subject);
+    }
     if($formatted!==$raw){
         $write['wr_content']=$formatted;
         $options=array_filter(explode(',',(string)($write['wr_option']??'')),static function($v){return $v!==''&&!in_array($v,['html1','html2'],true);});
@@ -288,7 +354,7 @@ function busan_rights_prepare_body($header,$board){
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=18">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=19">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.

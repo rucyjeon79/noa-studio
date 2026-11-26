@@ -138,3 +138,27 @@ ensure(substr_count($parentalHtml,'bn-rights-visual-leave')===3,'childcare topic
 ensure(strpos($parentalHtml,'<strong>만 8세 이하</strong>')!==false,'inline emphasis missing');
 ensure($normalize(str_replace('**','',$parental))===$normalize($parentalHtml),'numbered source wording lost');
 echo "PASS numbered childcare guide, topical illustrations and inline emphasis\n";
+
+// Round trip representative native edit formats, including lost custom metadata.
+foreach($rights as $a){
+    $edited=$a['body'];$edited[1].=' 수정한 문장도 그대로 표시합니다.';
+    array_splice($edited,2,0,['추가 확인 문단입니다.']);
+    $edited[]='작성: 챗지기자 · 부산지부 AI 기자.';
+    $plain=implode("\n\n",$edited);
+    $variants=[$plain,implode('<br><br>',array_map('htmlspecialchars',$edited)),
+       '<div><p>'.implode('</p><p>',array_map('htmlspecialchars',$edited)).'</p></div>'];
+    foreach($variants as $variant){
+        foreach(['bn-rights-note-v1',''] as $marker){
+            $write=['wr_subject'=>$a['title'],'wr_name'=>'수정한 작성자','wr_6'=>$marker,'wr_content'=>$variant,'wr_option'=>'html1'];
+            busan_rights_prepare_body('', ['bo_table'=>'note']);
+            $html=$write['wr_content'];
+            ensure(substr_count($html,'bn-rights-section-card')>=4,'edited guide collapsed');
+            ensure(strpos($html,'bn-rights-question')!==false&&strpos($html,'bn-rights-answer')!==false&&strpos($html,'bn-rights-example')!==false,'edited guide section lost');
+            ensure(substr_count($html,'bn-rights-visual ')===substr_count($html,'bn-rights-section-card'),'edited guide illustrations missing');
+            foreach($edited as $line)ensure(strpos($normalize($html),$normalize($line))!==false,'edited source words lost');
+        }
+    }
+}
+$media='<p>Q. 질문</p><p>A. 답변</p><p><a href="https://example.test">참고</a><img src="/photo.jpg"></p>';
+ensure(busan_rights_editor_text($media)===null,'rich media must not be stripped');
+echo "PASS native edit round trip: plain text, BR, editor paragraphs, inserted content and lost metadata\n";

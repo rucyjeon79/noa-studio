@@ -319,20 +319,21 @@ function bnrights_layout_audit(){
             $rendered=($out!==$body && function_exists('conv_content'))?conv_content($out,1):$out;
             $ok=$out!==$body&&strpos($rendered,'bn-rights-guide')!==false
                 &&strpos($GLOBALS['write']['wr_option']??'','html1')!==false;
-            if($ok&&$r['wr_6']!=='bn-rights-note-v1'){
+            if($ok&&strpos($rendered,'bn-rights-compact-text')!==false){
                 $normalize=static function($s){return preg_replace('/[\s\x{00A0}]+/u','',html_entity_decode($s,ENT_QUOTES,'UTF-8'));};
-                $source=preg_replace('/\*\*([^*\r\n]+)\*\*/u','$1',$body);
+                $plain=busan_rights_editor_text($body)??$body;
+                $source=preg_replace('/\*\*([^*\r\n]+)\*\*/u','$1',$plain);
                 // When emphasis spans native lines it can be retained verbatim.
-                $ok=($normalize(strip_tags($rendered))===$normalize($source)||$normalize(str_replace('**','',strip_tags($rendered)))===$normalize(str_replace('**','',$body)))
+                $ok=($normalize(strip_tags($rendered))===$normalize($source)||$normalize(str_replace('**','',strip_tags($rendered)))===$normalize(str_replace('**','',$plain)))
                     &&strpos($rendered,'bn-rights-compact-text')!==false
                     &&!preg_match('~<br\s*/?>\s*<br\s*/?>~i',$rendered);
                 $expected=0;
-                foreach(preg_split('/\R/u',$body) as $line)if(busan_rights_question_line($line))$expected++;
+                foreach(preg_split('/\R/u',$plain) as $line)if(busan_rights_question_line($line))$expected++;
                 $actual=substr_count($rendered,'bn-rights-topic-qa');
                 $report['question_group_audit'][]=['id'=>(int)$r['wr_id'],'expected'=>$expected,'actual'=>$actual];
                 $ok=$ok&&$expected===$actual;
                 $numbered=0;
-                foreach(preg_split('/\R/u',$body) as $line)if(busan_rights_numbered_heading($line))$numbered++;
+                foreach(preg_split('/\R/u',$plain) as $line)if(busan_rights_numbered_heading($line))$numbered++;
                 if(!$expected&&$numbered>=2){
                     $headingCount=substr_count($rendered,'bn-rights-topic bn-rights-topic-heading');
                     $report['numbered_heading_audit'][]=['id'=>(int)$r['wr_id'],'numbered'=>$numbered,'rendered_headings'=>$headingCount];
