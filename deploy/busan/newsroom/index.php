@@ -1,13 +1,16 @@
 <?php
 require_once dirname(__DIR__,2).'/common.php';
 if(!busan_news_split_active()){header('Location: '.G5_BBS_URL.'/board.php?bo_table=busan_news',true,302);exit;}
-$g5['title']='OpenAI 뉴스룸';
+$g5['title']='OpenAI 인사이트';
 require G5_PATH.'/head.php';
 $esc=static function($s){return htmlspecialchars((string)$s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');};
 ?>
-<section class="bn-hub" aria-label="뉴스룸">
-<h1>OpenAI 뉴스룸</h1>
-<p class="bn-hub-intro">부산지부 AI 기자 챗지기자가 전하는 소식입니다. ChatGPT를 활용하며 OpenAI 공식 뉴스룸과는 관계가 없습니다.</p>
+<section class="bn-hub" aria-label="OpenAI 인사이트">
+<header class="bn-insight-header">
+<h1>OpenAI INSIGHT</h1>
+<p class="bn-insight-tagline">소식을 넘어, 권리를 이해하다.</p>
+<p class="bn-hub-intro">부산지부 AI 기자 챗지기자와 함께하는 지식정보 공간입니다. ChatGPT를 활용하는 부산지부 자체 서비스이며 OpenAI의 공식 서비스가 아닙니다.</p>
+</header>
 <div class="bn-hub-grid">
 <?php foreach(busan_news_sections() as $id=>$name):
     $b=sql_fetch("SELECT * FROM {$g5['board_table']} WHERE bo_table='$id'",false);

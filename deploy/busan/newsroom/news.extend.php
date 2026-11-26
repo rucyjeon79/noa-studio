@@ -288,7 +288,7 @@ function busan_rights_prepare_body($header,$board){
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=17">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=18">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.

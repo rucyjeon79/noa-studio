@@ -216,3 +216,9 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 #bo_v_con .bn-rights-compact-text .bn-rights-topic p{font-size:clamp(14px,3.8vw,16px);line-height:1.65!important;margin:0 0 7px!important}
 #bo_v_con .bn-rights-compact-text .bn-rights-topic strong{font-weight:750;color:inherit}
 #bo_v_con .bn-rights-compact-text .bn-rights-topic > :last-child{margin-bottom:0!important}
+
+/* Insight landing identity — retain native board links and existing hub grid. */
+.bn-insight-header{margin:0 0 20px;padding:0}
+.bn-insight-header h1{font-size:clamp(25px,5vw,38px);font-weight:800;letter-spacing:-.035em;line-height:1.15;margin:0 0 8px}
+.bn-insight-tagline{font-size:clamp(15px,3.5vw,18px);font-weight:700;line-height:1.5;margin:0 0 10px}
+.bn-insight-header .bn-hub-intro{font-size:13px;line-height:1.6;margin:0;opacity:.78}

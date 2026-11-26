@@ -6,7 +6,8 @@ require_once dirname(__DIR__) . '/common.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 const BN_BOARD='busan_news';
-const BN_TITLE='OpenAI 뉴스룸';
+const BN_TITLE='OpenAI 인사이트';
+const BN_LEGACY_TITLES=['OpenAI 뉴스룸','챗지기자 뉴스'];
 const BN_MARK='busan-reporter-v1';
 const BN_ARCHIVE='busan-reporter-archive-v2';
 const BN_SECTIONS=[
@@ -47,11 +48,11 @@ function bnsetup() {
     if($board){
         $updates=[];
         foreach(['bo_subject','bo_mobile_subject'] as $field)
-            if($board[$field]==='챗지기자 뉴스')$updates[$field]=BN_TITLE;
+            if(in_array($board[$field],BN_LEGACY_TITLES,true))$updates[$field]=BN_TITLE;
         // On the launch edition these two native wrapper paths were empty.
         foreach(['bo_include_head','bo_include_tail'] as $field)
             if(isset($template[$field]) && trim($template[$field])!=='' && trim($board[$field])==='')$updates[$field]=$template[$field];
-        if($updates)bnq("UPDATE $bt SET ".bnset($updates)." WHERE bo_table='busan_news' AND bo_10='".BN_MARK."'");
+        if($updates)bnq("UPDATE $bt SET ".bnset($updates)." WHERE bo_table='busan_news' AND bo_10 IN (".bnvalue(BN_MARK).",".bnvalue(BN_ARCHIVE).")");
     }
     bnq("CREATE TABLE IF NOT EXISTS `$wt` LIKE `{$g5['write_prefix']}notice`");
     // Keep exactly one top-level newsroom. Never remove an unrelated menu.
@@ -61,7 +62,7 @@ function bnsetup() {
     while($m=sql_fetch_array($q)){
         $code=(string)$m['me_code'];$used[substr($code,0,2)]=true;
         if(strlen($code)===2)$ordered[]=$m;
-        if(!in_array(trim($m['me_name']),[BN_TITLE,'챗지기자 뉴스'],true))continue;
+        if(!in_array(trim($m['me_name']),array_merge([BN_TITLE],BN_LEGACY_TITLES),true))continue;
         $link=parse_url((string)$m['me_link']);$args=[];
         if(is_array($link))parse_str($link['query']??'',$args);
         $same=is_array($link)&&($link['path']??'')==='/bbs/board.php'
@@ -566,7 +567,7 @@ function bnpreflight(){
     }
     $q=bnq("SELECT me_code,me_name,me_order,me_link FROM $mt ORDER BY me_order,me_id");
     while($m=sql_fetch_array($q)){
-        if(in_array(trim($m['me_name']),array_merge([BN_TITLE,'챗지기자 뉴스'],array_column(BN_SECTIONS,0)),true)||strtolower(str_replace(' ','',trim($m['me_name'])))==='weruntogether'){
+        if(in_array(trim($m['me_name']),array_merge(array_merge([BN_TITLE],BN_LEGACY_TITLES),array_column(BN_SECTIONS,0)),true)||strtolower(str_replace(' ','',trim($m['me_name'])))==='weruntogether'){
             $result['menu'][]=['code'=>$m['me_code'],'name'=>$m['me_name'],'order'=>(int)$m['me_order'],'is_news_link'=>strpos($m['me_link'],'bo_table=busan_news')!==false];
         }
     }

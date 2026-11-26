@@ -187,7 +187,7 @@ async function assertMoves(page) {
       const strip=page.locator('#contentsWrap > .kvWrap + #bn-news-strip');
       await strip.waitFor({state:'visible'});
       const feed=await (await page.request.get(await strip.getAttribute('data-feed'))).json();
-      const boardMenu=page.locator('.sideGnb a[href*="bo_table=busan_news"]').filter({hasText:'OpenAI 뉴스룸'}).first();
+      const boardMenu=page.locator('.sideGnb a[href*="bo_table=busan_news"]').filter({hasText:'OpenAI 인사이트'}).first();
       assert(await boardMenu.count(),'renamed news menu missing');
       const boardURL=await boardMenu.evaluate(a=>a.href);
       assert(!(await strip.innerText()).includes('챗지기자'),'fixed reporter caption');
@@ -244,7 +244,7 @@ async function assertMoves(page) {
         const articleResponse = await page.goto(link,{waitUntil:'domcontentloaded'});
         assert.equal(articleResponse.headers()['x-busan-news-view'], 'excluded');
         const sectionNames={busan_news_company:'회사·그룹 소식',busan_news_union:'노동조합 소식',busan_news_law:'노동법·판례',busan_news_world:'세계 노동 동향'};
-        await page.getByRole('heading',{name:sectionNames[article.board]||'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
+        await page.getByRole('heading',{name:sectionNames[article.board]||'OpenAI 인사이트',exact:true}).first().waitFor({state:'visible'});
         const reporter=page.locator('.boardViewWrap .bn-reporter').first();
         await reporter.waitFor({state:'visible'});
         const authorCard=page.locator('[data-bn-reporter-card="1"]').first();
@@ -285,8 +285,9 @@ async function assertMoves(page) {
         await strip.getByText('최근 한 달 새 소식이 없습니다').waitFor();
       }
       await page.goto(boardURL,{waitUntil:'domcontentloaded'});
-      await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
-      assert((await page.title()).includes('OpenAI 뉴스룸'));
+      await page.getByRole('heading',{name:'OpenAI INSIGHT',exact:true}).first().waitFor({state:'visible'});
+      assert((await page.title()).includes('OpenAI 인사이트'));
+      assert.equal(await page.locator('.bn-insight-tagline').innerText(),'소식을 넘어, 권리를 이해하다.');
       for(const name of ['회사·그룹 소식','노동조합 소식','노동법·판례','세계 노동 동향']) await page.locator('.bn-hub-section').getByRole('heading',{name,exact:true}).waitFor({state:'visible'});
       await page.locator('.bn-rights-section').getByRole('heading',{name:'권리노트',exact:true}).waitFor({state:'visible'});
       assert.equal(await page.locator('.bn-hub-section').count(),5);
