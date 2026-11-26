@@ -65,3 +65,11 @@ register_shutdown_function(static function () {
     ensure($_SESSION === ['unrelated' => 'retained'], 'early exit polluted the reader session');
     echo "PASS diagnostic view exclusion, ordinary reading, points and session restoration\n";
 });
+
+$public=['wr_id'=>18,'wr_is_comment'=>0,'wr_option'=>'html1'];
+ensure(busan_board_share_eligible('notice',18,$public,['bo_table'=>'notice']),'ordinary board share missing');
+ensure(busan_board_share_eligible('busan_news_company',18,$public,['bo_table'=>'busan_news_company']),'news share missing');
+ensure(!busan_board_share_eligible('notice',18,array_replace($public,['wr_option'=>'html1,secret']),['bo_table'=>'notice']),'secret share must not render');
+ensure(!busan_board_share_eligible('notice',18,array_replace($public,['wr_is_comment'=>1]),['bo_table'=>'notice']),'comment share must not render');
+ensure(!busan_board_share_eligible('notice',0,$public,['bo_table'=>'notice']),'list share must not render');
+ensure(!busan_board_share_eligible('notice',18,$public,['bo_table'=>'other']),'wrong board share must not render');
