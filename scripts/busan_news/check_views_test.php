@@ -73,3 +73,30 @@ ensure(!busan_board_share_eligible('notice',18,array_replace($public,['wr_option
 ensure(!busan_board_share_eligible('notice',18,array_replace($public,['wr_is_comment'=>1]),['bo_table'=>'notice']),'comment share must not render');
 ensure(!busan_board_share_eligible('notice',0,$public,['bo_table'=>'notice']),'list share must not render');
 ensure(!busan_board_share_eligible('notice',18,$public,['bo_table'=>'other']),'wrong board share must not render');
+
+$rights=json_decode(file_get_contents(dirname(__DIR__,2).'/deploy/busan/newsroom/rights-notes.json'),true,512,JSON_THROW_ON_ERROR);
+foreach($rights as $a){
+    $raw='';
+    foreach($a['body'] as $s)$raw.='<p>'.htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</p>';
+    $raw.='<p>작성: 챗지기자 · 부산지부 AI 기자. 일반적인 현장 기록 및 상담 준비 안내이며, 개별 법률 판단이나 회사 지침을 대신하지 않습니다.</p>';
+    $formatted=busan_rights_format_body($raw);
+    ensure(strpos($formatted,'bn-rights-guide')!==false,'structured rights article missing');
+    ensure(substr_count($formatted,'bn-rights-section-card')>=4,'rights sections missing');
+    ensure(substr_count($formatted,'bn-rights-steps')===1,'rights example missing');
+    // All original words remain; only known labels and separators are replaced.
+    $normalize=static function($s){return preg_replace('/[\s\/]+/u','',html_entity_decode(strip_tags($s),ENT_QUOTES,'UTF-8'));};
+    $display=$normalize(str_replace(['</li>','</p>'],[' </li>',' </p>'],$formatted));
+    foreach($a['body'] as $paragraph){
+        $paragraph=preg_replace('/^(?:Q\. |A\. |예시: )/u','',$paragraph);
+        foreach(preg_split('/\s+\/\s+|(?<=[.!?])\s+/u',$paragraph,-1,PREG_SPLIT_NO_EMPTY) as $part)
+            ensure(strpos($display,$normalize($part))!==false,'rights text lost');
+    }
+    $write=['wr_name'=>'챗지기자','wr_6'=>'bn-rights-note-v1','wr_content'=>$raw,'wr_option'=>'html1'];
+    busan_rights_prepare_body('', ['bo_table'=>'notice']);
+    ensure($write['wr_content']===$raw,'other board changed');
+    busan_rights_prepare_body('', ['bo_table'=>'note']);
+    ensure($write['wr_content']===$formatted,'rights hook failed');
+}
+$legacy='<p>기존 조합원 글</p><p><strong>기존 내용</strong></p>';
+ensure(busan_rights_format_body($legacy)===$legacy,'legacy content must remain intact');
+echo "PASS rights-note structured rendering, complete text retention and legacy fallback\n";

@@ -114,7 +114,56 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=10">', 115);
+
+// Presentation only: preserve the stored article, ID, author and reward ledger.
+// Only our signed-format, plain-paragraph rights notes are transformed.
+function busan_rights_format_body($html){
+    if(!is_string($html)||!preg_match('~^(?:<p>[^<]*</p>\s*){6}$~uD',$html))return $html;
+    preg_match_all('~<p>([^<]*)</p>~u',$html,$m);
+    $p=$m[1];
+    if(count($p)!==6||strpos($p[0],'Q. ')!==0||strpos($p[1],'A. ')!==0
+        ||strpos($p[5],'작성: 챗지기자')!==0)return $html;
+    $example=0;
+    foreach([2,3,4] as $i)if(strpos($p[$i],'예시: ')===0){if($example)return $html;$example=$i;}
+    if(!$example)return $html;
+    $items=static function($text){
+        $parts=preg_split('/(?<=[.!?])\s+/u',trim($text),-1,PREG_SPLIT_NO_EMPTY);
+        $out='<ul class="bn-rights-list">';
+        foreach($parts as $part)$out.='<li>'.$part.'</li>';
+        return $out.'</ul>';
+    };
+    $section=static function($kind,$label,$content){
+        return '<div class="bn-rights-section-card bn-rights-'.$kind.'"><h3>'.$label.'</h3>'.$content.'</div>';
+    };
+    $out='<div class="bn-rights-guide"><div class="bn-rights-kicker">현장 권리노트 · 실무 가이드</div>';
+    $out.=$section('question','Q. 이런 상황이라면?','<p>'.substr($p[0],3).'</p>');
+    $out.=$section('answer','A. 핵심 답변','<p>'.substr($p[1],3).'</p>');
+    $check=[];$follow=[];
+    foreach([2,3,4] as $i){
+        if($i===$example)continue;
+        if($i<$example)$check[]=$p[$i];else $follow[]=$p[$i];
+    }
+    if($check)$out.=$section('check','현장에서 확인할 것',$items(implode(' ',$check)));
+    $steps=explode(' / ',substr($p[$example],strlen('예시: ')));
+    $exampleHtml='<ol class="bn-rights-steps">';
+    foreach($steps as $step)$exampleHtml.='<li>'.$step.'</li>';
+    $out.=$section('example','실제 상황 예시',$exampleHtml.'</ol>');
+    if($follow)$out.=$section('check','기록·상담 시 유의사항',$items(implode(' ',$follow)));
+    $out.='<div class="bn-rights-disclaimer"><p>'.$p[5].'</p></div></div>';
+    return $out;
+}
+function busan_rights_prepare_body($header,$board){
+    global $write;
+    if(($board['bo_table']??'')!=='note'||($write['wr_6']??'')!=='bn-rights-note-v1'
+        ||($write['wr_name']??'')!=='챗지기자'||!empty($write['wr_is_comment'])
+        ||strpos($write['wr_option']??'','secret')!==false)return $header;
+    $write['wr_content']=busan_rights_format_body($write['wr_content']??'');
+    return $header;
+}
+add_replace('board_content_head','busan_rights_prepare_body',11,2);
+add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
+
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=11">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
@@ -180,6 +229,9 @@ function busan_news_reporter_assets(){
             <?php
         }
     }
-    echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/reporter.js?v=5').'" defer></script>';
+    if($bo_table==='note'&&basename($_SERVER['SCRIPT_NAME']??'')==='board.php'&&(int)$wr_id>0){
+        echo '<template id="bn-rights-reading-marker"></template>';
+    }
+    echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/reporter.js?v=6').'" defer></script>';
 }
 add_event('tail_sub','busan_news_reporter_assets');

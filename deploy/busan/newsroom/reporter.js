@@ -95,7 +95,10 @@
     outer.dataset.bnReporterOuter='1';
     outer.dataset.bnReporterCard='1';
   }
-  function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();}
+  function apply(){
+    if(document.getElementById('bn-rights-reading-marker'))document.getElementById('bo_v_con')?.classList.add('bn-rights-reading');
+    document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();
+  }
   apply();
   document.addEventListener('bn-share-ready',placeShare);
   if(document.readyState!=='complete')window.addEventListener('load',apply,{once:true});
