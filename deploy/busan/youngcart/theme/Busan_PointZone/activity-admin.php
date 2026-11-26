@@ -3,7 +3,7 @@ require_once dirname(__DIR__,2).'/common.php';
 if(empty($is_member)||($is_admin??'')!=='super'||!empty($member['mb_leave_date'])||!empty($member['mb_intercept_date'])){http_response_code(403);exit;}
 require_once __DIR__.'/lib/activities-bridge.php';
 $g5['title']='POINT ZONE 활동 운영센터';
-$bpz_kinds=['auction'=>'포인트 경매','sharing'=>'포인트 나눔','events'=>'지부장 이벤트','profile'=>'프로필 꾸미기'];
+$bpz_kinds=['events'=>'지부장 이벤트','profile'=>'프로필 꾸미기'];
 $bpz_kind=$_GET['kind']??'events';
 if(!is_string($bpz_kind)||!isset($bpz_kinds[$bpz_kind])){http_response_code(404);exit;}
 $bpz_financialEnabled=false;$bpz_token=BusanActivitiesBridge::csrf();$bpz_rows=[];$bpz_error='';$bpz_ready=false;$bpz_edit=null;$bpz_people=[];
