@@ -35,3 +35,16 @@
 .busan-noa-menu-card .busan-noa-menu-entry :is(span,strong,i),.busan-noa-menu-card .busan-noa-menu-subscribe :is(span,strong,i){color:inherit!important}
 .busan-noa-menu-card :is(a,button,[role="button"]):focus-visible{outline:2px solid var(--bnm-action)!important;outline-offset:2px}
 @media(max-width:480px){.busan-noa-menu-card{padding:10px!important}.busan-noa-menu-card :is(.busan-noa-menu-entry,.busan-noa-menu-subscribe){font-size:13px!important}}
+
+/* Hide the retired caption without removing the existing widget or its controls. */
+.busan-noa-menu-card .busan-noa-menu-title{display:none!important}
+:root .busan-noa-menu-card .busan-noa-menu-entry,
+:root .busan-noa-menu-card .busan-noa-menu-entry :is(span,strong,b,i,small,em,label,div,p){
+  color:var(--bnm-action-text)!important;-webkit-text-fill-color:var(--bnm-action-text)!important;
+  text-shadow:none!important;
+}
+:root .busan-noa-menu-card .busan-noa-menu-subscribe,
+:root .busan-noa-menu-card .busan-noa-menu-subscribe :is(span,strong,b,i,small,em,label,div,p){
+  color:var(--bnm-text)!important;-webkit-text-fill-color:var(--bnm-text)!important;
+  text-shadow:none!important;
+}

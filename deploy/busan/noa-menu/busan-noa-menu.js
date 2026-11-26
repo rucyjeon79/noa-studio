@@ -3,6 +3,19 @@
   const text = el => (el.textContent || '').replace(/\s+/g, ' ').trim();
   const exact = (root, label) => [...root.querySelectorAll('a,button,[role="button"],span,div,p,strong,h1,h2,h3,h4,h5')]
     .filter(el => text(el) === label && ![...el.children].some(child => text(child) === label));
+  // Inline important variables beat the native menu's fixed-color declarations,
+  // but resolve dynamically on every theme switch (no hardcoded per-node colors).
+  function ink(el, token) {
+    const value = 'var('+token+')';
+    for (const property of ['color','-webkit-text-fill-color']) {
+      if (el.style.getPropertyValue(property)!==value || el.style.getPropertyPriority(property)!=='important')
+        el.style.setProperty(property,value,'important');
+    }
+  }
+  function actionInk(el, token) {
+    ink(el, token);
+    for (const child of el.querySelectorAll('span,strong,b,i,small,em,label,div,p')) ink(child,token);
+  }
   function mark() {
     const links = exact(document, 'NOA STUDIO 바로가기');
     if (!links.length) return false;
@@ -29,9 +42,23 @@
       if (!card || card === entry) continue;
       card.classList.add('busan-noa-menu-card');
       entry.classList.add('busan-noa-menu-entry');
-      for (const title of exact(card, 'YouTube Music Hi-Fi Player')) title.classList.add('busan-noa-menu-title');
+      for (const title of exact(card, 'YouTube Music Hi-Fi Player')) {
+        title.classList.add('busan-noa-menu-title');
+        title.hidden = true;
+      }
+      ink(card,'--bnm-text');
+      // Static text, excluding interactive or embedded player content.
+      for (const el of card.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span,strong,b,small,em,div')) {
+        if (el.closest('a,button,[role="button"],audio,video,iframe,.busan-noa-menu-title') ||
+            el.querySelector('a,button,[role="button"],audio,video,iframe')) continue;
+        if (text(el)) ink(el,'--bnm-text');
+      }
+      actionInk(entry,'--bnm-action-text');
       for (const sub of card.querySelectorAll('a,button,[role="button"]')) {
-        if (/Ainoa\s*구독하기/i.test(text(sub))) sub.classList.add('busan-noa-menu-subscribe');
+        if (/Ainoa\s*구독하기/i.test(text(sub))) {
+          sub.classList.add('busan-noa-menu-subscribe');
+          actionInk(sub,'--bnm-text');
+        }
       }
       found = true;
     }

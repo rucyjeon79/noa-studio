@@ -19,6 +19,8 @@ jobs:
           node --check deploy/busan/noa-menu/busan-noa-menu.js
           node --check scripts/qa/busan-noa-menu.cjs
           python -m pip install -q paramiko==3.5.1
+      - name: Fetch the verified previous presentation version
+        run: git fetch --no-tags --depth=1 origin 9d2b86223bd18c5a6ee45f15325633c12f798430
       - name: Deploy only independent menu presentation assets
         env:
           BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
@@ -28,7 +30,7 @@ jobs:
         run: |
           cd scripts
           python - <<'PY'
-          import os,socket,hmac,stat,hashlib,secrets,urllib.request
+          import os,socket,hmac,stat,hashlib,secrets,urllib.request,subprocess
           from pathlib import Path
           import paramiko
           from busan_readonly_check import configuration,fingerprint,PORT,ROOT
@@ -50,7 +52,8 @@ jobs:
                   assert stat.S_ISREG(s.lstat(dest).st_mode) and s.normalize(dest)==dest
                   with s.open(dest,'rb') as f: old=f.read(100000)
                   if old==data: continue
-                  raise RuntimeError('Existing unmanaged file: '+target)
+                  previous=subprocess.check_output(['git','show','9d2b86223bd18c5a6ee45f15325633c12f798430:deploy/busan/noa-menu/'+source.name])
+                  if old!=previous: raise RuntimeError('Existing unmanaged file: '+target)
                 except FileNotFoundError: pass
                 temp=dest+'.'+secrets.token_hex(8)+'.tmp'
                 with s.open(temp,'wx') as f: f.write(data)
@@ -59,7 +62,7 @@ jobs:
                 with s.open(dest,'rb') as f: assert f.read(100000)==data
                 print('PASS uploaded',target)
           for name in ['busan-noa-menu.css','busan-noa-menu.js']:
-            with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/banner-assets/'+name+'?v=1',timeout=20) as r:
+            with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/banner-assets/'+name+'?v=2',timeout=20) as r:
               assert r.read(100000)==(src/name).read_bytes()
           print('PASS live assets; no SQL or player changes')
           PY
