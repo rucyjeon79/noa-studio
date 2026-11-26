@@ -2,12 +2,10 @@
 if(!defined('_GNUBOARD_'))exit;
 $bpz_sections=[
  'shop'=>['포인트 상점','상품 및 꾸미기 아이템 구매','◈'],
- 'auction'=>['포인트 경매','한정 상품 입찰 및 낙찰','◇'],
- 'sharing'=>['포인트 나눔','조합원 공동 참여 캠페인','♡'],
  'events'=>['지부장 이벤트','활동 포상 및 포인트 환원','✦'],
  'profile'=>['프로필 꾸미기','기간제 및 영구 소장 아이템','☆'],
  'honor'=>['명예의 전당','누적 활동 및 기여도 순위','♜'],
- 'my'=>['나의 포인트존','구매·입찰·보유 아이템 및 이용내역','▤']
+ 'my'=>['나의 포인트존','구매·보유 아이템 및 이용내역','▤']
 ];
 if(($is_admin??'')==='super')$bpz_sections['manage']=['통합 운영센터','상품·이벤트·거래 운영 관리','⚙'];
 $bpz_section=$_GET['section']??'';
@@ -50,7 +48,7 @@ $bpz_base=BUSAN_POINTZONE_THEME_URL.'/pointzone.php';
 <section class="bpz-card">
 <h2><?php echo $bpz_section===''?'POINT ZONE 이용 안내':bpz_theme_escape($bpz_sections[$bpz_section][0]); ?></h2>
 <p>현금 결제 없이 포인트로만 운영합니다. 실제 상품 구매와 포인트 차감은 안전 검증 후 제공됩니다.</p>
-<?php if($bpz_section==='manage'&&($is_admin??'')==='super'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/activity-admin.php'); ?>">경매·나눔·이벤트·꾸미기 관리</a></p><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/catalog-admin.php'); ?>">상품·분류·재고 관리</a></p><?php } ?>
+<?php if($bpz_section==='manage'&&($is_admin??'')==='super'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/activity-admin.php'); ?>">이벤트·꾸미기 관리</a></p><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/catalog-admin.php'); ?>">상품·분류·재고 관리</a></p><?php } ?>
 <?php if(in_array($bpz_section,['shop','my','manage'],true)){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(BUSAN_POINTZONE_THEME_URL.'/checkout.php'); ?>"><?php echo $bpz_section==='manage'?'결제 확인 대기 관리':'장바구니 및 결제'; ?></a></p><?php } ?>
 <?php if($bpz_section==='my'){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape(G5_BBS_URL.'/point.php'); ?>">기존 포인트 내역 확인</a></p><?php } ?>
 <?php if($bpz_section!==''){ ?><p><a class="bpz-link" href="<?php echo bpz_theme_escape($bpz_base); ?>">POINT ZONE 홈으로</a></p><?php } ?>
