@@ -2,6 +2,42 @@
   "items": [
     {
       "topic": 2,
+      "date": "2026-11-26",
+      "title": "[텔코 NOW] SKBㆍLGU+",
+      "publisher": "대한경제",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE1ZcVBqQUtEQ3NtV3NaWHhva2NHemtRX0VRZ0NucGlnbzUzQUZMcFg5cDlQM0RkR1VpVHB0SnltdDVaekZVNERWS21pUFdaVURybjhFcXJZVTNWNVA4SDJWa2ktb2VoaHo3ZXExbkZTVldDRU0?oc=5",
+      "published_at": "2026-11-26T11:05:45+09:00",
+      "publisher_host": "m.dnews.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-26",
+      "title": "SK브로드밴드, 지역 소식 매시간 방송으로..AI로 평일 정시뉴스 10회 제작",
+      "publisher": "한국정경신문",
+      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9OTGNjZXZXY2IzeEZudHdKQW9OZEVHREQ5Z3ZLckYxWXZYdFpXdXFzdmRCQTNIR0p6WEkxTnE0Wm04d0YxTVVGTm4ydE9DM2UxV0E?oc=5",
+      "published_at": "2026-11-26T11:03:23+09:00",
+      "publisher_host": "kpenews.com"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-25",
+      "title": "부산∼싱가포르 양자보안망 시스템 구축 [아름다운 동행 특집]",
+      "publisher": "세계일보",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE96UDB0UlRSN0c5SFZDTTJiZFl1dk4tTkw2VWFlRzlHaW43b2V0MkkzQ0ZBR1VzaUdxcTN3bC1MSXNXTlROWW5ac0ZRakh2SWprbnYxSm4xakLSAVRBVV95cUxNUlpWWUk1SEJmQmhJeV9VRTFFQUlqTTZqMTFiYVV1WllTVG0yVWxBdUxVMmtnM2tWcW9JbjNQdkd1djdJenJScC1yUUpnUnRGWGM0NDg?oc=5",
+      "published_at": "2026-11-25T22:50:06+09:00",
+      "publisher_host": "www.segye.com"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-25",
+      "title": "SK브로드밴드, 유료방송·초고속인터넷 사업 집중…돌파구 찾을까",
+      "publisher": "굿모닝경제",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE84NkxqRjNqWC01SXlqVWNLd3JDUzNTQzJxNm5WWnkydkNHSVowWFNic195OE5iNjFPbUNIbm1yU3VXenJYamJTODFOc1h3MTg1OGlDTmN3cXlzR1FROFlvTE96cENYYjRxME5xNg?oc=5",
+      "published_at": "2026-11-25T15:52:09+09:00",
+      "publisher_host": "www.goodkyung.com"
+    },
+    {
+      "topic": 2,
       "date": "2026-11-24",
       "title": "SK브로드밴드가 AI로 제작 시간 3분의 1 걸려 지역뉴스 하루 10회 정시 방송한 비결은?",
       "publisher": "ER 이코노믹리뷰",
@@ -21,6 +57,15 @@
     {
       "topic": 2,
       "date": "2026-11-24",
+      "title": "3시간 걸리던 뉴스 제작, 1시간컷...SK브로드밴드 시청률도 3.4배↑",
+      "publisher": "인사이트",
+      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBKWTBoRHo1clN6VWtwLUxjWHdBYWQwSlhZOTZFTVNibXBKOWRrMHdLT2VKakdCSDhnaEJNRXl1ZHc0c1hDTHU4ZkxRbGdIZw?oc=5",
+      "published_at": "2026-11-24T10:01:52+09:00",
+      "publisher_host": "www.insight.co.kr"
+    },
+    {
+      "topic": 2,
+      "date": "2026-11-24",
       "title": "BGF리테일, CU서 SK브로드밴드 인터넷·IPTV 가입 접수",
       "publisher": "비건뉴스",
       "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE4tMVBuam1nb1hKaWJkeTZzNVBqSmd4TUhESHFSdGNTZDZZUktEOVd3Ull2YzR5dzFZSXNvdG5HSXdQTTVNTm1ZcjZ2M1FyWkY5Q0ExVUdFYUMxSlBsU1VQZnBKaDA4UQ?oc=5",
@@ -28,49 +73,31 @@
       "publisher_host": "www.vegannews.co.kr"
     },
     {
-      "topic": 2,
-      "date": "2026-11-23",
-      "title": "SK브로드밴드, AI로 지역뉴스 제작 혁신…제작 시간 단축",
-      "publisher": "매일일보",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE01eUs2aW1wSm1ZMTFkU1pFdTN4UlpOTE80NmF6TndWekRneThZSjBEMDQtR0h4M0NGblJhWEJKMGs4blB0MVg4Y2lwVjVQMXQ4QjhyNUpzWF8wUmxqZWZaSzBhblM?oc=5",
-      "published_at": "2026-11-23T16:33:35+09:00",
-      "publisher_host": "www.m-i.kr"
+      "topic": 3,
+      "date": "2026-11-26",
+      "title": "LTE 의존 없는 5G 시대 열린다 : SK텔레콤·KT·LG유플러스 전국망 갖추고 특화 서비스 준비",
+      "publisher": "Howl.Link",
+      "url": "https://news.google.com/rss/articles/CBMiO0FVX3lxTE5LM1ZyTVVwQkZHTmxlYW5Nc0ZQdFZqUDIwMUZXUlJ0N3o1TTFsQ0hIeWJlZjBGRW9UdzZV?oc=5",
+      "published_at": "2026-11-26T17:51:31+09:00",
+      "publisher_host": "t.co"
     },
     {
-      "topic": 2,
-      "date": "2026-11-23",
-      "title": "SK브로드밴드, AI로 지역뉴스 매시간 방송…제작시간 3분의 1로",
-      "publisher": "한스경제",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFA1b1loZWdiZGExVlAwWG42UFd6a2t3c2g1YWFBN0hLQ2l5blBxdUlnenUtNW1GLTNpTUdXcUxzVU5BaTJ2Y1lPekZxazEyc2JtWXF0Z2tlaDdVaE5lQXMwNHpRdGVVZGRWcVJN0gFvQVVfeXFMTlFzeU40UmxPcEt3SFZ3UVFHcjd6SHRYLTdiSWxKaGJhZ2FFU1RtUEhFbFg3d05BcVdZeldLQ2RBcFNBR2ZGNGttWFRsc0Y0Zk51bExTaEJVQXJqU2h0OFN3MW5fYllZRnNpcGdsYTlV?oc=5",
-      "published_at": "2026-11-23T15:45:00+09:00",
-      "publisher_host": "www.hansbiz.co.kr"
+      "topic": 3,
+      "date": "2026-11-26",
+      "title": "[CEO 리더십] 정재헌 SK텔레콤 대표, 통신의 기본 되찾고 AI의 기준 높였다 By FinancialPost",
+      "publisher": "Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9RNnJhUFJEWTlvNDFWYUM0Ul9vUHJTb1oyRVh6Tk54STlWNEc3M2l6ZjcxU1RrcFM4V0xwWmpOc2hkeXFYV3RWQTdBZlZvbTVSdmUzU1B1WVYwZ29xeVFfMVJ6R1hTZzVZVHNULWpKdWs?oc=5",
+      "published_at": "2026-11-26T15:08:00+09:00",
+      "publisher_host": "kr.investing.com"
     },
     {
-      "topic": 2,
-      "date": "2026-11-23",
-      "title": "CU, 온·오프라인 채널에서 SK브로드밴드 인터넷·IPTV 결합상품 신규 접수 시작",
-      "publisher": "로이슈",
-      "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE12MjJrRUQ3bkktSm5JNHFhWHhLeXpYQjVpQ2lKX1p4NGp3dzA3Wmp3OEdtR2FuQzNQdzQtVS1tSm1Wa05jcV9YeklUa0d1RVc4Q0tqZWwwNHBiazkxbXN1emhXYTc0S3plVmNXNUgxUDJUMGxtOVdTejlR?oc=5",
-      "published_at": "2026-11-23T15:33:15+09:00",
-      "publisher_host": "www.lawissue.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-23",
-      "title": "편의점서 인터넷 가입도…CU,생활서비스 중개 플랫폼 역할 확대",
-      "publisher": "1코노미뉴스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9MTFZ3NERxeHF2dFFwZGI3QjR1TW4teklISW1SanB2NWoteWplX1N3U05jTWtfN3pvWGdFaWFrR1ZIRXRzbzlENFlsaE9fcnVselZJdnVFOTVyN09iekRyaVVHTlhsdjRaZGpEYWN6SVA?oc=5",
-      "published_at": "2026-11-23T15:23:31+09:00",
-      "publisher_host": "www.1conomynews.co.kr"
-    },
-    {
-      "topic": 2,
-      "date": "2026-11-23",
-      "title": "SK브로드밴드, AI로 지역뉴스 제작시간 3분의 1로 줄였다",
-      "publisher": "뉴스핌",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFBqZV9kZGVLUVNWZWtSQzFDcTJCcl9UNlhXWTJ0M3FSTW9MSE1RbF90dW1idWlfTXBhN2V3NXhIWHl2VHYzN05qR1JGWklUZDVSdnJuNktjbWRhclZ4?oc=5",
-      "published_at": "2026-11-23T14:47:00+09:00",
-      "publisher_host": "www.newspim.com"
+      "topic": 3,
+      "date": "2026-11-25",
+      "title": "SKT 만족도, 해킹 전 수준 근접…통신3사 1위 지켰다",
+      "publisher": "지디넷코리아",
+      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE04akJmOHljWWtlTDN0X0ZESTdzam8wN09ObC1JcURwclRtOW1La2k4TW1Fck5JY0pDQmNqN1lmbkFMa3gyZWlGZ18tNFNNaVdONU9pUWd3?oc=5",
+      "published_at": "2026-11-25T16:06:10+09:00",
+      "publisher_host": "zdnet.co.kr"
     },
     {
       "topic": 3,
@@ -93,6 +120,15 @@
     {
       "topic": 3,
       "date": "2026-11-24",
+      "title": "[위클리오늘] 이동통신 소식_KT, SK텔레콤(11.24)",
+      "publisher": "위클리오늘",
+      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1hemZoWVBQdnpPQTdMMTlQcE1EYnUzZUZfSF9OVzJNbGcyRmdFVm9iUnNwV29UUGhmSTZIdkhsWGhDajJXdlNhNU1RNlJlWjY1c1l1MEktYVA4VXZsZ1B1Q2FNcXhTSWIza0o4eE1TQQ?oc=5",
+      "published_at": "2026-11-24T18:52:13+09:00",
+      "publisher_host": "www.weeklytoday.com"
+    },
+    {
+      "topic": 3,
+      "date": "2026-11-24",
       "title": "독거 어르신 돌보는 AI, 대국민 투표 거쳐 ‘시슐랭 스타’ 됐다",
       "publisher": "SK텔레콤 뉴스룸",
       "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE5NN1VqdXg3N2dweENwNXMyNFVxNVRpU3BaR1JveFVtVUtrNnk5R0FaS0JaTEtsZERqYlNSM3d2TTc2N3FXWWZSVg?oc=5",
@@ -109,40 +145,40 @@
       "publisher_host": "www.leadeconomy.co.kr"
     },
     {
-      "topic": 3,
-      "date": "2026-11-24",
-      "title": "SK텔레콤 주가 '앤트로픽 재료 소멸'에 저평가 매력 부각, 통신 본업·AIDC 힘입어 반등 기대감 인다",
-      "publisher": "비즈니스포스트",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE1EbU5sVU9NV0hKQW1hNTVueWZYaS1jMmhsZ0J3TV9ZYWpqNmdfeURfQkJMSkMxLUZtNFY3N29ualZDaFBHUWVHb2lsVkV6YXJQbld6dXVqRDM2ZGtzeVlUejRXN0dONTZfNmZ0VV82TGNFTTQ?oc=5",
-      "published_at": "2026-11-24T16:46:36+09:00",
-      "publisher_host": "www.businesspost.co.kr"
+      "topic": 4,
+      "date": "2026-11-26",
+      "title": "[SK그룹 인사추적]① 지난해 발탁한 사장들 1년 뒤… 강동수 에너지로·차선용 개발총괄로",
+      "publisher": "뉴스클레임",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5lTlAwUG94YTJHX1NjemJaZ19Od2lIRTE0cFE5MWRWdmVhZ2puSEY4NWxLLVVUT1ZHaEFGR1RITWdUcWlCWm5YaDl3LU1PUTJtREMzX0l5bVNhQnJUWEFtcGNINkFoUGRuRFJUNWhFTlHSAXRBVV95cUxNbWZnOXFqaHZLaXl5ZlNFNXp3V2RacXJxVk40T2ZTbFl4T3BlaG1teVgxT3RHY25fVGQtZ0Q1RmNPdTlGRXVHUnQ3WGZudVBCSmRGcFNYVDRBWmY3Smg1aGFhOXhNbG40ZFRoQVhRaG9BY1FuNA?oc=5",
+      "published_at": "2026-11-26T15:09:10+09:00",
+      "publisher_host": "www.newsclaim.co.kr"
     },
     {
-      "topic": 3,
-      "date": "2026-11-24",
-      "title": "SK텔레콤 '앤트로픽 재료 소멸'에 저평가 매력 부각, 통신 본업·AIDC 힘입어 반등 기대감 인다",
-      "publisher": "비즈니스포스트",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE1EbU5sVU9NV0hKQW1hNTVueWZYaS1jMmhsZ0J3TV9ZYWpqNmdfeURfQkJMSkMxLUZtNFY3N29ualZDaFBHUWVHb2lsVkV6YXJQbld6dXVqRDM2ZGtzeVlUejRXN0dONTZfNmZ0VV82TGNFTTQ?oc=5",
-      "published_at": "2026-11-24T16:46:36+09:00",
-      "publisher_host": "www.businesspost.co.kr"
+      "topic": 4,
+      "date": "2026-11-26",
+      "title": "SK그룹 채무보증 34조원…SK온·SK이노베이션에 83% 집중",
+      "publisher": "센트럴경제",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1NUkdpZ2NVQ3dKQVg3R0F3M1B1Y3lNMDVGZlpEaVZLZVNTQ2VXaEFhT1pLXzBxTWluckdXakxtN2xUbUJxVG8zNHBlbG5wcmdFYi0wT0pOMWNCaEliUnZqeEs4OWRTZ9IBakFVX3lxTFBjUklxU3hUaTdLOTZkSlNnU2RJQ1ZCU2g2ZHVpNWRoNmhQNHBVcEo5cWc2bVRTb3NKNHIzZERZdVBHSDJhal9QektIRGh2Y0FsR1RVWVVCdTB2amQyaFJLbTFrd1JDejZmRnc?oc=5",
+      "published_at": "2026-11-26T14:49:18+09:00",
+      "publisher_host": "www.newskr.kr"
     },
     {
-      "topic": 3,
-      "date": "2026-11-24",
-      "title": "SK텔레콤·조선대, 외국인 유학생 통신 편의 증진 맞손",
-      "publisher": "진일보 | 전남일보",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9PaTN6cWdXT2J6dkN0bkplRm15Tnl2Q1dWSVN3MlVPeVQ4ZTY5UGVaY2VFZXJVcE1IOFFtdnZTVXlOVERIbGdwOFdLTENwZ0JXekxvWXcxZnhwRktCcUlSemJqVS1tU2VNMDZ3VDVKbw?oc=5",
-      "published_at": "2026-11-24T16:24:30+09:00",
-      "publisher_host": "www.jnilbo.com"
+      "topic": 4,
+      "date": "2026-11-26",
+      "title": "[배터리 ESS 빌드업] [SK온] SK그룹 배터리 살리기 총력전, 홀로서기 분수령",
+      "publisher": "딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1ZWGY5WUNkbTNVRHJVamQzbkFrc3pIdHRjMmhBeXZFbHQtNmdGa21oOTFOd2F3QmxVRVkxR2JQam9Id1hoaWtYN0hTT3U0aGs?oc=5",
+      "published_at": "2026-11-26T07:07:33+09:00",
+      "publisher_host": "dealsite.co.kr"
     },
     {
-      "topic": 3,
-      "date": "2026-11-24",
-      "title": "[심층 분석] SK텔레콤 ‘AI 케어’, 기술 기반 돌봄의 경제적 가치 입증…4만1천 가구 연결한 디지털 사회안전망",
-      "publisher": "뉴스밸류",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBnUVoxdXplR2lHblhBQnprcTRDV0llQ1VMMUs3OG0wZDFqc2NWS2trbVhyQ3BaQmRCNVZWcVlnOW43c3k3VkE0U21neExNWDFzenV2eExFdFFVTjhFSWpkR0JFa0lIaDhXdEE?oc=5",
-      "published_at": "2026-11-24T16:00:00+09:00",
-      "publisher_host": "www.newsvalue.kr"
+      "topic": 4,
+      "date": "2026-11-26",
+      "title": "최태원 SK그룹 회장, AI혁신과 글로벌 협력으로 가치창출",
+      "publisher": "위클리피플 인물지식가이드저널",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE81cFd5eEdONVVzOGNKTUtQaXR1T2tvV1hXRFlHbW1CcWxVN3ZwSUdZM3h5NzJkSkNzZjBRclllTWcxQkw2VFI5OE8yLVpvY1FTM0tGX1NJeFAxZw?oc=5",
+      "published_at": "2026-11-26T06:11:46+09:00",
+      "publisher_host": "www.weeklypeople.net"
     },
     {
       "topic": 4,
@@ -181,112 +217,103 @@
       "publisher_host": "www.ngonews.kr"
     },
     {
-      "topic": 4,
-      "date": "2026-11-25",
-      "title": "[기업家] SK그룹 ㉙ㅣ AI·반도체 중심 미래 성장 가속…인프라부터 소재·인재 양성까지",
-      "publisher": "CBC뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5Fbzl5TXVtTVVrdE5Gam5RR2pfU29wNXkwRkNyeENPTUFqelZVaVM5UDdodFpTSWxKcGJTbU4yejFsaE1TeUl4RXpwclVWRDJFVjRoN2o2YUE1N3NJUElYaEtaYmxubWRz?oc=5",
-      "published_at": "2026-11-25T10:57:45+09:00",
-      "publisher_host": "www.cbci.co.kr"
-    },
-    {
-      "topic": 4,
-      "date": "2026-11-24",
-      "title": "최태원 SK그룹 회장, AI혁신과 글로벌 협력으로 가치창출",
-      "publisher": "위클리피플 인물지식가이드저널",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE81cFd5eEdONVVzOGNKTUtQaXR1T2tvV1hXRFlHbW1CcWxVN3ZwSUdZM3h5NzJkSkNzZjBRclllTWcxQkw2VFI5OE8yLVpvY1FTM0tGX1NJeFAxZw?oc=5",
-      "published_at": "2026-11-24T18:01:13+09:00",
-      "publisher_host": "www.weeklypeople.net"
-    },
-    {
-      "topic": 4,
-      "date": "2026-11-24",
-      "title": "'SK 내일' 걱정한 최태원…재산분할 전액 지급 후 '경영 전념' 방침",
-      "publisher": "더팩트",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBjcWM3MmNyRjBzQ2d4dTIyQU9wN3JyLW5tTUhPTENDRFVPb3h2eGZELVhBM3padDRyeW1KYkNRYndJcWJSdUZ1OWo0VzBVVUlTZW01bE5MNnJOZ9IBVEFVX3lxTE1aYVRobnNrQ0FteHQ0REx1R2szLWI3akZLcTlaYTE5MVo4WTR1V2lwY0pRUGF6OENnZFRmQ2c3TWVjV3RCQ0l2VVhUWjRoV1I1ZERnUg?oc=5",
-      "published_at": "2026-11-24T11:28:31+09:00",
-      "publisher_host": "news.tf.co.kr"
-    },
-    {
-      "topic": 4,
-      "date": "2026-11-23",
-      "title": "최태원 SK그룹 회장, 노소영 아트센터 나비 관장에게 재산분할금 9440억원 전액 지급 방안 선택",
-      "publisher": "정경시사 FOCUS",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1tN2JBOXdGS0xtUEhFc0YxbnpTOHBzTV9DenJRNF9hUHVqZ1VaVHg4T2Z3a2xPYy02R2tvdlRCa1ZUU3hIdmZNb0VzTWI0M2Zjb0NISUdKOWpEdnNiVGN4ZG9jLUhaZkxt?oc=5",
-      "published_at": "2026-11-23T19:44:07+09:00",
-      "publisher_host": "www.yjb0802.com"
+      "topic": 5,
+      "date": "2026-11-26",
+      "title": "[포토뉴스] 전국철도노동조합 준법투쟁 첫날",
+      "publisher": "강원일보",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9zVlI5bXI0dkR6VTRocWVvbFYtd2JFWWNreEFpWEs1RGVEZmkxbTdfZnBOd0Q5OFdxTEY2NEp2REVYN0doQ1lNYldoQXMwS3h0NmJyQlNpd3E4ak0?oc=5",
+      "published_at": "2026-11-26T18:46:11+09:00",
+      "publisher_host": "www.kwnews.co.kr"
     },
     {
       "topic": 5,
-      "date": "2026-11-25",
-      "title": "[포토] 마사회노조, ‘본사·경마공원 동반 이전’ ‘세제 지원’ 촉구",
+      "date": "2026-11-26",
+      "title": "근로복지공단 노조 8천명, 국회앞 총궐기…내달 8일 전면파업 예고",
+      "publisher": "연합뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE52dWk2YlB0MlFXY29oZXBZZlBtV2tpcW1wWTctNmNRLTFxZzN1QWdhS09kcklRNG1Bb1dpQVpwYjJJRmZZZnh6NjlhNXJJcUJzRmxISHpqZV9RUDDSAWBBVV95cUxPaVlWSW4yWXpsOVRsb2VWZ1B1TzlhMEx0UWhkT2NKYlFTU1QtNF9KdE1NZVZudzV0TzMzZjNBbDNjbWxrQzFmMU12ZkFmbHRMa1NrMDVhVW5GWkxaOWtBM18?oc=5",
+      "published_at": "2026-11-26T18:24:54+09:00",
+      "publisher_host": "www.yna.co.kr"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-26",
+      "title": "[포토] 공노총, ‘공무원 노후 소득 공백 해소’ 요구하며 삭발·단식",
       "publisher": "참여와혁신",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBPR2lUVEx5d0pERUtfbWVjTm9YQjRuVm9GZXhtdWlNb25CZDljYjN2SXRqWE84bkdENzRqOWF6WkZsRktUbkxLc0ZNTlYxQzZ1TGdReWFoYWVwYjBiSkpsQTFxVVpLdzhTb21XNlh3?oc=5",
-      "published_at": "2026-11-25T17:43:18+09:00",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9oc1BUZWgxWlpaZW9SS25nOGVCbTl1eWQ1X2QyV3pZZFE4U2NhQzljblpJSy1wQTlTZjI1bEVicDNFMHc0VUNINWdjYk1CZTgtanIzMTFTcTU5VWV3aUI0ZkJFR0VlY190WnU2Z1NB?oc=5",
+      "published_at": "2026-11-26T17:53:11+09:00",
       "publisher_host": "www.laborplus.co.kr"
     },
     {
       "topic": 5,
-      "date": "2026-11-25",
-      "title": "평택도시공사노동조합 제7대 위원장에 강면구 당선",
-      "publisher": "서울뉴스통신",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBHWHB2RXlvODFVb216MGQxUEtuX2l3T0wwZGNzanBkUTRZTkZDWGlHOW5LMDJWVktaYmtUQWtHNzdGMFJrNmNqM2hNS2MzbWc3Umx3YUdHMG5ySjE4UUljaVpNa1NDVmtQakhR?oc=5",
-      "published_at": "2026-11-25T15:24:42+09:00",
-      "publisher_host": "www.snakorea.com"
+      "date": "2026-11-26",
+      "title": "공공연대노련, “도약을 위한 정비···참여가 소중한 자산”",
+      "publisher": "참여와혁신",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFAyRzhNTlNUSlloeERPdnRhS0NuUlAtajlfSVpOZWVxQWY0bThBc3VfRkVTUEdlUEdlTElHT2dCUURHSUp5aTd3d0JQeWsxcE1BajJvSmQ3Ym1DdG1oY3BySjBwblJfRFBUVWhIeGdn?oc=5",
+      "published_at": "2026-11-26T17:48:32+09:00",
+      "publisher_host": "www.laborplus.co.kr"
     },
     {
       "topic": 5,
-      "date": "2026-11-25",
-      "title": "마사회 노동조합, 총력투쟁 결의대회",
+      "date": "2026-11-26",
+      "title": "임종식 경북교육감, 교육공무직 노동조합 총파업 대응 학교 급식현장 긴급 점검",
+      "publisher": "데일리대구경북뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFA0am9qQ0IzbFEyR0MzOVRjdTMxR0hFUVBaYWN4cEdkVjJnc3pXM2QzLTJJWWFHNG1WSV9vWk52cEdybE1tSTlNQmRGYmdqeE5uLWg0QjhPVlZmLWRILVA3TmJzSk91Zw?oc=5",
+      "published_at": "2026-11-26T17:25:03+09:00",
+      "publisher_host": "www.dailydgnews.com"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-26",
+      "title": "박홍근 기획처 장관, 소방 노동조합 만나 “소방재정 2조 원 이상 확충 노력”",
+      "publisher": "BBS불교방송",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1pa2JHcWNZeUI1bU5OaEVKMklnREMwZ0VaZ05Wdzc5bC1STHJUbURzTDN6UDlid0xMUnUyQjhqdkhwWjNSdXRCakhQTV9vdVRZZ3RqSHVWTTBUQVFvakRNdVVkaXJyTFE2eHFv?oc=5",
+      "published_at": "2026-11-26T16:33:26+09:00",
+      "publisher_host": "news.bbsi.co.kr"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-26",
+      "title": "헌재, 노조 설립·단체교섭 제3자 개입금지 ‘위헌’",
+      "publisher": "법치뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5wVUZ4VjJaeUxQRG5GN1pjSmd4X09sdk9Zemk2UmNtUUVpVGplSjk5Q2paQWpWTkRBdDRNR2tkMzN1d2huZ2F0U2s5SVA4WW9LdUdkYWdzY1BxeHB6b0Q0SFJTdXpqUdIBaEFVX3lxTFA3WVJOUExkYWl6WFRyMXJNdWVzZFI1Vkxua0liZ1dBcVdUa0lkYWJ0NFJXQm4zMzN0bTFscTA2NDhIWmJmaElwNm84MERLYW45UWlvYmtZOHBQRmV5Z0dacVJXYUdlbTMt?oc=5",
+      "published_at": "2026-11-26T16:32:27+09:00",
+      "publisher_host": "www.bubb.co.kr"
+    },
+    {
+      "topic": 5,
+      "date": "2026-11-26",
+      "title": "현대제철 비정규직지회, 오는 27일 원청 현대제철과 첫 단체교섭 상견례",
+      "publisher": "당진신문",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE90ZkhtOHNjMmNhTVc4V0FKd3B2VkRkTkZ3bWhXZ0FuX05nMEZFNUhORG1qNmcxN3BnNnZLSi1ILVV6SldKaG1STEVjNUFmWm9meEZyY01oZ2JVRXl4Tkh5N3RMb29Lb3o5?oc=5",
+      "published_at": "2026-11-26T16:19:32+09:00",
+      "publisher_host": "www.idjnews.kr"
+    },
+    {
+      "topic": 6,
+      "date": "2026-11-26",
+      "title": "노조 파업 외부서 지원했다고 처벌…헌재, 36년 만에 \"위헌\"(종합)",
       "publisher": "연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE0wSHB5dXpBbTQ5TkxBaUdWa0lyLXEwSHZ5VjlsOEVNam5QS3poc3hEQ2JQN3FNd0lpRnJyUVgxdDRMWFVTa2QyaGg5SE02eUlxRmRaYXp4V01jX2PSAWBBVV95cUxQTkxyVVl0Y05vMk96eWVEaW1BbHNCZ054MHlmZUZiWmR1Z0VQZC1mN3QtLTg2UTloaWUxeEVtYW5UWnZPYzNRc1FoQ3h2c2tPOXFaTVZFVVotVTFfY2ozQ1E?oc=5",
-      "published_at": "2026-11-25T14:41:47+09:00",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE51NTEzMEFYd1VPQVJmUEF0OVRlQUpGOVFJcUxyeU8yYkJZQU5LeS1tV2kzMnpseFY1d3lybkg4cTI0cnhEOXRmWWt6LWR6NVFnNlVOcVRab0dRRzE5Q1d6MdIBYEFVX3lxTE51NTEzMEFYd1VPQVJmUEF0OVRlQUpGOVFJcUxyeU8yYkJZQU5LeS1tV2kzMnpseFY1d3lybkg4cTI0cnhEOXRmWWt6LWR6NVFnNlVOcVRab0dRRzE5Q1d6MQ?oc=5",
+      "published_at": "2026-11-26T17:30:01+09:00",
       "publisher_host": "www.yna.co.kr"
     },
     {
-      "topic": 5,
-      "date": "2026-11-25",
-      "title": "군산시공무직노조 등 지역 단체, 외국인 아동 위해 성금 200만 원 기탁",
-      "publisher": "한국방송뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5DbW82elZXejhlSzEwVGNVd04yZ3Jjd0pMNXhMVmpLX2U1eC15Q251dHEtOXA3eUJheklkaXRJMzlPOVlPZGV2bVFJb0lySmR0R1lZLXlrNWFPNzV5?oc=5",
-      "published_at": "2026-11-25T13:48:08+09:00",
-      "publisher_host": "www.ikbn.news"
+      "topic": 6,
+      "date": "2026-11-26",
+      "title": "[노동뉴스] 전국 염전 765곳 전수조사, 23곳서 노동법 위반 확인",
+      "publisher": "아웃소싱타임스",
+      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE5RQzNNSTdydng3OGxSR05Ub2JPTDkzY3BlRHY0T3d4Z3hVeG9kMnh4ZFMxVkZtbmh4bjdyVzZpRTU3ZC1BZTA4NUM0WjFqRTVaZGUtUWtDbWw2NndCa0c5aUpFUTB4U1FncU9MSDZQeEtjZw?oc=5",
+      "published_at": "2026-11-26T10:41:41+09:00",
+      "publisher_host": "www.outsourcing.co.kr"
     },
     {
-      "topic": 5,
+      "topic": 6,
       "date": "2026-11-25",
-      "title": "양대노총, 정년연장 입법 촉구…\"해 넘기면 정부와 국회 책임\"",
-      "publisher": "연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9WYjlBSmRMck1oOVlvSE55RXA2bkxBcW5lVmRSVG9haTVhbmZIb0pteXRYemFGT3JYcS03WFlEdlRTWGx6OUMxalV0QmFmaXExS2c5VGFYMS1MR0ZsdDZRT9IBYEFVX3lxTE9WYjlBSmRMck1oOVlvSE55RXA2bkxBcW5lVmRSVG9haTVhbmZIb0pteXRYemFGT3JYcS03WFlEdlRTWGx6OUMxalV0QmFmaXExS2c5VGFYMS1MR0ZsdDZRTw?oc=5",
-      "published_at": "2026-11-25T10:03:50+09:00",
-      "publisher_host": "www.yna.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-25",
-      "title": "한·인도네시아 외국인 선원 권익 보호 논의",
-      "publisher": "물류신문",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBPcHYyaWMwQ1ZYRWhwU25PdkdWbHk5OHZFenYtc2VmUk5WdUdtZmpUT283M3hhNmxxSWZoNWhKWkFIQnk0T1lVOGMzc0ktZWpIbHV4SjhuQzlfMUV3R0Q5WC02RWgxTDJvRXJR?oc=5",
-      "published_at": "2026-11-25T09:35:22+09:00",
-      "publisher_host": "www.klnews.co.kr"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-25",
-      "title": "[오늘의 인천소사] 조선교통운수노동조합 인천지부 결성",
-      "publisher": "인천투데이",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5KeTNkMHJRUFFhRC1oVlBwU0s4VXFUY2JtdVBVR1JhRElwWFV4MWpPYkc3R1MySHJyTnN5NHZTRmNKekdmYWs5WllvQm85NVQwLVJuTkZQWmJlWHhwZGVUV0FmeWN4T3hPWWRhdTRuV1o?oc=5",
-      "published_at": "2026-11-25T08:30:00+09:00",
-      "publisher_host": "www.incheontoday.com"
-    },
-    {
-      "topic": 5,
-      "date": "2026-11-25",
-      "title": "박정현 의원 ‘국가직행정공제회’ 국가공무원노동조합 감사패 받아",
-      "publisher": "세이프투데이",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBweGJFRzRhTmhkR3g2eGZGZmtDMGI2cU9BWnVfUnJLLUE5YVRNTUtnN01ib0tXSHRKYXhPaV9sS0VqSGZ4NzhJWHo2X0JELXQ3SzNRZDdCcmRPdVozN0ZYZ1FxSXhRVTExM2lqV0530gFuQVVfeXFMUHB4YkVHNGFOaGRHeDZ4ZkZma0MwYjZxT0FadV9SckstQTlhVE1NS2c3TWJvS1dIdEpheE9pX2xLRWpIZng3OElYejZfQkQtdDdLM1FkN0JyZE91WjM3RlhnUXFJeFFVMTEzaWpXTnc?oc=5",
-      "published_at": "2026-11-25T08:28:29+09:00",
-      "publisher_host": "www.safetoday.kr"
+      "title": "소상공인연합회 “줄폐업 위기…노동법 강행 땐 장관 퇴진운동”",
+      "publisher": "조세일보",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFBhdjhyMWFGSkpYYVJzLXp5dkI2bUFpRzB0dnRoYzZfUkt0d203UjJhUXBNX3RXemdiaFBiaE8tNU9mYWNMZzBheUZydlQtUTB4WTRNXzN0bkRpc2hYZ3Y0?oc=5",
+      "published_at": "2026-11-25T20:27:51+09:00",
+      "publisher_host": "m.joseilbo.com"
     },
     {
       "topic": 6,
@@ -309,6 +336,24 @@
     {
       "topic": 6,
       "date": "2026-11-25",
+      "title": "“임금 한 번에 쓸까 걱정돼 보관”…염전사업장 23곳 노동법 위반",
+      "publisher": "경기일보",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBtTmVYaEowUzhzYU9RZ2xGbGVSSGY1ckV4WEwzM21ORmE4STRodGlzbWNQa2tSQTMwamN5bW40U2VyMkJ3THJvNjFieWZnYXVUV3NVNVpEUng0RVU?oc=5",
+      "published_at": "2026-11-25T14:59:29+09:00",
+      "publisher_host": "www.kyeonggi.com"
+    },
+    {
+      "topic": 6,
+      "date": "2026-11-25",
+      "title": "소상공인협회 “소상공인 곧 줄폐업 쓰나미…노동법 개정 중단해야”",
+      "publisher": "KBS 뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE81QW5WXzROTk5XdWZCQXgyX0tFVE1yRnJ4bS1JVFROMTk4R2xrNVVhOFRhX0FQWnp2QlV2bnlmTU12MEJkV0R5STZzTFRzWnBRWlA2WGdKODVKYVE?oc=5",
+      "published_at": "2026-11-25T14:12:00+09:00",
+      "publisher_host": "news.kbs.co.kr"
+    },
+    {
+      "topic": 6,
+      "date": "2026-11-25",
       "title": "소상공인협회, \"노동법 개정 중단해야… 소상공인 줄폐업 위기\"",
       "publisher": "TV서울",
       "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBVYTdibkdINFZULUtGUXlJTmN1Y3o3Vjg2UDE5QVVsdGxJbU50R1dXaUZyUjZJU1dReGsyMDc3LTg5Y0MzbzNDZjdMQWpfck5wR2hsdTFZVDk?oc=5",
@@ -316,121 +361,76 @@
       "publisher_host": "tvseoul.kr"
     },
     {
-      "topic": 6,
-      "date": "2026-11-25",
-      "title": "소상공인협회 \"소상공인 줄폐업 위기…노동법 개정 중단해야\"",
-      "publisher": "연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9FOFMycmoyUEJhRUxjQ2szT3hBblVrWVZDa0l2LW55X1VzWGRlRFRBc2ItNnVDcEZsYXkzc1QzUFdVc2NfUTh0MDFwNE9pWlZwM05ia1F6Y3RiWjRTOWNlMdIBYEFVX3lxTE9FOFMycmoyUEJhRUxjQ2szT3hBblVrWVZDa0l2LW55X1VzWGRlRFRBc2ItNnVDcEZsYXkzc1QzUFdVc2NfUTh0MDFwNE9pWlZwM05ia1F6Y3RiWjRTOWNlMQ?oc=5",
-      "published_at": "2026-11-25T13:43:53+09:00",
-      "publisher_host": "www.yna.co.kr"
-    },
-    {
-      "topic": 6,
-      "date": "2026-11-25",
-      "title": "소상공인협회 \"소상공인 줄폐업 위기…노동법 개정 중단해야\"",
-      "publisher": "매일경제 마켓",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5YWGxsY3RKMVc2S1ZUeHBXeEhLdGxFdm1JckYtLXJvbXNXQzZNZmhJaWQwREREdXJFcG9vRkRrTEpGb0k5SnBMX0dWNmV3dlQydFE?oc=5",
-      "published_at": "2026-11-25T13:43:53+09:00",
-      "publisher_host": "stock.mk.co.kr"
-    },
-    {
-      "topic": 6,
-      "date": "2026-11-25",
-      "title": "정부 염전 765곳 전수조사, 23곳서 임금체불·노동법 위반 적발",
-      "publisher": "에이블뉴스",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1OeTlDRk1tdzh2N2wzcEI1UG0xUXVoS01JQW91Zm41Rzh1d0pKTnVfalBVQUE2UmpscDNJNFo0TUttWTZkUUVaZkhONmZlWEZjUnppVHk2aFR4VEJfb0RXTEZjQ1lTemVSX2phUnFn0gFyQVVfeXFMT0hSc2JBMF9zU29RbDhOQjR0cUl0OHk5c1JnbmdETHVlUVVnZ0tvZ2M0eW1DQ29Lb1QzNEc2SUZtdHd6RXpQcnpSdVlsZ0dKWjI1eGd5bU1QWjhSbjNpOFpIa2pLQm9kb2xiSG8wUW54QWNn?oc=5",
-      "published_at": "2026-11-25T13:39:44+09:00",
-      "publisher_host": "www.ablenews.co.kr"
-    },
-    {
-      "topic": 6,
-      "date": "2026-11-25",
-      "title": "노동법 위반 의심 염전 근로 감독…23곳서 법 위반",
-      "publisher": "동양뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBhb252WXFEU1R2cDVwMHFpQWZhS0cxSGJHNlUzOWhYam9VSjktWXFoUk1nY2dvR1hqZk9lWEMzV1lvNGNQSHFndjZDWUEwdUF2bUFaUTFTcUh1V3FEeFRrWm53Rm1RcUxiVGc?oc=5",
-      "published_at": "2026-11-25T12:43:00+09:00",
-      "publisher_host": "www.dynews1.com"
-    },
-    {
-      "topic": 6,
-      "date": "2026-11-25",
-      "title": "“임금 한꺼번에 쓸까 봐 보관했다”…염전사업장 23곳 노동법 위반 적발",
-      "publisher": "중앙일보",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5ITGlYbVZHMjlPeWVHcjFRY1ZLUDRMV1dPSW16Q245Y3kyb3RTS0E4c3Y1SW13WTBOYno4UWx5LWsyWUJjNDM5N3UycC1zbFo3QXg4dUhn?oc=5",
-      "published_at": "2026-11-25T11:43:06+09:00",
-      "publisher_host": "www.joongang.co.kr"
+      "topic": 7,
+      "date": "2026-11-26",
+      "title": "Syria, ILO launch national employment and economic inclusion program",
+      "publisher": "سانا",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFBpZGxrS3N5a1lyeXRPVmU1eXE0aGNLUHNYWEhreExhbHRRYzJ1OTRtaWstSEFieG0yVHBDU3lxaUJRNE1FWXFPMg?oc=5",
+      "published_at": "2026-11-26T18:52:02+09:00",
+      "publisher_host": "sana.sy"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "“일터 여성폭력은 노동권 침해”…ILO 190호 협약 비준 촉구",
-      "publisher": "참세상",
-      "url": "https://news.google.com/rss/articles/CBMiQkFVX3lxTE95ZXlBNElRaEk3LTdyNkd5c2VINWVMM0VLZEQ4X3RQYU9nLVNTemhSNExpT2dvOHFOdmNVcXJHcnBLUQ?oc=5",
-      "published_at": "2026-11-25T14:23:17+09:00",
-      "publisher_host": "newscham.net"
+      "date": "2026-11-26",
+      "title": "StudProf 2026: Bringing Together Ukraine’s Student Trade Union Leaders",
+      "publisher": "Профспілка працівників освіти і науки України",
+      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPRkJadEdLMXZuTjVSSER3MXBHc21fSmFGV3JTRzVsNWo0OS1mY05IS2EyeUd1WFA0MXl6TDdvenpmdk13a1pPekdnb1Zzb2dSR1puZUs4a29KUUVpQUV0aHdaYzJvTWdaMGxWMnNpUHhJSS1mTGxUMDlNaThWaWNtZmRRb1UzY1ZUc3FQNWJtM3AtbVl3OGhvRFVGX0Njb1dPajNBd2NlZmFScHNVQnNXbFZ1ZjhyRUN0TWFZ?oc=5",
+      "published_at": "2026-11-26T18:30:57+09:00",
+      "publisher_host": "pon.org.ua"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "[포토] 공공운수노조, ILO 협약 비준 등 촉구",
-      "publisher": "일요시사",
-      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBKcmpCdDBpQzBYMnhBQkx5OUFCa3BwZG41VkhlVEQzMllQcDRjSk51NEl1YU1QU2ZpRkhET0FRVUVsTFVxTHk3ci10N1NVcmt0NU1DaEZoUXJCcmtlMDJsX253T1oxcVk?oc=5",
-      "published_at": "2026-11-25T14:08:20+09:00",
-      "publisher_host": "www.ilyosisa.co.kr"
+      "date": "2026-11-26",
+      "title": "DOLE congratulates re-elected ILO Director-General",
+      "publisher": "Department of Labor and Employment (DOLE)",
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPR0dZU2gyVlBBNDE4cmxPUEl1dWRGMjJfNGxxRVJEVmlHTDBhdWpZb0dXV19nN0dqTUtPeHpZV3pndmY0aDJoakJOYkJDX2wyQmcwZ0QzR0s3NG0tQTdxekNHSjM0cEI4QUhDMG9Xcnkta18yaHdpOEEzTDJUeXpfYURR?oc=5",
+      "published_at": "2026-11-26T15:22:10+09:00",
+      "publisher_host": "dole.gov.ph"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "\"특수고용직, 성추행 사각지대\"…노조, ILO 협약 비준 촉구",
-      "publisher": "더팩트",
-      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTFBhWl93c3p1RDdSeHlha0dqd1FjMG0tSUF6MzVVUzhfSW1ucElwcEFSUWpsWWc3SU1SQV9JbFNrSUVEVG9KaG1ObG5lYTNfMWJz0gFQQVVfeXFMUGFaX3dzenVEN1J4eWFrR2p3UWMwbS1JQXozNVVTOF9JbW5wSXBwQVJRamxZZzdJTVJBX0lsU2tJRURUb0pobU5sbmVhM18xYnM?oc=5",
-      "published_at": "2026-11-25T14:00:00+09:00",
-      "publisher_host": "m.tf.co.kr"
+      "date": "2026-11-26",
+      "title": "Trade Union University closes classes for officials of the Lao Central Confederation of Labour",
+      "publisher": "Laodong.vn",
+      "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxQX0h5QldPVHRwYXA3TFNLcVFPNTYzN1FEcGhpWmgwUng5VWVlR1dDdC12aFNnMUd3ZTVNOWw3cVZBUE1KOFJHeUluWE0ySEVtOWVPLVNoVGcxWHJZeHBuTWlkb0tseks3ZWVsNERZX3g1dUcxeHZtVTh4czVTTDExVjRMUURRamlodGZ1VTN4S1J4aGpoSVB3NnNJMlUtQTl5ZldfN2xQQ3ZoekpZQ2d2eHNzMDVGdkFBbjJPMkRRb3cyNlNZclFLZDFTM1NDc2s?oc=5",
+      "published_at": "2026-11-26T13:07:56+09:00",
+      "publisher_host": "news.laodong.vn"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "ILO 괴롭힘 금지협약 채택 7년…한국은 왜 비준 못하나",
-      "publisher": "법치뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9qRHRrLXlKb05XOEhwRkRXOThtQnFFSnd2MzZMZWFqc0p0ekc0UXkzRDIxamdmUmFyWEJBaHBqanJjVGZxVWJFVW0yWXU0UWUzMHE5SFgxUFVKZ2h6ejYzY2hkZmPSAWhBVV95cUxPQ19wM2p0QUtLQTJoT2ZVRjQxWTlFNGxkREdiTV9rV1BqTGpQUExJYkktdWdtMkNzT09RSi1oQzk0cnlLbTRhcVFNVG5YdkVNYXBPRGNBUEJNaUttV0c2OXdGZXpfY1I2eQ?oc=5",
-      "published_at": "2026-11-25T13:48:35+09:00",
-      "publisher_host": "www.bubb.co.kr"
+      "date": "2026-11-26",
+      "title": "PH calls for stronger worker protection against extreme weather at ILO Governing Body",
+      "publisher": "Department of Labor and Employment (DOLE)",
+      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPMk81aGNsS0ZGbTk2VEZzZlJlbUQyamF5cll2cDZ1M1otV3JKUFpkejJtQkprT0RwcFN1MVdLRkR5amIxQmR6X2tZVWV3M0tjTHZyNnRUWm1SczF0WXRJdU56d05Eb1MwN1pHSmFoZy1qVHFlZ1k1WkI0WXRxUHo5eVJ0c3pxVU5zVjk3UTQ0eWhGM1B2bzVuX0dRNlcyWXZ5ZDVwMHpyMko0aDQ0SldZVQ?oc=5",
+      "published_at": "2026-11-26T12:32:56+09:00",
+      "publisher_host": "dole.gov.ph"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "ILO urges member states to ratify Violence and Harassment Convention",
-      "publisher": "Human Resources Director",
-      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNU1Z1am9UaGwzSzBwajE0WlFWVzM2Z1RrVkU2WWlzRFlPMlAxR2xjNTZ5NVJWT0hfTlplaW80TVh3SEVqX0F0VEk0RVBwcWpuTm94VzROa2JCSVVsU0M2UDd4RFVBaHFRWl93WFJNQlZsdW5rZS1YYU13ZXZWTUNaRWFVVXk1bFBtUTFfb0YyN3hrTWNrRHRHMVZYQ1RkcjlDOG16cFZGNWd0MFhDak9reWVtZnprV2N2QjRPa2VnaDloR2szTkJIRUI2QQ?oc=5",
-      "published_at": "2026-11-25T13:12:41+09:00",
-      "publisher_host": "www.hcamag.com"
+      "date": "2026-11-26",
+      "title": "Are labour markets ready for the next crisis? ILO outlines six lessons for protecting jobs and livelihoods",
+      "publisher": "People Matters Global",
+      "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxNYm9aS3BReHUwQ2o4N2s0OHB4TGR5LTBDM3llV3dVelJCVmV5SlRDWGtBNkdPNXNOVzBxWElIVTFIa2pwN19xYVNVbkQtX3dQRkpTenJuak5DR1RJMzBjUktibFFaVGRKRWM4c1kxZzNzZEZSVjFpbjd5bU8wV2ItS2FyMXY2N0doUzlPTXNhSV82am1uZDV3U245bHJFNVlQRWd4US1FdGdVYVc5VFI1bWpsVGVQVjFfRjQ4Ri13akhrVDlHTEJTZjNFYUxERVMtQWR5dWhWWFZiQTM2SnhlT01FSGNmd016c2xQbmpaU1FDejM2OHZrbDJyQQ?oc=5",
+      "published_at": "2026-11-26T12:24:16+09:00",
+      "publisher_host": "sea.peoplemattersglobal.com"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "공공운수노조, ILO 협약 비준 촉구…\"폭력 없는 일터 보장해야\"",
-      "publisher": "연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9XSFJOeTZHWE9rRW5vYmswRE5rUnJia1BqbXJpc1Blano3Z3NMWkxoSFNoQmpFRlBhTzNwdzBNTG5jVTgzTjNFRE5YX0xSX0JnZjRpYkNZd242VktvWmduNdIBYEFVX3lxTE9XSFJOeTZHWE9rRW5vYmswRE5rUnJia1BqbXJpc1Blano3Z3NMWkxoSFNoQmpFRlBhTzNwdzBNTG5jVTgzTjNFRE5YX0xSX0JnZjRpYkNZd242VktvWmduNQ?oc=5",
-      "published_at": "2026-11-25T12:47:32+09:00",
-      "publisher_host": "www.yna.co.kr"
+      "date": "2026-11-26",
+      "title": "ITUC-Africa demands enforcement of Saudi Arabia labour rights",
+      "publisher": "The Guardian Nigeria News",
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNYjM5NExCNVJnLXJIbW5ZOUJteGY4OWwxeGhyME9aeUVNWXdKXzhWc3p3ZHlaQzdKdEZVbVhVUmMyVWNMYUVYR0dkSHlvM3ZROFdhaTI0Tk00WXZPSzJOUjg2dUt2aEh2eVhISkprVFhqNjliOTRscEZrNmdleC1hY3E1Z3dFb3ZzNk9UejUwZXR4RjRhQV9VTk03cw?oc=5",
+      "published_at": "2026-11-26T12:00:47+09:00",
+      "publisher_host": "guardian.ng"
     },
     {
       "topic": 7,
-      "date": "2026-11-25",
-      "title": "Philippines needs more and better jobs to sustain poverty reduction, ILO study finds",
+      "date": "2026-11-26",
+      "title": "ILO calls for continued action on a just transition following COP31",
       "publisher": "International Labour Organization",
-      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOWU1XR0JCdlFxNlVKc0ZzMktrS2dobzZ0V01SSnc4clQ0Z3htaVBhSnExc1hGNEVUSDBmRjg3eXljVGtTdDVtSlgybXdkcjcxTVBTb2syLXBkSl9WM2tWQk5DZlRNWDJ4NkxhN08xeE9NZTF6bHdWaWRjNFNfVHNHUjFoNkI4QzA0cnFzOW5aV21vcENrV3FyZmotZTMxQ3V4OHVsOGg1S3B4Y2xY?oc=5",
-      "published_at": "2026-11-25T12:34:34+09:00",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPSkFrSHl1YVBydGprSkZZalU1a3ZiSlhKREp5S1RJeDdiMEJ1ZUFXeFVPaklsTDc0aUpLUVhXMURXR2RMb21palhmU1F3SmdDWTZlWHJZYUtUYUJLMlpmeFBMRi1USnFSNnRBZXd6NGhadFFMMllzYXpWVm91OXdCMXg3RGVJdEZ0TmFmYzB2NHhIQy1JMlIw?oc=5",
+      "published_at": "2026-11-26T01:36:17+09:00",
       "publisher_host": "www.ilo.org"
-    },
-    {
-      "topic": 7,
-      "date": "2026-11-25",
-      "title": "ILO·ACEV·외즈예긴 대학, 이스탄불에서 협력 협약 체결",
-      "publisher": "IndexBox",
-      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPMkRTUWNqU3cwMXVoSDNDcmtFZDZodGluSWRsZ1REcHZCZlhVZ29GejJ1a2FXcDF6dEVYbGh4cFBxeWJocFdtaVRiWkZfTnNkVzdtRGhtQzVmNFloVG8wVERhc29oT0xzcEt5LWxTaUVIQU80LTRGT090REtMalZ5Z2xsbkQzOVB6NjFZV014eWt0QVhQb21CTm15d0lqQWw3NkVRVVNR?oc=5",
-      "published_at": "2026-11-25T03:50:24+09:00",
-      "publisher_host": "www.indexbox.io"
     }
   ]
 }
