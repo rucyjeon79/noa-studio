@@ -130,3 +130,11 @@ $visual=busan_rights_plain_body("도입입니다.\nQ1. 성과급 기준은?\nA. 
 ensure(substr_count($visual,'bn-rights-visual ')===2,'one illustration per question card');
 ensure(strpos($visual,'bn-rights-visual-pay')!==false&&strpos($visual,'bn-rights-visual-safety')!==false,'specific visual topics missing');
 echo "PASS contextual rights illustrations and one image per card\n";
+
+$parental="1) 기본적으로 적용되는 자녀 나이 기준\n\n근로자는 **만 8세 이하** 자녀를 양육합니다.\n\n급여 기준은 별도입니다.\n\n2) 기타 조건 (나이 외)\n\n신청 조건을 확인합니다.\n\n3) 휴직 기간 관련\n\n**1년 6개월** 관련 안내입니다.";
+$parentalHtml=busan_rights_plain_body($parental,'2026년 육아휴직 관련 팁');
+ensure(substr_count($parentalHtml,'bn-rights-topic bn-rights-topic-heading')===3,'numbered guide sections missing');
+ensure(substr_count($parentalHtml,'bn-rights-visual-leave')===3,'childcare topic illustrations incorrect');
+ensure(strpos($parentalHtml,'<strong>만 8세 이하</strong>')!==false,'inline emphasis missing');
+ensure($normalize(str_replace('**','',$parental))===$normalize($parentalHtml),'numbered source wording lost');
+echo "PASS numbered childcare guide, topical illustrations and inline emphasis\n";

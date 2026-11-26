@@ -300,8 +300,8 @@ function bnrights_layout_audit(){
     $bt=$g5['board_table'];$wt=$g5['write_prefix'].'note';
     $board=sql_fetch("SELECT bo_subject,bo_list_level,bo_read_level FROM $bt WHERE bo_table='note'",false);
     if(str_replace(' ','',trim($board['bo_subject']??''))!=='권리노트')throw new RuntimeException('rights board audit identity invalid');
-    $q=bnq("SELECT wr_id,wr_content,wr_6,wr_option,wr_name,wr_is_comment FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
-    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'server_render_verified'=>0,'server_render_failed_ids'=>[],'question_group_audit'=>[],'visual_audit'=>[],'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
+    $q=bnq("SELECT wr_id,wr_subject,wr_content,wr_6,wr_option,wr_name,wr_is_comment FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
+    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'server_render_verified'=>0,'server_render_failed_ids'=>[],'question_group_audit'=>[],'visual_audit'=>[],'numbered_heading_audit'=>[],'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
     while($r=sql_fetch_array($q)){
         $body=(string)$r['wr_content'];$report['total']++;
         $report[$r['wr_6']==='bn-rights-note-v1'?'new_format':'legacy']++;
@@ -320,7 +320,9 @@ function bnrights_layout_audit(){
                 &&strpos($GLOBALS['write']['wr_option']??'','html1')!==false;
             if($ok&&$r['wr_6']!=='bn-rights-note-v1'){
                 $normalize=static function($s){return preg_replace('/[\s\x{00A0}]+/u','',html_entity_decode($s,ENT_QUOTES,'UTF-8'));};
-                $ok=$normalize(strip_tags($rendered))===$normalize($body)
+                $source=preg_replace('/\*\*([^*\r\n]+)\*\*/u','$1',$body);
+                // When emphasis spans native lines it can be retained verbatim.
+                $ok=($normalize(strip_tags($rendered))===$normalize($source)||$normalize(str_replace('**','',strip_tags($rendered)))===$normalize(str_replace('**','',$body)))
                     &&strpos($rendered,'bn-rights-compact-text')!==false
                     &&!preg_match('~<br\s*/?>\s*<br\s*/?>~i',$rendered);
                 $expected=0;
@@ -328,6 +330,13 @@ function bnrights_layout_audit(){
                 $actual=substr_count($rendered,'bn-rights-topic-qa');
                 $report['question_group_audit'][]=['id'=>(int)$r['wr_id'],'expected'=>$expected,'actual'=>$actual];
                 $ok=$ok&&$expected===$actual;
+                $numbered=0;
+                foreach(preg_split('/\R/u',$body) as $line)if(busan_rights_numbered_heading($line))$numbered++;
+                if(!$expected&&$numbered>=2){
+                    $headingCount=substr_count($rendered,'bn-rights-topic bn-rights-topic-heading');
+                    $report['numbered_heading_audit'][]=['id'=>(int)$r['wr_id'],'numbered'=>$numbered,'rendered_headings'=>$headingCount];
+                    $ok=$ok&&$headingCount>=$numbered;
+                }
             }
             if($ok){
                 $cards=substr_count($rendered,'bn-rights-section-card ')+substr_count($rendered,'bn-rights-topic bn-rights-topic-qa')+substr_count($rendered,'bn-rights-topic bn-rights-topic-heading');

@@ -118,7 +118,7 @@ add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2
 // Presentation only: preserve the stored article, ID, author and reward ledger.
 // Only our signed-format, plain-paragraph rights notes are transformed.
 // Select a local explanatory illustration from the actual card's topic.
-function busan_rights_visual_key($title,$body,$kind){
+function busan_rights_visual_key($title,$body,$kind,$article=''){
     $rules=[
       'evacuate'=>'대피|안전한 장소|이동시켜|안전 확보|긴급.*신고',
       'pay'=>'성과급|상여금|급여|임금|수당|통상임금|최저임금|지급.?비율|퇴직금|정산',
@@ -133,7 +133,15 @@ function busan_rights_visual_key($title,$body,$kind){
       'check'=>'체크리스트|점검|확인할 것|확인 사항|유의사항|대응 방법|조치'
     ];
     $clean=static function($s){return html_entity_decode(strip_tags($s),ENT_QUOTES,'UTF-8');};
-    foreach([$clean($title),$clean($body)] as $text){
+    $topic=$clean($title);$article=$clean($article);
+    // A childcare guide should not become a salary guide because a later
+    // paragraph mentions benefit amounts. Prefer the question's subject.
+    if(preg_match('/육아|출산|배우자\s*출산|자녀\s*양육/u',$topic.' '.$article)){
+        if(preg_match('/급여|지원금|수당|금액|지급액/u',$topic))return 'pay';
+        if(preg_match('/근로시간\s*단축|단축근로/u',$topic))return 'time';
+        if(!preg_match('/해고|징계|불이익|복직\s*거부/u',$topic))return 'leave';
+    }
+    foreach([$topic,$clean($body),$article] as $text){
         foreach($rules as $key=>$pattern)if(preg_match('/'.$pattern.'/u',$text))return $key;
     }
     if(strpos($kind,'example')!==false)return 'example';
@@ -142,15 +150,15 @@ function busan_rights_visual_key($title,$body,$kind){
     if(strpos($kind,'question')!==false||strpos($kind,'topic-qa')!==false)return 'question';
     return 'guide';
 }
-function busan_rights_add_visuals($html){
+function busan_rights_add_visuals($html,$article=''){
     // These two renderers emit non-nested card containers. Only the generated
     // opening classes are augmented; neither the source text nor DB is changed.
     $pattern='~<div class="(bn-rights-(?:section-card|topic) bn-rights-[a-z-]+)">(.*?)</div>~su';
     $hasCards=preg_match('~<div class="bn-rights-topic bn-rights-topic-(?:qa|heading)"~',$html);
-    $out=preg_replace_callback($pattern,static function($m)use($hasCards){
+    $out=preg_replace_callback($pattern,static function($m)use($hasCards,$article){
         if($hasCards&&strpos($m[1],'topic-intro')!==false)return $m[0];
         $title=preg_match('~<h3\b[^>]*>(.*?)</h3>~su',$m[2],$h)?$h[1]:'';
-        $key=busan_rights_visual_key($title,$m[2],$m[1]);
+        $key=busan_rights_visual_key($title,$m[2],$m[1],$article);
         return '<div class="'.$m[1].' bn-rights-visual bn-rights-visual-'.$key.'">'.$m[2].'</div>';
     },$html);
     return is_string($out)?$out:$html;
@@ -196,7 +204,14 @@ function busan_rights_format_body($html){
 function busan_rights_question_line($line){
     return preg_match('/^\s*(?:Q\s*(?:[0-9０-９]+\s*)?[.．:：)）]|질문\s*(?:[0-9]+\s*)?[.．:：)）]|문\s*[:：])/iu',$line)===1;
 }
-function busan_rights_plain_body($raw){
+function busan_rights_numbered_heading($line){
+    $line=trim($line);
+    // Numbered topics are headings, not individual percentages or numbered answers.
+    return preg_match('/^(?:\*\*)?[0-9０-９]{1,2}\s*[)）.．]\s*\S/u',$line)===1
+      && mb_strlen($line)<=100
+      && !preg_match('/(?:%|원|시간|일|개월)\s*$/u',$line);
+}
+function busan_rights_plain_body($raw,$article=''){
     if(!is_string($raw)||!trim($raw)||$raw!==strip_tags($raw))return $raw;
     $lines=preg_split('/\R/u',$raw);
     if(!is_array($lines))return $raw;
@@ -204,6 +219,8 @@ function busan_rights_plain_body($raw){
     $kind='';$list=false;$pending=[];
     $esc=static function($s){
         $text=htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+        // Render paired literal Markdown emphasis as safe HTML, not stray stars.
+        $text=preg_replace('/\*\*([^*\r\n]+)\*\*/u','<strong>$1</strong>',$text);
         return function_exists('url_auto_link')?url_auto_link($text):$text;
     };
     $endlist=static function()use(&$out,&$list){if($list){$out.='</ul>';$list=false;}};
@@ -216,12 +233,18 @@ function busan_rights_plain_body($raw){
         $kind=$type;$out.='<div class="bn-rights-topic bn-rights-topic-'.$type.'">';
         if($title!=='')$out.='<h3 class="bn-rights-topic-title">'.$esc($title).'</h3>';
     };
+    $hasQuestions=false;$numbered=0;
+    foreach($lines as $line){
+        if(busan_rights_question_line(trim($line)))$hasQuestions=true;
+        if(busan_rights_numbered_heading($line))$numbered++;
+    }
     foreach($lines as $line){
         $line=trim($line);
         if($line===''||preg_match('/^[\s\x{00A0}]+$/u',$line))continue;
         $question=busan_rights_question_line($line);
         // Do not turn numbered payment rates or answers into standalone boxes.
-        $heading=preg_match('/^(?:■|◆|▶|【)/u',$line)&&mb_strlen($line)<=85;
+        $heading=(preg_match('/^(?:■|◆|▶|【)/u',$line)&&mb_strlen($line)<=85)
+          ||(!$hasQuestions&&$numbered>=2&&busan_rights_numbered_heading($line));
         if($question){$start('qa',$line);continue;}
         if($heading){$start('heading',$line);continue;}
         if($kind==='')$start('intro');
@@ -242,7 +265,7 @@ function busan_rights_plain_body($raw){
     $flush();$endlist();
     if($kind==='')return $raw;
     $out.='</div></div>';
-    return busan_rights_add_visuals($out);
+    return busan_rights_add_visuals($out,$article);
 }
 function busan_rights_prepare_body($header,$board){
     global $write;
@@ -252,7 +275,7 @@ function busan_rights_prepare_body($header,$board){
     if(($write['wr_6']??'')==='bn-rights-note-v1'&&($write['wr_name']??'')==='챗지기자'){
         $formatted=busan_rights_format_body($raw);
     }elseif(!preg_match('/(?:^|,)html[12](?:,|$)/', $write['wr_option']??'') || $raw===strip_tags($raw)){
-        $formatted=busan_rights_plain_body($raw);
+        $formatted=busan_rights_plain_body($raw,$write['wr_subject']??'');
     }else return $header;
     if($formatted!==$raw){
         $write['wr_content']=$formatted;
@@ -265,7 +288,7 @@ function busan_rights_prepare_body($header,$board){
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=16">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=17">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
