@@ -53,7 +53,42 @@
     });
     identity.dataset.bnReporterCard='1';
   }
-  function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);}
+  // Move the real share control (and its existing listener), never make a second one.
+  // Only the reporter's article author card is eligible; ordinary boards are unchanged.
+  function placeShare() {
+    const wrap=document.querySelector('.boardViewWrap');
+    const button=wrap?.querySelector('.bn-article-share[data-kind="article"]');
+    const identity=wrap?.querySelector('[data-bn-reporter-card="1"]');
+    const name=identity?.querySelector('.bn-reporter');
+    if(!button||!identity||!name||identity.contains(button))return;
+    const n=name.getBoundingClientRect();
+    const blanks=[...identity.querySelectorAll('button,a,[role="button"],.button,.btn')]
+      .filter(el=>{
+        if(el===button||el.contains(name)||el.contains(identity.querySelector('.bn-theme-avatar')))return false;
+        if((el.textContent||'').trim()||el.getAttribute('aria-label')||el.getAttribute('title')||el.matches('[aria-hidden="true"]'))return false;
+        const r=el.getBoundingClientRect();
+        if(r.width<16||r.width>65||r.height<16||r.height>65||r.top<n.bottom-3||r.top>n.bottom+45||Math.abs(r.left-n.left)>38)return false;
+        return ![...el.querySelectorAll('img,svg,i,canvas')].some(icon=>{
+          const s=getComputedStyle(icon), box=icon.getBoundingClientRect();
+          return s.display!=='none'&&s.visibility!=='hidden'&&box.width>2&&box.height>2;
+        });
+      }).sort((a,b)=>Math.abs(a.getBoundingClientRect().top-n.bottom)-Math.abs(b.getBoundingClientRect().top-n.bottom));
+    button.classList.add('bn-reporter-share');
+    if(blanks.length){
+      blanks[0].replaceWith(button);
+    }else{
+      // Some themes omit the old member control entirely. Keep the same
+      // placement immediately below the name without modifying other metadata.
+      const anchor=name.closest('.sv_wrap')||name;
+      const slot=document.createElement('div');
+      slot.className='bn-reporter-share-slot';
+      anchor.insertAdjacentElement('afterend',slot);
+      slot.append(button);
+    }
+    button.dataset.bnReporterShare='1';
+  }
+  function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();}
   apply();
+  document.addEventListener('bn-share-ready',placeShare);
   if(document.readyState!=='complete')window.addEventListener('load',apply,{once:true});
 })();

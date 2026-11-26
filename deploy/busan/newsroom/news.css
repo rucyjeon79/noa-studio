@@ -73,3 +73,11 @@
 .bn-reporter-avatar{background:#fff;padding:5px;box-sizing:border-box}
 .bn-reporter-avatar img{display:block;width:100%;height:100%;object-fit:contain}
 img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;border-radius:50%!important;padding:10px!important;box-sizing:border-box!important}
+
+/* The article action moves into the reporter's former member-control position. */
+.boardViewWrap [data-bn-reporter-card="1"] .bn-article-share.bn-reporter-share {
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  box-sizing:border-box;width:44px;min-width:44px;height:44px;min-height:44px;
+  padding:0;cursor:pointer;color:var(--bb-accent,#176a80);vertical-align:middle;
+}
+.bn-reporter-share-slot{display:flex;align-items:center;justify-content:flex-start;gap:0;margin:4px 0}

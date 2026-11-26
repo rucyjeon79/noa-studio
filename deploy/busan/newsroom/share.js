@@ -58,4 +58,5 @@
       button.disabled = false;
     }
   });
+  document.dispatchEvent(new Event('bn-share-ready'));
 })();

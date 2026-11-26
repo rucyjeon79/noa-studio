@@ -12,8 +12,13 @@ async function verifyArticleShare(page, article, width) {
   assert(box.width>=44 && box.height>=44,'share touch target');
   assert(await button.evaluate(el=>{
     const r=el.getBoundingClientRect();
-    return r.left>=0 && r.right<=innerWidth && !!el.closest('.boardViewHeader');
-  }),'share action stays within the header');
+    const author=el.closest('[data-bn-reporter-card="1"]');
+    const name=author?.querySelector('.bn-reporter')?.getBoundingClientRect();
+    return r.left>=0 && r.right<=innerWidth && !!author && !!name
+      && el.dataset.bnReporterShare==='1' && r.top>=name.bottom-3
+      && Math.abs(r.left-name.left)<=38;
+  }),'share action is below the reporter name inside the author card');
+  assert.equal(await page.locator('.boardViewHeader .bn-article-share').count(),0,'no duplicated upper share action');
   await page.locator('.boardViewWrap').screenshot({path:'/tmp/busan-news-share-'+width+'.png'});
 
   // Stub only device APIs: test the real deployed click handler without sending a message.
