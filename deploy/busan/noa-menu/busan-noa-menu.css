@@ -1,0 +1,37 @@
+/* 부산지부 메뉴 안의 NOA STUDIO 안내 카드만 적용. Player controls untouched. */
+:root{
+  --bnm-surface:#f4fafb;--bnm-edge:#cbdde3;--bnm-text:#173b4b;--bnm-muted:#456673;
+  --bnm-action:#176a80;--bnm-action-text:#fff;--bnm-secondary:#e7f2f5;--bnm-shadow:0 3px 12px rgba(27,69,89,.07);
+}
+:root[data-busan-theme="dark"],:root.darkMode{
+  --bnm-surface:#17283d;--bnm-edge:#34465b;--bnm-text:#edf3fb;--bnm-muted:#b9c8da;
+  --bnm-action:#dcc997;--bnm-action-text:#162435;--bnm-secondary:#22364d;--bnm-shadow:0 3px 12px rgba(0,0,0,.16);
+}
+:root[data-busan-theme="light"]{
+  --bnm-surface:#f4fafb;--bnm-edge:#cbdde3;--bnm-text:#173b4b;--bnm-muted:#456673;
+  --bnm-action:#176a80;--bnm-action-text:#fff;--bnm-secondary:#e7f2f5;--bnm-shadow:0 3px 12px rgba(27,69,89,.07);
+}
+.busan-noa-menu-card{
+  box-sizing:border-box!important;min-width:0;max-width:100%;
+  background:var(--bnm-surface)!important;color:var(--bnm-text)!important;
+  border:1px solid var(--bnm-edge)!important;border-radius:var(--bb-radius,16px)!important;
+  box-shadow:var(--bnm-shadow)!important;padding:12px!important;
+}
+.busan-noa-menu-card .busan-noa-menu-title{
+  color:var(--bnm-muted)!important;font-size:12px!important;font-weight:650!important;line-height:1.5!important;
+}
+.busan-noa-menu-card :is(.busan-noa-menu-entry,.busan-noa-menu-subscribe){
+  box-sizing:border-box!important;min-height:44px;min-width:0;max-width:100%;
+  padding:8px 10px!important;border-radius:9px!important;line-height:1.4!important;
+  font-weight:700!important;white-space:normal!important;text-align:center;
+  text-decoration:none!important;overflow-wrap:anywhere;
+}
+.busan-noa-menu-card .busan-noa-menu-entry{
+  background:var(--bnm-action)!important;color:var(--bnm-action-text)!important;border:1px solid var(--bnm-action)!important;
+}
+.busan-noa-menu-card .busan-noa-menu-subscribe{
+  background:var(--bnm-secondary)!important;color:var(--bnm-text)!important;border:1px solid var(--bnm-edge)!important;
+}
+.busan-noa-menu-card .busan-noa-menu-entry :is(span,strong,i),.busan-noa-menu-card .busan-noa-menu-subscribe :is(span,strong,i){color:inherit!important}
+.busan-noa-menu-card :is(a,button,[role="button"]):focus-visible{outline:2px solid var(--bnm-action)!important;outline-offset:2px}
+@media(max-width:480px){.busan-noa-menu-card{padding:10px!important}.busan-noa-menu-card :is(.busan-noa-menu-entry,.busan-noa-menu-subscribe){font-size:13px!important}}

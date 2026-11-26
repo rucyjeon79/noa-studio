@@ -1,0 +1,69 @@
+name: Busan NOA menu theme
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/busan/noa-menu/**','scripts/qa/busan-noa-menu.cjs','.github/workflows/busan-noa-menu.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: busan-readonly-sftp, cancel-in-progress: false}
+jobs:
+  theme:
+    runs-on: ubuntu-24.04
+    environment: busan-readonly
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: |
+          php -l deploy/busan/noa-menu/noa-menu.extend.php
+          node --check deploy/busan/noa-menu/busan-noa-menu.js
+          node --check scripts/qa/busan-noa-menu.cjs
+          python -m pip install -q paramiko==3.5.1
+      - name: Deploy only independent menu presentation assets
+        env:
+          BUSAN_SSH_HOST: ${{ secrets.BUSAN_SSH_HOST }}
+          BUSAN_SSH_USER: ${{ secrets.BUSAN_SSH_USER }}
+          BUSAN_SSH_PASSWORD: ${{ secrets.BUSAN_SSH_PASSWORD }}
+          BUSAN_SSH_HOST_FINGERPRINT: ${{ secrets.BUSAN_SSH_HOST_FINGERPRINT }}
+        run: |
+          cd scripts
+          python - <<'PY'
+          import os,socket,hmac,stat,hashlib,secrets,urllib.request
+          from pathlib import Path
+          import paramiko
+          from busan_readonly_check import configuration,fingerprint,PORT,ROOT
+          host,user,password,pin=configuration(os.environ)
+          src=Path('../deploy/busan/noa-menu')
+          files={'busan-assistant/banner-assets/busan-noa-menu.css':src/'busan-noa-menu.css','busan-assistant/banner-assets/busan-noa-menu.js':src/'busan-noa-menu.js','extend/busan-noa-menu.extend.php':src/'noa-menu.extend.php'}
+          with socket.create_connection((host,PORT),timeout=15) as sock,paramiko.Transport(sock) as t:
+            t.get_security_options().key_types=('ssh-ed25519',)
+            t.start_client(timeout=20)
+            assert hmac.compare_digest(fingerprint(t.get_remote_server_key()),pin)
+            t.auth_password(user,password,fallback=False)
+            with paramiko.SFTPClient.from_transport(t) as s:
+              s.get_channel().settimeout(25)
+              assert s.normalize(ROOT)==ROOT
+              for target,source in files.items():
+                dest=ROOT+'/'+target
+                data=source.read_bytes()
+                try:
+                  assert stat.S_ISREG(s.lstat(dest).st_mode) and s.normalize(dest)==dest
+                  with s.open(dest,'rb') as f: old=f.read(100000)
+                  if old==data: continue
+                  raise RuntimeError('Existing unmanaged file: '+target)
+                except FileNotFoundError: pass
+                temp=dest+'.'+secrets.token_hex(8)+'.tmp'
+                with s.open(temp,'wx') as f: f.write(data)
+                s.chmod(temp,0o644)
+                s.posix_rename(temp,dest)
+                with s.open(dest,'rb') as f: assert f.read(100000)==data
+                print('PASS uploaded',target)
+          for name in ['busan-noa-menu.css','busan-noa-menu.js']:
+            with urllib.request.urlopen('https://skhnslu-busan.com/busan-assistant/banner-assets/'+name+'?v=1',timeout=20) as r:
+              assert r.read(100000)==(src/name).read_bytes()
+          print('PASS live assets; no SQL or player changes')
+          PY
+      - name: Verify live light and dark menu card
+        run: |
+          npm install --prefix /tmp/busan-noa-menu-qa --no-audit --no-fund --ignore-scripts playwright-core@1.56.1
+          NODE_PATH=/tmp/busan-noa-menu-qa/node_modules node scripts/qa/busan-noa-menu.cjs
