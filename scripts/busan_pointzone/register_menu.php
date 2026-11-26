@@ -92,7 +92,7 @@ try{
     }
     $needsOrder=$newOrder!==$currentOrder;
     $desired=['shop'=>'포인트 상점','events'=>'지부장 이벤트',
-              'profile'=>'프로필 꾸미기','honor'=>'명예의 전당','my'=>'나의 포인트존'];
+              'profile'=>'프로필 꾸미기','my'=>'나의 포인트존'];
     $children=pzm_q("SELECT me_id,me_code,me_name,me_link,me_target,me_order,me_use,me_mobile_use FROM $mt WHERE LENGTH(me_code)=4 AND LEFT(me_code,2)=".pzm_v($code)." ORDER BY me_code,me_id");
     $byCode=[];while($row=sql_fetch_array($children)){
         if(isset($byCode[$row['me_code']]))throw new RuntimeException('duplicate submenu code');
@@ -101,7 +101,7 @@ try{
     $plan=[];$i=0;
     $suffixes=['shop'=>'10','events'=>'40','profile'=>'50','honor'=>'60','my'=>'70'];
     $retired=[];
-    foreach(['20'=>['auction','포인트 경매'],'30'=>['sharing','포인트 나눔']] as $suffix=>[$key,$name]){
+    foreach(['20'=>['auction','포인트 경매'],'30'=>['sharing','포인트 나눔'],'60'=>['honor','명예의 전당']] as $suffix=>[$key,$name]){
         $row=$byCode[$code.$suffix]??null;
         if(!$row)continue;
         if($row['me_name']!==$name||!in_array($row['me_link'],[$url.'?section='.$key,$legacy.'?section='.$key],true))throw new RuntimeException('retired submenu identity conflict');
