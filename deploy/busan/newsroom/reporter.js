@@ -60,7 +60,24 @@
     const button=wrap?.querySelector('.bn-article-share[data-kind="article"]');
     const identity=wrap?.querySelector('[data-bn-reporter-card="1"]');
     const name=identity?.querySelector('.bn-reporter');
-    if(!button||!identity||!name||identity.contains(button))return;
+    if(!button||!identity||!name||button.dataset.bnReporterShare==='1')return;
+    // The inner identity block can be only as wide as the author's text.
+    // Locate the actual full-width bordered profile card, not that inner block.
+    const wrapRect=wrap.getBoundingClientRect();
+    const avatar=identity.querySelector('.bn-theme-avatar');
+    let outer=null,fallback=null;
+    for(let p=identity;p&&p!==wrap;p=p.parentElement){
+      if(p.matches('body,main,#contentsWrap,#bo_v_con,.boardViewHeader')||p.contains(button))break;
+      if(!avatar||!p.contains(avatar)||p.querySelectorAll('.bn-reporter').length!==1)continue;
+      const r=p.getBoundingClientRect(),s=getComputedStyle(p);
+      if(r.width<wrapRect.width*.82||r.height>260||r.height<35)continue;
+      const border=parseFloat(s.borderInlineEndWidth)||0;
+      const radius=parseFloat(s.borderTopRightRadius)||0;
+      if(border>0&&radius>0){outer=p;break;}
+      if(!fallback||r.width>fallback.getBoundingClientRect().width+2)fallback=p;
+    }
+    outer=outer||fallback;
+    if(!outer)return; // Keep the working upper share control if no safe card is found.
     const n=name.getBoundingClientRect();
     const blanks=[...identity.querySelectorAll('button,a,[role="button"],.button,.btn')]
       .filter(el=>{
@@ -87,11 +104,12 @@
     }
     // Preserve the theme's existing padding and reserve only the right-side
     // width necessary for a 44px touch target. No separate action row.
-    const padding=parseFloat(getComputedStyle(identity).paddingInlineEnd)||0;
-    identity.style.setProperty('--bn-author-share-padding',Math.max(padding,12)+52+'px');
-    identity.classList.add('bn-reporter-share-right');
+    const padding=parseFloat(getComputedStyle(outer).paddingInlineEnd)||0;
+    outer.style.setProperty('--bn-author-share-padding',Math.max(padding,12)+52+'px');
+    outer.classList.add('bn-reporter-share-right');
+    outer.dataset.bnReporterOuter='1';
     button.classList.add('bn-reporter-share');
-    identity.append(button);
+    outer.append(button);
     button.dataset.bnReporterShare='1';
   }
   function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();}

@@ -114,7 +114,7 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=8">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=9">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
@@ -149,6 +149,6 @@ add_event('tail_sub', 'busan_news_article_share');
 function busan_news_reporter_assets(){
     global $bo_table;
     if(!busan_news_is_board($bo_table??''))return;
-    echo '<script src="'.htmlspecialchars(G5_URL.'/busan-assistant/newsroom/reporter.js?v=3',ENT_QUOTES,'UTF-8').'" defer></script>';
+    echo '<script src="'.htmlspecialchars(G5_URL.'/busan-assistant/newsroom/reporter.js?v=4',ENT_QUOTES,'UTF-8').'" defer></script>';
 }
 add_event('tail_sub','busan_news_reporter_assets');

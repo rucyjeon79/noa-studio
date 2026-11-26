@@ -12,11 +12,13 @@ async function verifyArticleShare(page, article, width) {
   assert(box.width>=44 && box.height>=44,'share touch target');
   assert(await button.evaluate(el=>{
     const r=el.getBoundingClientRect();
-    const author=el.closest('[data-bn-reporter-card="1"]');
+    const author=el.closest('[data-bn-reporter-outer="1"]');
     const name=author?.querySelector('.bn-reporter')?.getBoundingClientRect();
     const card=author?.getBoundingClientRect();
-    return r.left>=0 && r.right<=innerWidth && !!author && !!name && !!card
+    const wrap=el.closest('.boardViewWrap')?.getBoundingClientRect();
+    return !!wrap && r.left>=0 && r.right<=innerWidth && !!author && !!name && !!card
       && el.dataset.bnReporterShare==='1' && author.classList.contains('bn-reporter-share-right')
+      && card.width>=wrap.width*.82 && wrap.right-r.right<=Math.max(40,wrap.width*.055)
       && r.left>=name.right && card.right-r.right>=0 && card.right-r.right<=25
       && r.top>=card.top-1 && r.bottom<=card.bottom+1
       && Math.abs((r.top+r.bottom)/2-(card.top+card.bottom)/2)<=4
