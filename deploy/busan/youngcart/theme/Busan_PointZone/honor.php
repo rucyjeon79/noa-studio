@@ -4,7 +4,7 @@ require_once dirname(__DIR__,2).'/common.php';
 if(empty($is_member)||empty($member['mb_id'])||!empty($member['mb_leave_date'])||!empty($member['mb_intercept_date'])){
     alert('부산지부 조합원 로그인 후 이용해 주세요.',G5_BBS_URL.'/login.php?url='.rawurlencode(G5_URL.'/theme/Busan_PointZone/honor.php'));
 }
-$bh_sections=['home'=>'명예의 전당','rules'=>'선정 기준 및 운영 규정','review'=>'간부 심사','vote'=>'조합원 투표','history'=>'역대 수상 기록'];
+$bh_sections=['home'=>'수상자 소개','rules'=>'선정 기준 및 운영 규정','review'=>'간부 심사','vote'=>'조합원 투표','history'=>'역대 수상 기록'];
 $bh_section=$_GET['section']??'home';
 if(!is_string($bh_section)||!isset($bh_sections[$bh_section])){http_response_code(404);exit;}
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){http_response_code(405);exit;}
