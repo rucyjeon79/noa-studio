@@ -85,7 +85,7 @@ def run():
                 integrated(page)
                 check(call(detail,"guest")[0]==403,"guest denied detail")
                 check(call(detail+"x")[0]==404,"invalid product ID")
-                sections={"shop":"포인트 상점","events":"지부장 이벤트","profile":"프로필 꾸미기","honor":"명예의 전당","my":"나의 포인트존"}
+                sections={"shop":"포인트 상점","events":"지부장 이벤트","profile":"프로필 꾸미기","my":"나의 포인트존"}
                 for section,label in sections.items():
                     code,page,_=call("pointzone.php?section="+section)
                     check(code==200,"submenu HTTP "+section)
@@ -111,7 +111,7 @@ def run():
                     check(call("pointzone.php?section="+section,"super",data)[0]==503,"financial route gate "+action)
                 print("BUSAN_POINTZONE_ACTIVITY_FINANCIAL_ROUTE_LOCK_OK")
                 print("BUSAN_POINTZONE_ACTIVITY_UI_OK")
-                print("BUSAN_POINTZONE_FIVE_SUBMENUS_OK")
+                print("BUSAN_POINTZONE_FOUR_SUBMENUS_OK")
                 code,body,_=call("checkout.php?item="+"8"*20)
                 check(code==200 and "장바구니 담기" in body and '<fieldset><input type="hidden" name="csrf"' in body,"enabled cart action")
                 cart_token=re.search(r'name="csrf" value="([a-f0-9]{64})"',body).group(1)
