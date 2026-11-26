@@ -293,6 +293,24 @@ function bnrights_menu(){
     if(function_exists('run_event'))run_event('admin_menu_list_update');
     return ['code'=>$code,'name'=>'권리노트','board'=>'note'];
 }
+// Read-only shape audit of every actual rights-note body, without exposing
+// the member-only original text, title, author, attachment URLs or other data.
+function bnrights_layout_audit(){
+    global $g5;
+    $bt=$g5['board_table'];$wt=$g5['write_prefix'].'note';
+    $board=sql_fetch("SELECT bo_subject,bo_list_level,bo_read_level FROM $bt WHERE bo_table='note'",false);
+    if(str_replace(' ','',trim($board['bo_subject']??''))!=='권리노트')throw new RuntimeException('rights board audit identity invalid');
+    $q=bnq("SELECT wr_id,wr_content,wr_6 FROM $wt WHERE wr_is_comment=0 ORDER BY wr_id");
+    $report=['total'=>0,'legacy'=>0,'new_format'=>0,'paragraphs'=>0,'line_breaks'=>0,'headings'=>0,'lists'=>0,'tables'=>0,'plain_text'=>0,'interactive_fallback'=>0,'read_level'=>(int)$board['bo_read_level'],'list_level'=>(int)$board['bo_list_level']];
+    while($r=sql_fetch_array($q)){
+        $body=(string)$r['wr_content'];$report['total']++;
+        $report[$r['wr_6']==='bn-rights-note-v1'?'new_format':'legacy']++;
+        foreach(['paragraphs'=>'p|div','line_breaks'=>'br','headings'=>'h[1-6]|strong|b','lists'=>'ul|ol|dl','tables'=>'table','interactive_fallback'=>'script|style|form|iframe|object|embed|template'] as $key=>$tags)
+            if(preg_match('~<(?:'.$tags.')\b~i',$body))$report[$key]++;
+        if($body===strip_tags($body))$report['plain_text']++;
+    }
+    return $report;
+}
 function bnrights_publish($input){
     global $g5,$config;
     if(!bnactive())throw new RuntimeException('newsroom split not active');
@@ -358,7 +376,7 @@ function bnrights_publish($input){
     if(function_exists('delete_cache_latest'))delete_cache_latest('note');
     $after=sql_fetch("SELECT * FROM $bt WHERE bo_table='note'",false);
     foreach(['gr_id','bo_list_level','bo_read_level','bo_write_level','bo_comment_level','bo_write_point','bo_read_point','bo_use_cert','bo_use_category','bo_category_list'] as $field)if(($after[$field]??null)!==($board[$field]??null))throw new RuntimeException('rights permission or policy changed');
-    return ['menu'=>$menu,'rows'=>$rows,'list_level'=>(int)$board['bo_list_level'],'read_level'=>(int)$board['bo_read_level'],'write_point'=>$policy,'permissions_preserved'=>true];
+    return ['menu'=>$menu,'rows'=>$rows,'list_level'=>(int)$board['bo_list_level'],'read_level'=>(int)$board['bo_read_level'],'write_point'=>$policy,'permissions_preserved'=>true,'layout_audit'=>bnrights_layout_audit()];
 }
 
 function bnvalidate($a){

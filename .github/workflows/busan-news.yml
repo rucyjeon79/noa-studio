@@ -36,6 +36,7 @@ jobs:
           node --check deploy/busan/newsroom/ticker.js
           node --check deploy/busan/newsroom/share.js
           node --check deploy/busan/newsroom/reporter.js
+          node --check deploy/busan/newsroom/rights-reader.js
           python -m pip install -q paramiko==3.5.1
       - name: Publish only Busan news and register its native menu
         env:

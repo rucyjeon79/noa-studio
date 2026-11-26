@@ -134,3 +134,18 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 #bo_v_con .bn-rights-disclaimer{border-top:1px solid var(--bb-border,#aabac2);padding:12px 2px 0;font-size:12px;opacity:.82}
 #bo_v_con .bn-rights-disclaimer p{margin:0;line-height:1.65}
 @media(max-width:480px){#bo_v_con .bn-rights-guide{gap:10px}#bo_v_con .bn-rights-section-card{padding:13px}}
+
+/* Legacy rights-note articles: native words, headings, tables and links retained. */
+#bo_v_con .bn-rights-legacy{gap:12px}
+#bo_v_con .bn-rights-legacy .bn-rights-section-card{white-space:pre-line;overflow-wrap:anywhere;min-width:0}
+#bo_v_con .bn-rights-legacy .bn-rights-section-card > :first-child{margin-top:0}
+#bo_v_con .bn-rights-legacy .bn-rights-section-card > :last-child{margin-bottom:0}
+#bo_v_con .bn-rights-legacy .bn-rights-original-heading{font-weight:750;line-height:1.5;margin:0 0 10px;color:var(--bb-accent,#176a80)}
+#bo_v_con .bn-rights-legacy .bn-rights-heading{border-inline-start:3px solid var(--bb-accent,#176a80)}
+#bo_v_con .bn-rights-legacy .bn-rights-check{border-inline-start:3px solid var(--bb-accent,#176a80)}
+#bo_v_con .bn-rights-legacy :is(p,li,blockquote){line-height:1.75}
+#bo_v_con .bn-rights-legacy :is(ul,ol){white-space:normal;padding-inline-start:1.4em}
+#bo_v_con .bn-rights-legacy :is(table,pre){max-width:100%;overflow-wrap:anywhere;white-space:normal}
+#bo_v_con .bn-rights-legacy pre{white-space:pre-wrap}
+#bo_v_con .bn-rights-legacy .bn-rights-lines{line-height:1.9}
+#bo_v_con .bn-rights-legacy .bn-rights-section-card:has(table){overflow-x:auto}

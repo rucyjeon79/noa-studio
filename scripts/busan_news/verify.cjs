@@ -2,6 +2,33 @@ const assert = require('node:assert/strict');
 const { chromium, devices, request } = require('playwright-core');
 const origin = 'https://skhnslu-busan.com';
 const checkHeaders = {'X-Busan-News-Check': '1'};
+async function verifyRightsLayout(browser) {
+  const fs=require('node:fs');
+  const js=fs.readFileSync('deploy/busan/newsroom/rights-reader.js','utf8');
+  const css=fs.readFileSync('deploy/busan/newsroom/news.css','utf8');
+  for(const width of [320,390,1440]){
+    const page=await browser.newPage({viewport:{width,height:800}});
+    try {
+      for(const body of [
+        '<h3>기존 제목</h3><p>첫 설명</p><p>둘째 설명</p><h3>기존 목록</h3><ul><li>항목 하나</li><li>항목 둘</li></ul><p><a href="/note">기존 링크</a></p>',
+        '<div><p><strong>Q. 질문</strong></p><p>A. 답변</p><p>한 줄<br>다음 줄</p><table><tbody><tr><td>원래 표</td></tr></tbody></table></div>',
+        '기존 첫 줄\n기존 다음 줄<br>기존 마지막 줄'
+      ]){
+        await page.setContent('<template id="bn-rights-reading-marker"></template><div id="bo_v_con">'+body+'</div>');
+        await page.addStyleTag({content:css});
+        const before=await page.locator('#bo_v_con').evaluate(el=>({text:el.textContent,links:[...el.querySelectorAll('a')].map(a=>a.getAttribute('href')),tags:el.querySelectorAll('table,li,br,img').length}));
+        await page.addScriptTag({content:js});
+        const after=await page.locator('#bo_v_con').evaluate(el=>({text:el.textContent,links:[...el.querySelectorAll('a')].map(a=>a.getAttribute('href')),tags:el.querySelectorAll('table,li,br,img').length}));
+        assert.deepEqual(after,before,'legacy rights words, links and structural nodes must remain');
+        assert(await page.locator('.bn-rights-legacy .bn-rights-section-card').count()>0,'legacy cards missing');
+        assert(await page.locator('#bo_v_con').evaluate(el=>el.scrollWidth<=el.clientWidth+2),'rights content overflows viewport');
+        await page.addScriptTag({content:js});
+        assert.equal(await page.locator('.bn-rights-legacy').count(),1,'formatting must be idempotent');
+      }
+      console.log('PASS rights legacy card layout and unchanged text/links',width);
+    } finally {await page.close();}
+  }
+}
 
 async function verifyArticleShare(page, article, width) {
   const button=page.getByRole('button',{name:'기사 공유',exact:true});
@@ -124,6 +151,7 @@ async function assertMoves(page) {
 (async()=>{
   const browser = await chromium.launch({channel:'chrome',headless:true});
   try {
+    await verifyRightsLayout(browser);
     for (const options of [
       {...devices['Pixel 7'], reducedMotion:'reduce', viewport:{width:390,height:844}},
       {viewport:{width:1440,height:920}}
