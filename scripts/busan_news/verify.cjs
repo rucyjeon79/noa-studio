@@ -14,16 +14,21 @@ async function verifyArticleShare(page, article, width) {
     const r=el.getBoundingClientRect();
     const author=el.closest('[data-bn-reporter-outer="1"]');
     const name=author?.querySelector('.bn-reporter')?.getBoundingClientRect();
+    const info=author?.querySelector('.bn-reporter-info')?.getBoundingClientRect();
+    const avatar=author?.querySelector('.bn-theme-avatar')?.getBoundingClientRect();
     const card=author?.getBoundingClientRect();
     const wrap=el.closest('.boardViewWrap')?.getBoundingClientRect();
-    return !!wrap && r.left>=0 && r.right<=innerWidth && !!author && !!name && !!card
-      && el.dataset.bnReporterShare==='1' && author.classList.contains('bn-reporter-share-right')
+    const mid=b=>(b.top+b.bottom)/2;
+    return !!wrap && r.left>=0 && r.right<=innerWidth && !!author && !!name && !!card && !!info && !!avatar
+      && el.dataset.bnReporterShare==='1' && author.classList.contains('bn-reporter-compact')
       && card.width>=wrap.width*.82 && wrap.right-r.right<=Math.max(40,wrap.width*.055)
-      && r.left>=name.right && card.right-r.right>=0 && card.right-r.right<=25
-      && r.top>=card.top-1 && r.bottom<=card.bottom+1
-      && Math.abs((r.top+r.bottom)/2-(card.top+card.bottom)/2)<=4
+      && r.left>=info.right && card.right-r.right>=0 && card.right-r.right<=25
+      && Math.abs(mid(r)-mid(info))<=2 && Math.abs(mid(r)-mid(avatar))<=2
+      && Math.abs(mid(r)-mid(card))<=2
+      && card.height<=Math.max(r.height,info.height,avatar.height)+28
+      && author.children.length===3 && !!author.querySelector('.bn-reporter-meta time')
       && !author.querySelector('.bn-reporter-share-slot');
-  }),'share action is right aligned in the compact author card');
+  }),'logo, reporter info and share must share one vertical centerline without excess card height');
   assert.equal(await page.locator('.boardViewHeader .bn-article-share').count(),0,'no duplicated upper share action');
   await page.locator('.boardViewWrap').screenshot({path:'/tmp/busan-news-share-'+width+'.png'});
 

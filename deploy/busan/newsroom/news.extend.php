@@ -114,7 +114,7 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=9">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=10">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
@@ -147,8 +147,39 @@ add_event('tail_sub', 'busan_news_article_share');
 
 
 function busan_news_reporter_assets(){
-    global $bo_table;
+    global $bo_table,$wr_id,$write,$board,$g5;
     if(!busan_news_is_board($bo_table??''))return;
-    echo '<script src="'.htmlspecialchars(G5_URL.'/busan-assistant/newsroom/reporter.js?v=4',ENT_QUOTES,'UTF-8').'" defer></script>';
+    $esc=static function($s){return htmlspecialchars((string)$s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');};
+    if(basename($_SERVER['SCRIPT_NAME']??'')==='board.php'
+        && busan_board_share_eligible($bo_table,$wr_id??0,$write??[],$board??[])
+        && ($write['wr_name']??'')==='챗지기자'
+        && preg_match('/^[a-f0-9]{64}$/D',$write['wr_3']??'')
+        && preg_match('/^[a-f0-9]{64}$/D',$write['wr_4']??'')){
+        $table=$g5['write_prefix'].$bo_table;
+        $record=sql_fetch("SELECT wr_datetime,wr_hit,wr_comment,ca_name FROM `$table` WHERE wr_id=".(int)$wr_id." AND wr_is_comment=0",false);
+        if(!empty($record['wr_datetime'])){
+            $timestamp=strtotime($record['wr_datetime']);
+            $category=!empty($board['bo_use_category'])?trim($record['ca_name']??''):'';
+            $categoryUrl=G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&sca='.rawurlencode($category);
+            ?>
+            <template id="bn-reporter-compact-template">
+              <img class="bn-theme-avatar" src="<?=$esc(G5_URL.'/busan-assistant/newsroom/reporter-logo.svg')?>" alt="ChatGPT" width="48" height="48">
+              <div class="bn-reporter-info">
+                <span class="bn-reporter" data-bn-fixed="1" title="부산지부 AI 기자 · ChatGPT 활용">챗지기자</span>
+                <div class="bn-reporter-meta">
+                  <time datetime="<?=$esc(date('c',$timestamp))?>"><?=$esc(date('y-m-d H:i',$timestamp))?></time>
+                  <span aria-label="댓글 <?=(int)$record['wr_comment']?>개"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 3-2z"/><path d="M8 11h.01M16 11h.01"/></svg><?=number_format((int)$record['wr_comment'])?>개</span>
+                  <span aria-label="조회 <?=(int)$record['wr_hit']?>회"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><?=number_format((int)$record['wr_hit'])?>회</span>
+                </div>
+                <?php if($category!==''):?>
+                <a class="bn-reporter-category" href="<?=$esc($categoryUrl)?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13l-7 7L3 10V3h7z"/><circle cx="7.5" cy="7.5" r="1"/></svg><?=$esc($category)?></a>
+                <?php endif;?>
+              </div>
+              <div class="bn-reporter-actions"></div>
+            </template>
+            <?php
+        }
+    }
+    echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/reporter.js?v=5').'" defer></script>';
 }
 add_event('tail_sub','busan_news_reporter_assets');

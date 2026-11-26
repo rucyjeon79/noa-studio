@@ -78,39 +78,22 @@
     }
     outer=outer||fallback;
     if(!outer)return; // Keep the working upper share control if no safe card is found.
-    const n=name.getBoundingClientRect();
-    const blanks=[...identity.querySelectorAll('button,a,[role="button"],.button,.btn')]
-      .filter(el=>{
-        if(el===button||el.contains(name)||el.contains(identity.querySelector('.bn-theme-avatar')))return false;
-        if((el.textContent||'').trim()||el.getAttribute('aria-label')||el.getAttribute('title')||el.matches('[aria-hidden="true"]'))return false;
-        const r=el.getBoundingClientRect();
-        if(r.width<16||r.width>65||r.height<16||r.height>65||r.top<n.bottom-3||r.top>n.bottom+45||Math.abs(r.left-n.left)>38)return false;
-        return ![...el.querySelectorAll('img,svg,i,canvas')].some(icon=>{
-          const s=getComputedStyle(icon), box=icon.getBoundingClientRect();
-          return s.display!=='none'&&s.visibility!=='hidden'&&box.width>2&&box.height>2;
-        });
-      }).sort((a,b)=>Math.abs(a.getBoundingClientRect().top-n.bottom)-Math.abs(b.getBoundingClientRect().top-n.bottom));
-    // Remove the former empty member action and its now-empty row only.
-    // Never remove author, metadata, category or real controls.
-    if(blanks.length){
-      let parent=blanks[0].parentElement;
-      blanks[0].remove();
-      for(let depth=0;parent&&parent!==identity&&depth<3;depth++){
-        if(parent.contains(name)||parent.contains(identity.querySelector('.bn-theme-avatar'))
-          ||(parent.textContent||'').trim()||parent.querySelector('a,button,input,img,svg,i,canvas,[role="button"]'))break;
-        const next=parent.parentElement;
-        parent.remove();parent=next;
-      }
-    }
-    // Preserve the theme's existing padding and reserve only the right-side
-    // width necessary for a 44px touch target. No separate action row.
-    const padding=parseFloat(getComputedStyle(outer).paddingInlineEnd)||0;
-    outer.style.setProperty('--bn-author-share-padding',Math.max(padding,12)+52+'px');
-    outer.classList.add('bn-reporter-share-right');
-    outer.dataset.bnReporterOuter='1';
+    const template=document.getElementById('bn-reporter-compact-template');
+    if(!template||outer.querySelector('#bo_v_con,.boardViewHeader,form,textarea'))return;
+    // Render the verified reporter's own compact card instead of inheriting
+    // the native member-only rows, fixed heights or empty category space.
+    const fragment=template.content.cloneNode(true);
+    const slot=fragment.querySelector('.bn-reporter-actions');
+    if(!slot||!fragment.querySelector('.bn-reporter-info')||!fragment.querySelector('.bn-theme-avatar'))return;
     button.classList.add('bn-reporter-share');
-    outer.append(button);
     button.dataset.bnReporterShare='1';
+    slot.append(button); // Preserve the actual share listener and touch target.
+    outer.replaceChildren(fragment);
+    outer.removeAttribute('data-bn-reporter-card');
+    outer.style.removeProperty('--bn-author-share-padding');
+    outer.classList.add('bn-reporter-share-right','bn-reporter-compact');
+    outer.dataset.bnReporterOuter='1';
+    outer.dataset.bnReporterCard='1';
   }
   function apply(){document.querySelectorAll('.bn-reporter').forEach(fix);placeShare();}
   apply();
