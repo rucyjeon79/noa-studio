@@ -65,7 +65,7 @@ async function verifyArticleShare(page, article, width) {
 async function verifyCheckViews(browser, article) {
   const listing = await browser.newPage();
   const listURL = new URL('/bbs/board.php', origin);
-  listURL.search = new URLSearchParams({bo_table:'busan_news', sfl:'wr_subject', stx:article.title});
+  listURL.search = new URLSearchParams({bo_table:new URL(article.url).searchParams.get('bo_table'), sfl:'wr_subject', stx:article.title});
   const readHits = async () => {
     await listing.goto(listURL.href, {waitUntil:'domcontentloaded'});
     const row = listing.locator('.cardBox').filter({
@@ -174,7 +174,8 @@ async function assertMoves(page) {
         const link=article.url;
         const articleResponse = await page.goto(link,{waitUntil:'domcontentloaded'});
         assert.equal(articleResponse.headers()['x-busan-news-view'], 'excluded');
-        await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
+        const sectionNames={busan_news_company:'회사·그룹 소식',busan_news_union:'노동조합 소식',busan_news_law:'노동법·판례',busan_news_world:'세계 노동 동향'};
+        await page.getByRole('heading',{name:sectionNames[article.board]||'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
         const card=page.locator('#bo_v_con a.bn-source-card');
         await card.waitFor({state:'visible'});
         assert.equal(await card.count(),1);
@@ -194,6 +195,8 @@ async function assertMoves(page) {
       await page.goto(boardURL,{waitUntil:'domcontentloaded'});
       await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
       assert((await page.title()).includes('OpenAI 뉴스룸'));
+      for(const name of ['회사·그룹 소식','노동조합 소식','노동법·판례','세계 노동 동향']) await page.locator('.bn-hub-section').getByRole('heading',{name,exact:true}).waitFor({state:'visible'});
+      assert.equal(await page.locator('.bn-hub-section').count(),4);
       assert.equal(await page.locator('.bn-article-share').count(),0,'article sharing is absent on the list');
       console.log('PASS newsroom menu and board title',width,boardURL);
       await page.close();

@@ -1,13 +1,49 @@
 <?php
 if (!defined('_GNUBOARD_') || (defined('G5_IS_ADMIN') && G5_IS_ADMIN)) return;
 
+function busan_news_sections(){
+    return ['busan_news_company'=>'회사·그룹 소식','busan_news_union'=>'노동조합 소식','busan_news_law'=>'노동법·판례','busan_news_world'=>'세계 노동 동향'];
+}
+function busan_news_is_board($id){
+    return $id==='busan_news'||isset(busan_news_sections()[$id]);
+}
+function busan_news_split_active(){
+    global $g5;
+    $b=sql_fetch("SELECT bo_10 FROM {$g5['board_table']} WHERE bo_table='busan_news'",false);
+    return ($b['bo_10']??'')==='busan-reporter-archive-v2';
+}
+// Old shared article links remain valid, while the main menu opens the hub.
+function busan_news_legacy_redirect(){
+    global $bo_table,$wr_id,$g5;
+    if($bo_table!=='busan_news'||basename($_SERVER['SCRIPT_NAME']??'')!=='board.php'
+        ||!in_array($_SERVER['REQUEST_METHOD']??'',['GET','HEAD'],true)||!busan_news_split_active())return;
+    $id=(int)$wr_id;
+    if($id>0)foreach(busan_news_sections() as $target=>$title){
+        $t=$g5['write_prefix'].$target;
+        $row=sql_fetch("SELECT wr_id FROM `$t` WHERE wr_id=$id AND wr_is_comment=0",false);
+        if(!empty($row['wr_id'])){header('Location: '.G5_BBS_URL.'/board.php?bo_table='.$target.'&wr_id='.$id,true,302);exit;}
+    }
+    header('Location: '.G5_URL.'/busan-assistant/newsroom/index.php',true,302);exit;
+}
+busan_news_legacy_redirect();
+
+// Replace only the reporter's native member popup, never the chair's ordinary profile.
+function busan_news_reporter_sideview($items,$context){
+    if(!busan_news_is_board($context['bo_table']??'')||trim(strip_tags($context['name']??''))!=='챗지기자')return $items;
+    return ['name_tag_open'=>'<span class="bn-reporter" title="부산지부 AI 기자 · ChatGPT 활용">',
+        'name_tag_close'=>'</span>',
+        'name_tag'=>['<span class="bn-reporter-avatar" aria-hidden="true">AI</span><span>챗지기자</span>'],
+        'menus'=>[]];
+}
+add_replace('member_sideview_items','busan_news_reporter_sideview',99,2);
+
 // Mark only this request as viewed before the native counter runs. Restore the
 // original session value before rendering so a later ordinary visit still counts.
 function busan_news_exclude_check_view() {
     global $bo_table, $wr_id, $board;
     if (($_SERVER['HTTP_X_BUSAN_NEWS_CHECK'] ?? '') !== '1'
         || basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'board.php'
-        || $bo_table !== 'busan_news' || (int)$wr_id <= 0
+        || !busan_news_is_board($bo_table) || (int)$wr_id <= 0
         || !isset($board['bo_read_point']) || (int)$board['bo_read_point'] !== 0) return;
 
     // The native viewed-session guard also wraps reading points. Fail closed if
@@ -54,7 +90,7 @@ function busan_news_home_strip() {
 // Both native board headers run before get_view() prepares the public article.
 function busan_news_prepare_source_card($header, $board) {
     global $write;
-    if (($board['bo_table'] ?? '') !== 'busan_news' || empty($write['wr_3'])) return $header;
+    if (!busan_news_is_board($board['bo_table'] ?? '') || empty($write['wr_3'])) return $header;
     $url = $write['wr_link1'] ?? '';
     if (!filter_var($url, FILTER_VALIDATE_URL) || parse_url($url, PHP_URL_SCHEME) !== 'https'
         || !hash_equals($write['wr_3'], hash('sha256', $url))) return $header;
@@ -78,19 +114,19 @@ function busan_news_prepare_source_card($header, $board) {
 
 add_replace('board_content_head', 'busan_news_prepare_source_card', 10, 2);
 add_replace('board_mobile_content_head', 'busan_news_prepare_source_card', 10, 2);
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=4">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=5">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 function busan_news_article_share() {
     global $bo_table, $wr_id, $write;
     if (basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'board.php'
-        || $bo_table !== 'busan_news' || (int)$wr_id <= 0
+        || !busan_news_is_board($bo_table) || (int)$wr_id <= 0
         || (int)($write['wr_id'] ?? 0) !== (int)$wr_id
         || !empty($write['wr_is_comment'])
         || strpos($write['wr_option'] ?? '', 'secret') !== false) return;
     $escape = static function ($text) { return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); };
     $title = html_entity_decode(strip_tags($write['wr_subject'] ?? ''), ENT_QUOTES, 'UTF-8');
-    $url = G5_BBS_URL.'/board.php?bo_table=busan_news&wr_id='.(int)$wr_id;
+    $url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.(int)$wr_id;
     ?>
     <template id="bn-share-template">
       <button type="button" class="button bg-wh shadowline-de round-s bxicon color-gray-800 sBtn bn-article-share"

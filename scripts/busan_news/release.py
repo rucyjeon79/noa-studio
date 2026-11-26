@@ -19,7 +19,7 @@ ORIGIN = 'https://skhnslu-busan.com'
 PRIVATE = '/hosting/rucyjeon79/busan-assistant-private'
 ASSETS = Path('deploy/busan/newsroom')
 MODULE = 'busan-assistant/newsroom'
-FILES = {MODULE+'/'+name: ASSETS/name for name in ['news.css', 'ticker.js', 'share.js', 'recent.php']}
+FILES = {MODULE+'/'+name: ASSETS/name for name in ['news.css', 'ticker.js', 'share.js', 'recent.php', 'index.php']}
 FILES['extend/busan-news.extend.php'] = ASSETS/'news.extend.php'
 FILES['busan-assistant/newsroom-account-import.php'] = Path('scripts/busan_news/publish.php')
 FILES['busan-assistant/newsroom-account.php'] = ASSETS/'account.php'
@@ -118,7 +118,7 @@ def main(s):
         s.chmod(dest, 0o644)
         # Diagnose the exact schema and normalize navigation before the historic
         # reward/import phase. No points or article rows are changed by these calls.
-        for mode in ('preflight','menu'):
+        for mode in ('preflight','menu','split'):
             req = urllib.request.Request(ORIGIN+'/busan-assistant/'+probe, data=b'[]',
                 headers={'X-Busan-News':token,'Content-Type':'application/json',
                          'X-Busan-News-Deploy-Mode':mode})
@@ -131,6 +131,7 @@ def main(s):
             if not result.get('ok') or not isinstance(result.get('inventory'),dict):
                 raise RuntimeError('News '+mode+' receipt invalid')
             print('BUSAN_NEWS_'+mode.upper(),json.dumps(result['inventory'],ensure_ascii=False,sort_keys=True))
+            if mode=='split': print('BUSAN_NEWS_MIGRATION_RECEIPT',json.dumps(result.get('split'),ensure_ascii=False,sort_keys=True))
         for name, data in todo or [(None, b'[]')]:
             req = urllib.request.Request(ORIGIN+'/busan-assistant/'+probe, data=data,
                 headers={'X-Busan-News':token, 'Content-Type':'application/json'})

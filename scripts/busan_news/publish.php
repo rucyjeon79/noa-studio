@@ -8,6 +8,13 @@ header('Cache-Control: no-store');
 const BN_BOARD='busan_news';
 const BN_TITLE='OpenAI 뉴스룸';
 const BN_MARK='busan-reporter-v1';
+const BN_ARCHIVE='busan-reporter-archive-v2';
+const BN_SECTIONS=[
+ 'busan_news_company'=>['회사·그룹 소식',[1,2,3,4]],
+ 'busan_news_union'=>['노동조합 소식',[5]],
+ 'busan_news_law'=>['노동법·판례',[6]],
+ 'busan_news_world'=>['세계 노동 동향',[7]]
+];
 const BN_TOPICS=['홈앤서비스','SK브로드밴드','SK텔레콤','SK그룹','노동조합','노동법','노동관련 세계동향'];
 function bnq($s) { $r=sql_query($s,false); if (!$r) throw new RuntimeException('database operation failed'); return $r; }
 function bnvalue($v){ return "'".sql_real_escape_string((string)$v)."'"; }
@@ -19,7 +26,7 @@ function bnsetup() {
     $parent=sql_fetch("SELECT me_code FROM $mt WHERE LENGTH(me_code)=2 AND REPLACE(LOWER(TRIM(me_name)),' ','')='weruntogether' LIMIT 1",false);
     if(empty($parent['me_code'])||!preg_match('/^[0-9a-z]{2}$/iD',$parent['me_code'])) throw new RuntimeException('We Run Together menu missing');
     $board=sql_fetch("SELECT * FROM $bt WHERE bo_table='busan_news'",false);
-    if($board && $board['bo_10']!==BN_MARK)throw new RuntimeException('unrelated board with this ID');
+    if($board && !in_array($board['bo_10'],[BN_MARK,BN_ARCHIVE],true))throw new RuntimeException('unrelated board with this ID');
     $template=sql_fetch("SELECT * FROM $bt WHERE bo_table='notice'",false);
     if(empty($template['bo_table']))throw new RuntimeException('board template missing');
     $join=sql_fetch("SELECT gr_id FROM $bt WHERE bo_table='join'",false);
@@ -97,6 +104,157 @@ function bnsetup() {
     if(function_exists('run_event'))run_event('admin_menu_list_update');
 
 }
+
+function bncount($table,$where='1'){
+    $row=sql_fetch("SELECT COUNT(*) AS n FROM $table WHERE $where",false);
+    if(!isset($row['n']))throw new RuntimeException('count unavailable');
+    return (int)$row['n'];
+}
+function bnactive(){
+    global $g5;
+    $b=sql_fetch("SELECT bo_10 FROM {$g5['board_table']} WHERE bo_table='busan_news'",false);
+    return ($b['bo_10']??'')===BN_ARCHIVE;
+}
+function bnsection($topic){
+    foreach(BN_SECTIONS as $id=>$section)if(in_array((int)$topic,$section[1],true))return $id;
+    throw new RuntimeException('unknown topic');
+}
+function bnboards(){return bnactive()?array_keys(BN_SECTIONS):[BN_BOARD];}
+function bnsectionmenu(){
+    global $g5;
+    $mt=$g5['menu_table'];$base=G5_URL.'/bbs/board.php?bo_table=';
+    $root=sql_fetch("SELECT me_code FROM $mt WHERE LENGTH(me_code)=2 AND me_name=".bnvalue(BN_TITLE)." LIMIT 1",false);
+    $prefix=$root['me_code']??'';
+    if(!preg_match('/^[a-z0-9]{2}$/iD',$prefix))throw new RuntimeException('newsroom root unavailable');
+    $i=0;
+    foreach(BN_SECTIONS as $id=>$section){
+        $url=$base.$id;$i++;
+        $found=sql_fetch("SELECT me_id,me_code FROM $mt WHERE me_link=".bnvalue($url)." AND LEFT(me_code,2)=".bnvalue($prefix)." AND LENGTH(me_code)=4",false);
+        $fields=['me_name'=>$section[0],'me_link'=>$url,'me_order'=>$i*10,'me_use'=>1,'me_mobile_use'=>1,'me_target'=>'self'];
+        if(!empty($found['me_id'])){
+            bnq("UPDATE $mt SET ".bnset($fields)." WHERE me_id=".(int)$found['me_id']);
+        }else{
+            $code='';
+            for($k=$i*10;$k<1296;$k++){
+                $test=$prefix.str_pad(base_convert((string)$k,10,36),2,'0',STR_PAD_LEFT);
+                if(!bncount($mt,"me_code=".bnvalue($test))){$code=$test;break;}
+            }
+            if(!$code)throw new RuntimeException('newsroom submenu full');
+            bnq("INSERT INTO $mt SET ".bnset(['me_code'=>$code]+$fields));
+        }
+    }
+    if(function_exists('run_event'))run_event('admin_menu_list_update');
+}
+function bnsplit(){
+    global $g5,$config;
+    $bt=$g5['board_table'];$src=$g5['write_prefix'].BN_BOARD;
+    $nt=$g5['board_new_table'];$gt=$g5['board_good_table'];
+    $ft=$g5['board_file_table'];$st=$g5['scrap_table'];
+    $admin=(string)($config['cf_admin']??'');$actor=get_member($admin);
+    if(!$admin||($actor['mb_id']??'')!==$admin||!empty($actor['mb_leave_date'])||!empty($actor['mb_intercept_date']))throw new RuntimeException('reward recipient unavailable');
+    $root=sql_fetch("SELECT * FROM $bt WHERE bo_table='busan_news'",false);
+    if(!in_array($root['bo_10']??'',[BN_MARK,BN_ARCHIVE],true))throw new RuntimeException('unowned legacy board');
+    if((int)$root['bo_write_point']!==10||(int)$root['bo_read_point']!==0||(int)$root['bo_use_good']!==1)throw new RuntimeException('news reward policy changed');
+    $targets=[];$tables=[$bt,$src,$nt,$gt,$ft,$st];
+    foreach(BN_SECTIONS as $id=>$section){
+        $dest=$g5['write_prefix'].$id;$targets[$id]=$dest;$tables[]=$dest;
+    }
+    foreach($tables as $t)if(!preg_match('/^[a-zA-Z0-9_]{1,90}$/D',$t))throw new RuntimeException('invalid migration table');
+    if(($root['bo_10']??'')===BN_ARCHIVE){
+        foreach($targets as $id=>$dest){
+            $b=sql_fetch("SELECT bo_10 FROM $bt WHERE bo_table=".bnvalue($id),false);
+            if(($b['bo_10']??'')!==BN_MARK)throw new RuntimeException('split board missing');
+        }
+        bnsectionmenu();
+        return ['already_active'=>true,'inventory'=>bnpreflight()];
+    }
+    // Phase 1: create only managed, initially private native boards.
+    foreach($targets as $id=>$dest){
+        $section=BN_SECTIONS[$id];$existing=sql_fetch("SELECT * FROM $bt WHERE bo_table=".bnvalue($id),false);
+        $physical=sql_fetch("SHOW TABLE STATUS WHERE Name=".bnvalue($dest),false);
+        if($existing && (($existing['bo_10']??'')!==BN_MARK||(int)$existing['bo_list_level']!==10||(int)$existing['bo_read_level']!==10))
+            throw new RuntimeException('split board ownership conflict');
+        if(!$existing && $physical)throw new RuntimeException('unclaimed split write table');
+        if(!$existing){
+            $fields=$root;
+            $fields=array_replace($fields,['bo_table'=>$id,'bo_subject'=>$section[0],'bo_mobile_subject'=>$section[0],
+              'bo_notice'=>'','bo_count_write'=>0,'bo_count_comment'=>0,'bo_list_level'=>10,'bo_read_level'=>10,
+              'bo_use_search'=>0,'bo_use_category'=>$id==='busan_news_company'?1:0,
+              'bo_category_list'=>$id==='busan_news_company'?implode('|',array_slice(BN_TOPICS,0,4)):'','bo_10'=>BN_MARK]);
+            bnq("INSERT INTO $bt SET ".bnset($fields));
+        }
+        bnq("CREATE TABLE IF NOT EXISTS $dest LIKE $src");
+    }
+    // MyISAM has no rollback. Keep the original physical rows untouched as the
+    // rollback archive and lock all affected tables while copying and switching.
+    bnq('LOCK TABLES '.implode(', ',array_map(static function($t){return $t.' WRITE';},$tables)));
+    $activated=false;$moved=false;$report=[];
+    try{
+        $root=sql_fetch("SELECT bo_10,bo_notice FROM $bt WHERE bo_table='busan_news'",false);
+        if(($root['bo_10']??'')!==BN_MARK||!empty($root['bo_notice']))throw new RuntimeException('legacy board changed');
+        $total=bncount($src);
+        if(!$total||bncount($src,"wr_is_comment<>0 OR wr_name<>".bnvalue('챗지기자')." OR CHAR_LENGTH(wr_3)<>64 OR CHAR_LENGTH(wr_4)<>64 OR wr_2 NOT IN ('1','2','3','4','5','6','7') OR wr_5='bn-point-pending-v1' OR wr_parent<>wr_id")>0)
+            throw new RuntimeException('legacy articles need manual review');
+        if(bncount($ft,"bo_table='busan_news'")||bncount($st,"bo_table='busan_news'"))throw new RuntimeException('new attachment or scrap requires migration');
+        $allids=implode(',',array_map('bnvalue',array_keys(BN_SECTIONS)));
+        $oldgood=bncount($gt,"bo_table IN ('busan_news',$allids)");
+        $oldnew=bncount($nt,"bo_table IN ('busan_news',$allids)");
+        foreach($targets as $id=>$dest){
+            $topics=implode(',',array_map('bnvalue',BN_SECTIONS[$id][1]));
+            $condition="wr_2 IN ($topics)";
+            if(bncount($dest,"wr_id NOT IN (SELECT wr_id FROM $src WHERE $condition)")>0)throw new RuntimeException('unexpected split article');
+            bnq("REPLACE INTO $dest SELECT * FROM $src WHERE $condition");
+            $expected=bncount($src,$condition);
+            if(bncount($dest)!==$expected)throw new RuntimeException('split article count mismatch');
+            $rows=bnq("SELECT * FROM $src WHERE $condition ORDER BY wr_id");
+            while($row=sql_fetch_array($rows)){
+                $copy=sql_fetch("SELECT * FROM $dest WHERE wr_id=".(int)$row['wr_id'],false);
+                if($row!==$copy)throw new RuntimeException('split article content mismatch');
+            }
+            // Preserve the original owner in the archive; on the active reporter
+            // copies future native recommendation awards belong to the configured
+            // super administrator. The historical points ledger is never rewritten.
+            $changed=bncount($dest,"mb_id<>".bnvalue($admin));
+            if($changed)bnq("UPDATE $dest SET mb_id=".bnvalue($admin));
+            if(bncount($dest,"mb_id<>".bnvalue($admin)))throw new RuntimeException('reward owner verification failed');
+            $report[$id]=['articles'=>$expected,'future_reward_owner_normalized'=>$changed];
+        }
+        if(array_sum(array_column($report,'articles'))!==$total)throw new RuntimeException('split totals differ');
+        $moved=true;
+        foreach($targets as $id=>$dest){
+            foreach([$gt,$nt] as $rel){
+                bnq("UPDATE $rel SET bo_table=".bnvalue($id)." WHERE bo_table='busan_news' AND wr_id IN (SELECT wr_id FROM $dest)");
+            }
+            $report[$id]['recommendations']=bncount($gt,"bo_table=".bnvalue($id));
+            $report[$id]['recent_records']=bncount($nt,"bo_table=".bnvalue($id));
+        }
+        if(bncount($gt,"bo_table='busan_news'")||bncount($nt,"bo_table='busan_news'")||
+           array_sum(array_column($report,'recommendations'))!==$oldgood||array_sum(array_column($report,'recent_records'))!==$oldnew)
+            throw new RuntimeException('related record count mismatch');
+        foreach($targets as $id=>$dest){
+            bnq("UPDATE $bt SET bo_list_level=1,bo_read_level=1,bo_use_search=1,bo_count_write=".$report[$id]['articles'].",bo_count_comment=0 WHERE bo_table=".bnvalue($id)." AND bo_10=".bnvalue(BN_MARK));
+        }
+        // Single activation flag controls reader redirects and publisher routing.
+        bnq("UPDATE $bt SET bo_10=".bnvalue(BN_ARCHIVE).",bo_use_search=0 WHERE bo_table='busan_news' AND bo_10=".bnvalue(BN_MARK));
+        $saved=sql_fetch("SELECT bo_10 FROM $bt WHERE bo_table='busan_news'",false);
+        if(($saved['bo_10']??'')!==BN_ARCHIVE)throw new RuntimeException('split activation failed');
+        $activated=true;
+    }catch(Throwable $ex){
+        if(!$activated){
+            // Never delete originals. Restore any moved native references before
+            // reopening the old list, and hide the new boards on a normal error.
+            foreach($targets as $id=>$dest){
+                if($moved)foreach([$gt,$nt] as $rel)bnq("UPDATE $rel SET bo_table='busan_news' WHERE bo_table=".bnvalue($id)." AND wr_id IN (SELECT wr_id FROM $src)");
+                bnq("UPDATE $bt SET bo_list_level=10,bo_read_level=10,bo_use_search=0 WHERE bo_table=".bnvalue($id)." AND bo_10=".bnvalue(BN_MARK));
+            }
+        }
+        throw $ex;
+    }finally{sql_query('UNLOCK TABLES',false);}
+    foreach(array_merge([BN_BOARD],array_keys(BN_SECTIONS)) as $id)if(function_exists('delete_cache_latest'))delete_cache_latest($id);
+    bnsectionmenu();
+    return ['already_active'=>false,'archive_articles'=>$total,'moved_recommendations'=>$oldgood,'moved_recent_records'=>$oldnew,'boards'=>$report];
+}
+
 function bnvalidate($a){
     if(!is_array($a)||!in_array($a['topic']??0,range(1,7),true)||!is_array($a['body']??null)||count($a['body'])<2||count($a['body'])>5)throw new RuntimeException('invalid article');
     foreach(array_merge([$a['publisher']??null,$a['title']??null],$a['body']) as $s){if(!is_string($s)||!trim($s)||mb_strlen($s)>1000)throw new RuntimeException('article text');}
@@ -106,22 +264,31 @@ function bnvalidate($a){
 }
 function bnpublish($a,$admin_id,$write_point) {
     global $g5;
-    $wt=$g5['write_prefix'].BN_BOARD;
+    $boards=bnboards();
+    $dest=count($boards)===1?BN_BOARD:bnsection($a['topic']);
+    $wt=$g5['write_prefix'].$dest;
     $key=hash('sha256',$a['url']);$event=hash('sha256',preg_replace('/[\p{P}\p{Z}\s]+/u','',mb_strtolower($a['title'])));
-    $row=sql_fetch("SELECT wr_id,mb_id,wr_5 FROM `$wt` WHERE wr_is_comment=0 AND (wr_3='$key' OR wr_4='$event') LIMIT 1",false);
+    $row=[];$next=1;
+    foreach($boards as $candidate){
+        $table=$g5['write_prefix'].$candidate;
+        $existing=sql_fetch("SELECT wr_id,mb_id,wr_5 FROM `$table` WHERE wr_is_comment=0 AND (wr_3='$key' OR wr_4='$event') LIMIT 1",false);
+        if(!empty($existing['wr_id'])){$row=$existing;$dest=$candidate;$wt=$table;break;}
+        $max=sql_fetch("SELECT MAX(wr_id) AS id FROM `$table`",false);
+        $next=max($next,(int)($max['id']??0)+1);
+    }
     $new=empty($row['wr_id']);
     if($new){
         $body='';
         foreach($a['body'] as $p)$body.='<p>'.bneh($p).'</p>';
         $body.='<p><strong>출처</strong> · '.bneh($a['publisher']).' · '.bneh($a['date']).' &nbsp; <a href="'.bneh($a['url']).'" target="_blank" rel="noopener noreferrer">원문 읽기 ↗</a></p>';
-        $post=['wr_num'=>get_next_num($wt),'wr_reply'=>'','wr_option'=>'html1','wr_subject'=>$a['title'],'wr_content'=>$body,
-          'mb_id'=>$admin_id,'wr_name'=>'챗지기자','wr_datetime'=>G5_TIME_YMDHIS,'wr_last'=>G5_TIME_YMDHIS,'ca_name'=>BN_TOPICS[$a['topic']-1],
+        $post=['wr_id'=>$next,'wr_num'=>get_next_num($wt),'wr_reply'=>'','wr_option'=>'html1','wr_subject'=>$a['title'],'wr_content'=>$body,
+          'mb_id'=>$admin_id,'wr_name'=>'챗지기자','wr_datetime'=>G5_TIME_YMDHIS,'wr_last'=>G5_TIME_YMDHIS,'ca_name'=>($dest===BN_BOARD||$dest==='busan_news_company')?BN_TOPICS[$a['topic']-1]:'',
           'wr_1'=>$a['date'],'wr_2'=>$a['topic'],'wr_3'=>$key,'wr_4'=>$event,'wr_5'=>$write_point>0?'bn-point-pending-v1':'','wr_6'=>'bn-retro-checked-v1','wr_link1'=>$a['url'],'wr_link2'=>'','wr_ip'=>'','wr_seo_title'=>function_exists('generate_seo_title')?generate_seo_title($a['title']):''];
-        bnq("INSERT INTO `$wt` SET ".bnset($post));$id=(int)sql_insert_id();
+        bnq("INSERT INTO `$wt` SET ".bnset($post));$id=$next;
     }else{$id=(int)$row['wr_id'];}
     bnq("UPDATE `$wt` SET wr_parent=$id WHERE wr_id=$id AND wr_parent=0");
     $nt=$g5['board_new_table'];
-    bnq("INSERT INTO $nt (bo_table,wr_id,wr_parent,bn_datetime,mb_id) SELECT 'busan_news',$id,$id,wr_datetime,mb_id FROM `$wt` WHERE wr_id=$id AND wr_datetime>=DATE_SUB(NOW(),INTERVAL 7 DAY) AND NOT EXISTS(SELECT 1 FROM $nt WHERE bo_table='busan_news' AND wr_id=$id)");
+    bnq("INSERT INTO $nt (bo_table,wr_id,wr_parent,bn_datetime,mb_id) SELECT '$dest',$id,$id,wr_datetime,mb_id FROM `$wt` WHERE wr_id=$id AND wr_datetime>=DATE_SUB(NOW(),INTERVAL 7 DAY) AND NOT EXISTS(SELECT 1 FROM $nt WHERE bo_table='$dest' AND wr_id=$id)");
     // Only articles created under this policy receive writing points. Native relation
     // keys make recovery idempotent, including a retry after an interrupted award.
     $pending=$new ? $write_point>0 : ($row['wr_5']??'')==='bn-point-pending-v1';
@@ -129,13 +296,13 @@ function bnpublish($a,$admin_id,$write_point) {
         $recipient=$new ? $admin_id : (string)$row['mb_id'];
         if($write_point<=0 || $recipient==='')throw new RuntimeException('news point policy unavailable');
         if(!function_exists('insert_point'))throw new RuntimeException('point ledger unavailable');
-        insert_point($recipient,$write_point,'챗지기자 기사 발행 +'.$write_point.'P',BN_BOARD,(string)$id,'쓰기');
+        insert_point($recipient,$write_point,'챗지기자 기사 발행 +'.$write_point.'P',$dest,(string)$id,'쓰기');
         $pt=$g5['point_table'];
-        $entry=sql_fetch("SELECT po_point FROM $pt WHERE mb_id=".bnvalue($recipient)." AND po_rel_table=".bnvalue(BN_BOARD)." AND po_rel_id=".bnvalue((string)$id)." AND po_rel_action=".bnvalue('쓰기')." LIMIT 1",false);
+        $entry=sql_fetch("SELECT po_point FROM $pt WHERE mb_id=".bnvalue($recipient)." AND po_rel_table=".bnvalue($dest)." AND po_rel_id=".bnvalue((string)$id)." AND po_rel_action=".bnvalue('쓰기')." LIMIT 1",false);
         if((int)($entry['po_point']??0)<=0)throw new RuntimeException('news point not verified');
         bnq("UPDATE `$wt` SET wr_5='bn-point-credited-v1' WHERE wr_id=$id AND wr_5='bn-point-pending-v1'");
     }
-    return ['id'=>$id,'created'=>$new];
+    return ['id'=>$id,'board'=>$dest,'created'=>$new];
 }
 
 /* Owner-approved historical migration: article authorship is unchanged; only
@@ -212,7 +379,7 @@ function bnpreflight(){
     global $g5,$config;
     $bt=$g5['board_table'];$mt=$g5['menu_table'];$wt=$g5['write_prefix'].BN_BOARD;
     $board=sql_fetch("SELECT bo_10,bo_write_point,bo_use_good,bo_count_write,bo_count_comment FROM $bt WHERE bo_table='busan_news'",false);
-    $result=['board_exists'=>!empty($board),'owned'=>($board['bo_10']??'')===BN_MARK,
+    $result=['board_exists'=>!empty($board),'owned'=>in_array($board['bo_10']??'',[BN_MARK,BN_ARCHIVE],true),'split_active'=>($board['bo_10']??'')===BN_ARCHIVE,
        'write_point'=>(int)($board['bo_write_point']??0),'good_enabled'=>(int)($board['bo_use_good']??0),
        'points_enabled'=>!empty($config['cf_use_point']),'good_hook'=>function_exists('bp_on_good'),
        'topics'=>[],'related_counts'=>[],'engines'=>[],'menu'=>[],'target_boards'=>[]];
@@ -235,14 +402,14 @@ function bnpreflight(){
     }
     $q=bnq("SELECT me_code,me_name,me_order,me_link FROM $mt ORDER BY me_order,me_id");
     while($m=sql_fetch_array($q)){
-        if(in_array(trim($m['me_name']),[BN_TITLE,'챗지기자 뉴스'],true)||strtolower(str_replace(' ','',trim($m['me_name'])))==='weruntogether'){
+        if(in_array(trim($m['me_name']),array_merge([BN_TITLE,'챗지기자 뉴스'],array_column(BN_SECTIONS,0)),true)||strtolower(str_replace(' ','',trim($m['me_name'])))==='weruntogether'){
             $result['menu'][]=['code'=>$m['me_code'],'name'=>$m['me_name'],'order'=>(int)$m['me_order'],'is_news_link'=>strpos($m['me_link'],'bo_table=busan_news')!==false];
         }
     }
     foreach(['busan_news_company','busan_news_union','busan_news_law','busan_news_world'] as $id){
         $x=sql_fetch("SELECT bo_10 FROM $bt WHERE bo_table=".bnvalue($id),false);
         $t=sql_fetch("SHOW TABLE STATUS WHERE Name=".bnvalue($g5['write_prefix'].$id),false);
-        $result['target_boards'][$id]=['board_exists'=>!empty($x),'owned'=>($x['bo_10']??'')===BN_MARK,'table_exists'=>!empty($t)];
+        $result['target_boards'][$id]=['board_exists'=>!empty($x),'owned'=>($x['bo_10']??'')===BN_MARK,'table_exists'=>!empty($t),'articles'=>!empty($t)?(int)(sql_fetch("SELECT COUNT(*) AS n FROM `".$g5['write_prefix'].$id."` WHERE wr_is_comment=0",false)['n']??0):0];
     }
     return $result;
 }
@@ -258,11 +425,12 @@ try{
     $stage='lock'; $lock=sql_fetch("SELECT GET_LOCK('busan_news_publish_v1',15) AS ok",false);
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
     $mode=$_SERVER['HTTP_X_BUSAN_NEWS_DEPLOY_MODE']??'';
-    if(!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['preflight','menu'],true)){
+    if(!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['preflight','menu','split'],true)){
         if($input!==[])throw new RuntimeException('deployment inventory requires empty input');
         $stage=$mode;
         if($mode==='menu')bnsetup();
-        echo json_encode(['ok'=>true,'inventory'=>bnpreflight()],JSON_UNESCAPED_UNICODE);
+        $split=$mode==='split'?bnsplit():null;
+        echo json_encode(['ok'=>true,'inventory'=>bnpreflight(),'split'=>$split],JSON_UNESCAPED_UNICODE);
         exit;
     }
     $stage='setup';if (!defined('BUSAN_ACCOUNT_NEWS')) bnsetup();
@@ -275,10 +443,13 @@ try{
     if(!isset($policy['bo_write_point']))throw new RuntimeException('news board policy missing');
     $write_point=!empty($config['cf_use_point'])?max(0,(int)$policy['bo_write_point']):0;
     $retro=null;
-    if(!defined('BUSAN_ACCOUNT_NEWS')){$stage='historical_points';$retro=bnretro($admin_id,$write_point);}
+    // Historical reward repair is a separate explicitly reviewed operation; do not run it during structural releases.
     $stage='publish';$rows=[];foreach($input as $a)$rows[]=bnpublish($a,$admin_id,$write_point);
-    bnq("UPDATE {$g5['board_table']} SET bo_count_write=(SELECT COUNT(*) FROM `{$g5['write_prefix']}busan_news` WHERE wr_is_comment=0) WHERE bo_table='busan_news'");
-    if(function_exists('delete_cache_latest'))delete_cache_latest('busan_news');
+    foreach(bnboards() as $id){
+        $t=$g5['write_prefix'].$id;
+        bnq("UPDATE {$g5['board_table']} SET bo_count_write=(SELECT COUNT(*) FROM `$t` WHERE wr_is_comment=0) WHERE bo_table=".bnvalue($id));
+        if(function_exists('delete_cache_latest'))delete_cache_latest($id);
+    }
     echo json_encode(['ok'=>true,'rows'=>$rows,'historical_points'=>$retro]);
 }catch(Throwable $e){
     if(!defined('BUSAN_ACCOUNT_NEWS')){
