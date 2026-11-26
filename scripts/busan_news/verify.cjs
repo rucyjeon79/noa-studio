@@ -235,7 +235,9 @@ async function assertMoves(page) {
       await page.getByRole('heading',{name:'OpenAI 뉴스룸',exact:true}).first().waitFor({state:'visible'});
       assert((await page.title()).includes('OpenAI 뉴스룸'));
       for(const name of ['회사·그룹 소식','노동조합 소식','노동법·판례','세계 노동 동향']) await page.locator('.bn-hub-section').getByRole('heading',{name,exact:true}).waitFor({state:'visible'});
-      assert.equal(await page.locator('.bn-hub-section').count(),4);
+      await page.locator('.bn-rights-section').getByRole('heading',{name:'권리노트',exact:true}).waitFor({state:'visible'});
+      assert.equal(await page.locator('.bn-hub-section').count(),5);
+      assert.equal(await page.locator('.bn-rights-section .bn-hub-list').count(),0,'never expose member-only rights notes on the public hub');
       assert.equal(await page.locator('.bn-article-share').count(),0,'article sharing is absent on the list');
       console.log('PASS newsroom menu and board title',width,boardURL);
       await page.close();

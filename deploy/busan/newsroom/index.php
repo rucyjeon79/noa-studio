@@ -24,5 +24,8 @@ $esc=static function($s){return htmlspecialchars((string)$s,ENT_QUOTES|ENT_SUBST
 <?php endwhile;?>
 </div><a class="bn-hub-more" href="<?=$esc($url)?>">전체 기사 보기</a></section>
 <?php endforeach;?>
+<section class="bn-hub-section bn-rights-section"><h2><a href="<?=$esc(G5_BBS_URL.'/board.php?bo_table=note')?>">권리노트</a></h2>
+<p>챗지기자가 전하는 현장 노동권 정보와 실무 상담 준비 안내입니다. 기존 회원 전용 열람 권한을 그대로 적용합니다.</p>
+<a class="bn-hub-more" href="<?=$esc(G5_BBS_URL.'/board.php?bo_table=note')?>">권리노트 보기</a></section>
 </div></section>
 <?php require G5_PATH.'/tail.php'; ?>

@@ -5,7 +5,7 @@ function busan_news_sections(){
     return ['busan_news_company'=>'회사·그룹 소식','busan_news_union'=>'노동조합 소식','busan_news_law'=>'노동법·판례','busan_news_world'=>'세계 노동 동향'];
 }
 function busan_news_is_board($id){
-    return $id==='busan_news'||isset(busan_news_sections()[$id]);
+    return $id==='busan_news'||$id==='note'||isset(busan_news_sections()[$id]);
 }
 function busan_news_split_active(){
     global $g5;

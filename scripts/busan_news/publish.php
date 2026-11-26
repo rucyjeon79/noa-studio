@@ -255,6 +255,112 @@ function bnsplit(){
     return ['already_active'=>false,'archive_articles'=>$total,'moved_recommendations'=>$oldgood,'moved_recent_records'=>$oldnew,'boards'=>$report];
 }
 
+
+/* Rights note: retain the existing native board and every permission setting. */
+function bnrights_menu(){
+    global $g5;
+    $mt=$g5['menu_table'];$bt=$g5['board_table'];
+    $board=sql_fetch("SELECT bo_table,bo_subject FROM $bt WHERE bo_table='note'",false);
+    if(($board['bo_table']??'')!=='note'||str_replace(' ','',trim($board['bo_subject']??''))!=='권리노트')throw new RuntimeException('rights board identity not verified');
+    $root=sql_fetch("SELECT me_code FROM $mt WHERE LENGTH(me_code)=2 AND me_name=".bnvalue(BN_TITLE)." LIMIT 1",false);
+    $prefix=$root['me_code']??'';
+    if(!preg_match('/^[a-z0-9]{2}$/iD',$prefix))throw new RuntimeException('newsroom root unavailable');
+    $q=bnq("SELECT me_id,me_code,me_name,me_link,me_order FROM $mt WHERE LENGTH(me_code)=4 ORDER BY me_id");
+    $matches=[];
+    while($m=sql_fetch_array($q)){
+        if(str_replace(' ','',trim($m['me_name']))!=='권리노트')continue;
+        $link=parse_url($m['me_link']);$args=[];
+        if(!is_array($link))throw new RuntimeException('rights menu link conflict');
+        parse_str($link['query']??'',$args);
+        if(!in_array(strtolower($link['host']??''),['','skhnslu-busan.com','www.skhnslu-busan.com','rucyjeon79.dothome.co.kr'],true)
+           ||!(in_array(rtrim($link['path']??'','/'),['/note','note'],true)||(($link['path']??'')==='/bbs/board.php'&&$args===['bo_table'=>'note'])))
+            throw new RuntimeException('rights menu link conflict');
+        $matches[]=$m;
+    }
+    if(count($matches)!==1)throw new RuntimeException('rights menu missing or duplicated');
+    $m=$matches[0];$code=$m['me_code'];
+    if(substr($code,0,2)!==$prefix){
+        $code='';
+        for($k=50;$k<1296;$k++){
+            $test=$prefix.str_pad(base_convert((string)$k,10,36),2,'0',STR_PAD_LEFT);
+            if(!bncount($mt,"me_code=".bnvalue($test))){$code=$test;break;}
+        }
+        if(!$code)throw new RuntimeException('rights submenu full');
+    }
+    bnq("UPDATE $mt SET ".bnset(['me_code'=>$code,'me_order'=>50,'me_name'=>'권리노트'])." WHERE me_id=".(int)$m['me_id']." AND me_code=".bnvalue($m['me_code']));
+    $saved=sql_fetch("SELECT me_code,me_name,me_order FROM $mt WHERE me_id=".(int)$m['me_id'],false);
+    if(($saved['me_code']??'')!==$code||($saved['me_name']??'')!=='권리노트'||(int)($saved['me_order']??0)!==50)throw new RuntimeException('rights menu not verified');
+    if(function_exists('run_event'))run_event('admin_menu_list_update');
+    return ['code'=>$code,'name'=>'권리노트','board'=>'note'];
+}
+function bnrights_publish($input){
+    global $g5,$config;
+    if(!bnactive())throw new RuntimeException('newsroom split not active');
+    $menu=bnrights_menu();
+    $bt=$g5['board_table'];$wt=$g5['write_prefix'].'note';
+    $board=sql_fetch("SELECT * FROM $bt WHERE bo_table='note'",false);
+    $admin=(string)($config['cf_admin']??'');$actor=get_member($admin);
+    if(!$admin||($actor['mb_id']??'')!==$admin||!empty($actor['mb_leave_date'])||!empty($actor['mb_intercept_date']))throw new RuntimeException('rights author unavailable');
+    if(!preg_match('/^[a-zA-Z0-9_]{1,90}$/D',$wt))throw new RuntimeException('rights table invalid');
+    if(!array_is_list($input)||count($input)>3)throw new RuntimeException('rights batch invalid');
+    $categories=array_values(array_filter(array_map('trim',explode('|',$board['bo_category_list']??''))));
+    $policy=!empty($config['cf_use_point'])?max(0,(int)$board['bo_write_point']):0;
+    $prepared=[];
+    foreach($input as $a){
+        if(!is_array($a)||!preg_match('/^[a-z0-9-]{4,80}$/D',$a['slug']??'')||!is_string($a['title']??null)||mb_strlen($a['title'])>120||!is_array($a['body']??null)||count($a['body'])<3||count($a['body'])>8)throw new RuntimeException('rights article invalid');
+        foreach($a['body'] as $s)if(!is_string($s)||!trim($s)||mb_strlen($s)>1500)throw new RuntimeException('rights article paragraph invalid');
+        $category='';
+        if(!empty($board['bo_use_category'])){
+            foreach($categories as $c)if(preg_match('/현장|공감|기타|일반|정보|신규|필독/u',$c)){$category=$c;break;}
+            if(!$category&&$categories)$category=$categories[0];
+            if(!$category)throw new RuntimeException('rights category unavailable');
+        }
+        $prepared[]=[$a,$category];
+    }
+    $rows=[];
+    foreach($prepared as [$a,$category]){
+        $key=hash('sha256','busan-rights-note:'.$a['slug']);
+        $event=hash('sha256',preg_replace('/[\p{P}\p{Z}\s]+/u','',mb_strtolower($a['title'])));
+        $row=sql_fetch("SELECT wr_id,mb_id,wr_name,wr_3,wr_5 FROM $wt WHERE wr_is_comment=0 AND (wr_3=".bnvalue($key)." OR wr_subject=".bnvalue($a['title']).") LIMIT 1",false);
+        $new=empty($row['wr_id']);
+        if($new){
+            $body='';
+            foreach($a['body'] as $s)$body.='<p>'.bneh($s).'</p>';
+            $body.='<p>작성: 챗지기자 · 부산지부 AI 기자. 일반적인 현장 기록 및 상담 준비 안내이며, 개별 법률 판단이나 회사 지침을 대신하지 않습니다.</p>';
+            $post=['wr_num'=>get_next_num($wt),'wr_reply'=>'','wr_option'=>'html1','wr_subject'=>$a['title'],'wr_content'=>$body,
+              'mb_id'=>$admin,'wr_name'=>'챗지기자','wr_datetime'=>G5_TIME_YMDHIS,'wr_last'=>G5_TIME_YMDHIS,'ca_name'=>$category,
+              'wr_3'=>$key,'wr_4'=>$event,'wr_5'=>$policy>0?'bn-point-pending-v1':'','wr_6'=>'bn-rights-note-v1','wr_ip'=>'',
+              'wr_seo_title'=>function_exists('generate_seo_title')?generate_seo_title($a['title']):''];
+            bnq("INSERT INTO $wt SET ".bnset($post));$id=(int)sql_insert_id();
+        }else{
+            $id=(int)$row['wr_id'];
+            if(($row['wr_3']??'')!==$key||($row['wr_name']??'')!=='챗지기자'){
+                $rows[]=['id'=>$id,'created'=>false,'status'=>'existing_title_preserved'];continue;
+            }
+        }
+        bnq("UPDATE $wt SET wr_parent=$id WHERE wr_id=$id AND wr_parent=0");
+        $nt=$g5['board_new_table'];
+        bnq("INSERT INTO $nt (bo_table,wr_id,wr_parent,bn_datetime,mb_id) SELECT 'note',$id,$id,wr_datetime,mb_id FROM $wt WHERE wr_id=$id AND wr_datetime>=DATE_SUB(NOW(),INTERVAL 7 DAY) AND NOT EXISTS(SELECT 1 FROM $nt WHERE bo_table='note' AND wr_id=$id)");
+        if($new?$policy>0:($row['wr_5']??'')==='bn-point-pending-v1'){
+            $recipient=$new?$admin:(string)$row['mb_id'];
+            if($policy<=0||$recipient!==$admin)throw new RuntimeException('rights point policy changed');
+            insert_point($recipient,$policy,'챗지기자 권리노트 발행 +'.$policy.'P','note',(string)$id,'쓰기');
+            $pt=$g5['point_table'];
+            $entry=sql_fetch("SELECT po_point FROM $pt WHERE mb_id=".bnvalue($recipient)." AND po_rel_table='note' AND po_rel_id=".bnvalue((string)$id)." AND po_rel_action=".bnvalue('쓰기')." LIMIT 1",false);
+            if((int)($entry['po_point']??0)!==$policy)throw new RuntimeException('rights reward not verified');
+            bnq("UPDATE $wt SET wr_5='bn-point-credited-v1' WHERE wr_id=$id AND wr_5='bn-point-pending-v1'");
+        }
+        $saved=sql_fetch("SELECT wr_subject,wr_name,wr_3,wr_parent FROM $wt WHERE wr_id=$id",false);
+        if(($saved['wr_subject']??'')!==$a['title']||($saved['wr_name']??'')!=='챗지기자'||($saved['wr_3']??'')!==$key||(int)$saved['wr_parent']!==$id)throw new RuntimeException('rights post verification failed');
+        $rows[]=['id'=>$id,'created'=>$new,'status'=>'verified','category'=>$category];
+    }
+    bnq("UPDATE $bt SET bo_count_write=(SELECT COUNT(*) FROM $wt WHERE wr_is_comment=0) WHERE bo_table='note'");
+    if(function_exists('delete_cache_latest'))delete_cache_latest('note');
+    $after=sql_fetch("SELECT * FROM $bt WHERE bo_table='note'",false);
+    foreach(['gr_id','bo_list_level','bo_read_level','bo_write_level','bo_comment_level','bo_write_point','bo_read_point','bo_use_cert','bo_use_category','bo_category_list'] as $field)if(($after[$field]??null)!==($board[$field]??null))throw new RuntimeException('rights permission or policy changed');
+    return ['menu'=>$menu,'rows'=>$rows,'list_level'=>(int)$board['bo_list_level'],'read_level'=>(int)$board['bo_read_level'],'write_point'=>$policy,'permissions_preserved'=>true];
+}
+
 function bnvalidate($a){
     if(!is_array($a)||!in_array($a['topic']??0,range(1,7),true)||!is_array($a['body']??null)||count($a['body'])<2||count($a['body'])>5)throw new RuntimeException('invalid article');
     foreach(array_merge([$a['publisher']??null,$a['title']??null],$a['body']) as $s){if(!is_string($s)||!trim($s)||mb_strlen($s)>1000)throw new RuntimeException('article text');}
@@ -417,14 +523,20 @@ $stage='input';
 try{
     $input=json_decode(file_get_contents('php://input',false,null,0,500000),true,32,JSON_THROW_ON_ERROR);
     if(!is_array($input)||count($input)>100)throw new RuntimeException('invalid batch');
-    foreach($input as $a)bnvalidate($a);
+    $mode=$_SERVER['HTTP_X_BUSAN_NEWS_DEPLOY_MODE']??'';
+    $rightsMode=!defined('BUSAN_ACCOUNT_NEWS')&&$mode==='rights';
+    if(!$rightsMode)foreach($input as $a)bnvalidate($a);
     if (defined('BUSAN_ACCOUNT_NEWS')) {
         if (!array_is_list($input) || count($input)>7) throw new RuntimeException('edition size');
         foreach ($input as $a) if ($a['date']<date('Y-m-d',strtotime(G5_TIME_YMD.' -1 month'))) throw new RuntimeException('expired article');
     }
     $stage='lock'; $lock=sql_fetch("SELECT GET_LOCK('busan_news_publish_v1',15) AS ok",false);
     if((int)($lock['ok']??0)!==1)throw new RuntimeException('publisher busy');
-    $mode=$_SERVER['HTTP_X_BUSAN_NEWS_DEPLOY_MODE']??'';
+    if($rightsMode){
+        $stage='rights';
+        echo json_encode(['ok'=>true,'rights'=>bnrights_publish($input)],JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     if(!defined('BUSAN_ACCOUNT_NEWS')&&in_array($mode,['preflight','menu','split'],true)){
         if($input!==[])throw new RuntimeException('deployment inventory requires empty input');
         $stage=$mode;

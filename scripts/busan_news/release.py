@@ -132,6 +132,20 @@ def main(s):
                 raise RuntimeError('News '+mode+' receipt invalid')
             print('BUSAN_NEWS_'+mode.upper(),json.dumps(result['inventory'],ensure_ascii=False,sort_keys=True))
             if mode=='split': print('BUSAN_NEWS_MIGRATION_RECEIPT',json.dumps(result.get('split'),ensure_ascii=False,sort_keys=True))
+        # A separate reviewed batch writes to the existing member-only rights board.
+        rights_path=Path('deploy/busan/newsroom/rights-notes.json')
+        rights_data=rights_path.read_bytes()
+        req=urllib.request.Request(ORIGIN+'/busan-assistant/'+probe,data=rights_data,
+            headers={'X-Busan-News':token,'Content-Type':'application/json','X-Busan-News-Deploy-Mode':'rights'})
+        try:
+            with urllib.request.urlopen(req,timeout=90) as response:
+                rights_result=json.load(response)
+        except urllib.error.HTTPError as e:
+            print('BUSAN_RIGHTS_ERROR',e.code,e.headers.get('X-Busan-News-Stage'),e.headers.get('X-Busan-News-Reason'))
+            raise RuntimeError('Rights note release failed') from None
+        if not rights_result.get('ok') or not rights_result.get('rights',{}).get('permissions_preserved'):
+            raise RuntimeError('Rights receipt invalid')
+        print('BUSAN_RIGHTS_RECEIPT',json.dumps(rights_result['rights'],ensure_ascii=False,sort_keys=True))
         for name, data in todo or [(None, b'[]')]:
             req = urllib.request.Request(ORIGIN+'/busan-assistant/'+probe, data=data,
                 headers={'X-Busan-News':token, 'Content-Type':'application/json'})
