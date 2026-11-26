@@ -11,7 +11,7 @@ FILES={
  'lib/activities-controller.php':'38b49974bb599e220340b9ea9c0a09622f41a00e',
  'lib/activities-view.php':'99804b83239ec1e7e4cc773c210720d1610fe5c7'
 }
-DESIRED=['포인트 상점','지부장 이벤트','프로필 꾸미기','명예의 전당','나의 포인트존']
+DESIRED=['포인트 상점','지부장 이벤트','프로필 꾸미기','나의 포인트존']
 def release(s):
     for path in (remote.ROOT,remote.THEME,remote.THEME+'/shop',remote.THEME+'/lib',remote.PRIVATE,remote.ROOT+'/busan-assistant'):remote.directory(s,path)
     plan=[]
