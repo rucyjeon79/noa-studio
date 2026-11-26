@@ -24,7 +24,7 @@ try{
         if(strlen($c)!==2)continue;
         $roots[]=$r;$n=bh_name($r['me_name']);
         if($n==='WE RUN TOGETHER')$run[]=$r;
-        if(in_array($n,['INSIGHT','INSIGHTS','인사이트','INSIGHT (인사이트)','인사이트 (INSIGHT)'],true))$ins[]=$r;
+        if(in_array($n,['OPENAI 인사이트','INSIGHT','INSIGHTS','인사이트','INSIGHT (인사이트)','인사이트 (INSIGHT)'],true))$ins[]=$r;
         if($n==='명예의 전당')$hon[]=$r;
         if($n==='POINT ZONE')$point[]=$r;
     }
