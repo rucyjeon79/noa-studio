@@ -115,3 +115,10 @@ $write=['wr_content'=>$raw,'wr_option'=>'secret','wr_is_comment'=>0];
 busan_rights_prepare_body('', ['bo_table'=>'note']);
 ensure($write['wr_content']===$raw,'secret legacy text changed');
 echo "PASS server-rendered plain rights Q&A, no duplicated breaks, original wording retained\n";
+
+$numbered="작업중지권은\n\n일을 멈추는 걸로 끝나지 않습니다.\n\n멈췄다면,\n\n그 다음은 회사의 책임입니다.\n\nQ1. 첫 질문?\n\nA. 첫 답변입니다.\n\n다른 사람에게 대신 시키는 행위 금지\n\nQ2. 다음 질문?\n\nA. 다음 답변입니다.\n\nQ 3) 마지막 질문?\n\n마지막 답변입니다.";
+$numberedHtml=busan_rights_plain_body($numbered);
+ensure(substr_count($numberedHtml,'bn-rights-topic-qa')===3,'numbered Q&A lost');
+ensure(strpos($numberedHtml,'작업중지권은 일을 멈추는 걸로 끝나지 않습니다.')!==false,'short introduction still fragmented');
+ensure($normalize($numbered)===$normalize($numberedHtml),'numbered rights wording changed');
+echo "PASS numbered Q1/Q2/Q3 and joined introduction\n";

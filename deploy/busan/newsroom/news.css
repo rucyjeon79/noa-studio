@@ -174,3 +174,10 @@ img.bn-theme-avatar{background:#fff!important;object-fit:contain!important;borde
 #bo_v_con .bn-rights-compact-text .bn-rights-topic h3{font-size:16px!important;line-height:1.45!important;margin:0 0 8px!important}
 #bo_v_con .bn-rights-compact-text .bn-rights-topic p{line-height:1.65!important;margin:0 0 7px!important}
 #bo_v_con .bn-rights-compact-text .bn-rights-topic > :last-child{margin-bottom:0!important}
+
+/* Numbered Q&A: tight readable rhythm, shared question/answer panel. */
+#bo_v_con .bn-rights-compact-text{display:grid!important;gap:12px!important;white-space:normal!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic-qa{border:1px solid var(--bb-border,#aabac2);border-inline-start:3px solid var(--bb-accent,#176a80);border-radius:8px;padding:12px!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic-title{font-weight:750!important;white-space:normal!important;line-height:1.45!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic p{padding:0!important;white-space:normal!important;margin:0 0 6px!important}
+#bo_v_con .bn-rights-compact-text .bn-rights-topic > :last-child{margin-bottom:0!important}

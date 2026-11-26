@@ -7,7 +7,7 @@
   const classify=node=>{
     const text=(node.textContent||'').trim();
     if(!text||text.length>125)return '';
-    if(/^(?:Q\s*[.:：]|질문\s*[:：]|문\s*[:：])/i.test(text))return 'question';
+    if(/^(?:Q\s*(?:[0-9０-９]+\s*)?[.．:：)）]|질문\s*(?:[0-9]+\s*)?[.．:：)）]|문\s*[:：])/i.test(text))return 'question';
     if(/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/i.test(text))return 'answer';
     if(/^(?:예시|사례|현장 사례)\s*[:：]/.test(text))return 'example';
     if(/^(?:체크리스트|확인할 것|대응 방법|대처 방법|실천 방법)\s*[:：]?$/.test(text))return 'check';
@@ -42,7 +42,7 @@
       guide.append(section);paragraph=null;list=null;
     };
     for(const line of lines){
-      const question=/^(?:Q\s*[.:：]|질문\s*[:：]|문\s*[:：])/i.test(line);
+      const question=/^(?:Q\s*(?:[0-9０-９]+\s*)?[.．:：)）]|질문\s*(?:[0-9]+\s*)?[.．:：)）]|문\s*[:：])/i.test(line);
       const heading=/^(?:■|◆|▶|【|[①-⑳]|\d{1,2}[.)]\s)/.test(line)&&line.length<=75;
       const example=/^(?:예시|사례|현장 사례)\s*[:：]/.test(line);
       const answer=/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/i.test(line);

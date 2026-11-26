@@ -154,41 +154,53 @@ function busan_rights_format_body($html){
 }
 // Format the original plain text before Gnuboard adds BR tags and theme wrappers.
 // No database write; actual native article permission checks remain in effect.
+function busan_rights_question_line($line){
+    return preg_match('/^\s*(?:Q\s*(?:[0-9０-９]+\s*)?[.．:：)）]|질문\s*(?:[0-9]+\s*)?[.．:：)）]|문\s*[:：])/iu',$line)===1;
+}
 function busan_rights_plain_body($raw){
     if(!is_string($raw)||!trim($raw)||$raw!==strip_tags($raw))return $raw;
     $lines=preg_split('/\R/u',$raw);
     if(!is_array($lines))return $raw;
     $out='<div class="bn-rights-guide bn-rights-legacy bn-rights-compact-text">';
-    $kind='';$list=false;
+    $kind='';$list=false;$pending=[];
     $esc=static function($s){
         $text=htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
         return function_exists('url_auto_link')?url_auto_link($text):$text;
     };
     $endlist=static function()use(&$out,&$list){if($list){$out.='</ul>';$list=false;}};
-    $start=static function($type,$title='')use(&$out,&$kind,$endlist,$esc){
-        $endlist();if($kind!=='')$out.='</div>';
+    $flush=static function()use(&$out,&$pending,$esc){
+        if(!$pending)return;
+        $out.='<p>'.$esc(implode(' ',$pending)).'</p>';$pending=[];
+    };
+    $start=static function($type,$title='')use(&$out,&$kind,$endlist,$esc,$flush){
+        $flush();$endlist();if($kind!=='')$out.='</div>';
         $kind=$type;$out.='<div class="bn-rights-topic bn-rights-topic-'.$type.'">';
         if($title!=='')$out.='<h3 class="bn-rights-topic-title">'.$esc($title).'</h3>';
     };
     foreach($lines as $line){
         $line=trim($line);
         if($line===''||preg_match('/^[\s\x{00A0}]+$/u',$line))continue;
-        $question=preg_match('/^(?:Q\s*[.:：]|질문\s*[:：]|문\s*[:：])/iu',$line);
+        $question=busan_rights_question_line($line);
         // Do not turn numbered payment rates or answers into standalone boxes.
         $heading=preg_match('/^(?:■|◆|▶|【)/u',$line)&&mb_strlen($line)<=85;
         if($question){$start('qa',$line);continue;}
         if($heading){$start('heading',$line);continue;}
         if($kind==='')$start('intro');
         if(preg_match('/^(?:[-–—•ㆍ·▪✓✔]\s*|☞\s*)/u',$line)){
-            if(!$list){$out.='<ul class="bn-rights-compact-list">';$list=true;}
+            $flush();if(!$list){$out.='<ul class="bn-rights-compact-list">';$list=true;}
             $out.='<li>'.$esc($line).'</li>';continue;
         }
         $endlist();
         $class=preg_match('/^(?:A\s*[.:：]|답변\s*[:：]|답\s*[:：])/iu',$line)?'bn-rights-compact-answer':
           (preg_match('/^(?:예시|사례|현장 사례)\s*[:：]/u',$line)?'bn-rights-compact-example':'');
-        $out.='<p'.($class!==''?' class="'.$class.'"':'').'>'.$esc($line).'</p>';
+        if($class!==''){$flush();$out.='<p class="'.$class.'">'.$esc($line).'</p>';continue;}
+        // Rejoin short fragments into readable sentences, but retain distinct
+        // rate entries and explicit short directives as separate compact lines.
+        if($pending && (preg_match('/(?:금지|필수|%|원|시간|일)$/u',end($pending))||mb_strlen(implode(' ',$pending))>170))$flush();
+        $pending[]=$line;
+        if(preg_match('/[.!?。！？]$/u',$line)||preg_match('/(?:금지|필수|%)$/u',$line))$flush();
     }
-    $endlist();
+    $flush();$endlist();
     if($kind==='')return $raw;
     $out.='</div></div>';
     return $out;
@@ -214,7 +226,7 @@ function busan_rights_prepare_body($header,$board){
 add_replace('board_content_head','busan_rights_prepare_body',11,2);
 add_replace('board_mobile_content_head','busan_rights_prepare_body',11,2);
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=14">', 115);
+add_stylesheet('<link rel="stylesheet" href="'.G5_URL.'/busan-assistant/newsroom/news.css?v=15">', 115);
 add_event('tail_sub', 'busan_news_home_strip');
 
 // Sharing is a common board feature, not limited to the newsroom.
@@ -282,7 +294,7 @@ function busan_news_reporter_assets(){
     }
     if($bo_table==='note'&&basename($_SERVER['SCRIPT_NAME']??'')==='board.php'&&(int)$wr_id>0){
         echo '<template id="bn-rights-reading-marker"></template>';
-        echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/rights-reader.js?v=2').'" defer></script>';
+        echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/rights-reader.js?v=3').'" defer></script>';
     }
     echo '<script src="'.$esc(G5_URL.'/busan-assistant/newsroom/reporter.js?v=6').'" defer></script>';
 }
