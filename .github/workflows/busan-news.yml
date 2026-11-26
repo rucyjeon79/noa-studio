@@ -1,9 +1,8 @@
 name: Busan reporter newsroom
 on:
   push:
-    branches: [main, busan/news-copy]
+    branches: [main]
     paths: ['deploy/busan/newsroom/**', 'scripts/busan_news/**', 'newsroom/editions/**', '.github/workflows/busan-news.yml']
-  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: busan-news-publisher, cancel-in-progress: false}
 jobs:
