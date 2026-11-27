@@ -1,7 +1,8 @@
 name: Busan rights note daily
 on:
   schedule:
-    - cron: '0 23 * * *' # 08:00 KST next day
+    - cron: '0,20,40 23 * * *' # 08:00 KST; idempotent recovery at 08:20 and 08:40
+    - cron: '0 0 * * *' # 09:00 KST fallback if GitHub delays the first slot
   workflow_dispatch:
   push:
     branches: [main]
@@ -19,7 +20,7 @@ jobs:
           python -m pip install -q paramiko==3.5.1
           python scripts/busan_news/rights_daily.py --check
   publish:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'Busan rights note approved immediate recovery'))
     needs: validate
     runs-on: ubuntu-24.04
     environment: busan-readonly
