@@ -1,4 +1,5 @@
 name: Busan SFTP read-only verification
+# Recheck current host mapping after daily rights publication failed.
 on:
   workflow_dispatch:
   push:
