@@ -1,4 +1,4 @@
-name: N80 one-time verified Backup recovery
+name: N80 one-time Backup provider verification
 on:
   push:
     branches: [n80/emergency-backup-diagnostic-20261128]
@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Install pinned SFTP client
         run: python -m pip install paramiko==3.5.1
-      - name: Apply only hash-verified Backup recovery under the existing N80 lock
+      - name: Verify exact Drive backup path and report bounded failure reason
         env:
           NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
           NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
@@ -30,7 +30,7 @@ jobs:
           ROOT='/hosting/noastudio/noa-hub'
           WEB='/hosting/noastudio/html'
           REMOTE=WEB+'/noa-app/engine/storage-drive.php'
-          OLD='1173bef33012a7c213e2f50d23700030b92f1cf002cfed815c37dfc6617c366a'
+          OLD='2941b902ecbac417a446fd8335f111890beceeafa8857175e2fffd09c2965b0b'
           NEW='2941b902ecbac417a446fd8335f111890beceeafa8857175e2fffd09c2965b0b'
           PIN='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU'
           def digest(b): return hashlib.sha256(b).hexdigest()
@@ -44,78 +44,39 @@ jobs:
               with s.open(path,'wx') as f: f.write(data); f.flush()
               s.chmod(path,0o600)
               if read_regular(s,path,len(data))!=data: raise RuntimeError('stage_mismatch')
-          def patch(raw):
-              src=raw.decode('utf-8')
-              def rep(a,b):
-                  nonlocal src
-                  if src.count(a)!=1: raise RuntimeError('patch_anchor_mismatch')
-                  src=src.replace(a,b,1)
-              rep("function n80_storage_put_bytes(string $name,string $bytes,string $key):array {",r"""/** Resolve only a single exact backup identity; never pick one of duplicates. */
-          function n80_storage_find_key(string $lookup,string $token):?string {
-           $found=n80_storage_json($lookup,$token);
-           if(!is_array($found['files']??null)||!array_is_list($found['files']))throw new RuntimeException('storage_drive_lookup_invalid');
-           if(count($found['files'])>1||!empty($found['nextPageToken'])||!empty($found['incompleteSearch']))throw new RuntimeException('storage_drive_duplicate');
-           if(!$found['files'])return null;
-           $id=$found['files'][0]['id']??null;
-           if(!is_string($id)||preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$id)!==1)throw new RuntimeException('storage_drive_id');
-           return $id;
-          }
-          function n80_storage_put_bytes(string $name,string $bytes,string $key):array {""")
-              rep(r""" $found=n80_storage_json('https://www.googleapis.com/drive/v3/files?q='.rawurlencode($q).'&fields=files(id)&pageSize=10',$token);
-           if(count($found['files']??[])>1)throw new RuntimeException('storage_drive_duplicate');
-           $id=$found['files'][0]['id']??null;
-           if(!$id){""",r""" $lookup='https://www.googleapis.com/drive/v3/files?q='.rawurlencode($q).'&fields=nextPageToken,incompleteSearch,files(id)&pageSize=10';
-           $id=n80_storage_find_key($lookup,$token);
-           if($id===null){""")
-              rep(r"""  $r=n80_storage_http('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',$token,'POST',$body,['Content-Type: multipart/related; boundary='.$b]);
-            if($r['code']<200||$r['code']>=300||empty($r['json']['id']))throw new RuntimeException('storage_drive_upload_failed');$id=$r['json']['id'];""",r"""  try {
-             $r=n80_storage_http('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',$token,'POST',$body,['Content-Type: multipart/related; boundary='.$b]);
-             if($r['code']<200||$r['code']>=300)throw new RuntimeException('storage_drive_http_'.$r['code']);
-             $id=$r['json']['id']??null;
-             if(!is_string($id)||preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$id)!==1)throw new RuntimeException('storage_drive_upload_failed');
-            }catch(RuntimeException $e){
-             // The provider may have accepted the original POST. Only look up its exact key.
-             // No repeated POST, no alternate folder, no relaxation of hash verification.
-             if(!in_array($e->getMessage(),['storage_drive_transport','storage_drive_upload_failed','storage_drive_http_408','storage_drive_http_500','storage_drive_http_502','storage_drive_http_503','storage_drive_http_504'],true))throw $e;
-             $id=n80_storage_find_key($lookup,$token);
-             if($id===null)throw $e;
-            }""")
-              rep(" return $expected+['url'=>$f['webViewLink']??null,'verifiedAt'=>time(),'provider'=>'google_drive'];", """ if(($f['appProperties']['n80BackupKey']??null)!==$key||($f['name']??null)!==$name)throw new RuntimeException('storage_drive_identity_mismatch');
-           return $expected+['url'=>$f['webViewLink']??null,'verifiedAt'=>time(),'provider'=>'google_drive'];""")
-              return src.encode('utf-8')
           repair=r"""<?php
           declare(strict_types=1);
           $root='/hosting/noastudio/noa-hub';
-          $target='/hosting/noastudio/html/noa-app/engine/storage-drive.php';
-          $before='1173bef33012a7c213e2f50d23700030b92f1cf002cfed815c37dfc6617c366a';
-          $after='2941b902ecbac417a446fd8335f111890beceeafa8857175e2fffd09c2965b0b';
           require_once '/hosting/noastudio/html/noa-app/engine/hub.php';
-          try {
-           $result=n80_hub_locked($root,static function()use($root,$target,$before,$after):array{
-            $src=n80_hub_read($root,'source.json');
-            if(($src['revision']??null)!==1208||n80_hub_read($root,'journal.json')!==[])throw new RuntimeException('source_or_journal_changed');
-            $control=n80_hub_read($root,'control.json');
-            if(($control['stop']??false)!==true||($control['paused']??false)!==true)throw new RuntimeException('maintenance_not_paused');
-            if(is_link($target)||!is_file($target)||hash_file('sha256',$target)!==$before)throw new RuntimeException('preimage_changed');
-            $candidate=__DIR__.'/candidate.php';$original=__DIR__.'/original.php';
-            if(is_link($candidate)||is_link($original)||hash_file('sha256',$candidate)!==$after||hash_file('sha256',$original)!==$before)throw new RuntimeException('stage_integrity');
-            if(!chmod($candidate,0644)||!rename($candidate,$target))throw new RuntimeException('atomic_rename_failed');
-            try{
-             clearstatcache(true,$target);
-             if(hash_file('sha256',$target)!==$after)throw new RuntimeException('live_hash_mismatch');
-             $receipt=['ok'=>true,'mode'=>'one_time_emergency_repair','sourceRevision'=>1208,'filesChanged'=>1,'beforeSha256'=>$before,'afterSha256'=>$after,'backupFileId'=>'1tHnZ5HLpqdYN6r1I_c8gckM1avwcpDXW','backupReadbackVerified'=>true,'checkedAt'=>time(),'normalReleaseHistoryChanged'=>false];
-             n80_hub_write($root,'emergency-backup-recovery-1208.json',$receipt);
-             if(n80_hub_read($root,'emergency-backup-recovery-1208.json')!==$receipt)throw new RuntimeException('receipt_readback_failed');
-             if(function_exists('opcache_invalidate'))@opcache_invalidate($target,true);
-             return $receipt;
-            }catch(Throwable $e){
-             clearstatcache(true,$target);
-             if(hash_file('sha256',$target)===$after&&chmod($original,0644))rename($original,$target);
-             throw $e;
-            }
-           },2000);
-           echo "N80_LOCKED_REPAIR=".json_encode($result,JSON_THROW_ON_ERROR)."\n";
-          }catch(Throwable $e){echo "N80_LOCKED_REPAIR_FAILED=".get_class($e)."\n";exit(1);}
+          require_once '/hosting/noastudio/html/noa-app/engine/storage-drive.php';
+          $out=['ok'=>false,'mode'=>'one_time_provider_diagnosis','sourceWrites'=>0,'checks'=>[]];
+          $stage='maintenance_fence';
+          try{
+           $ctrl=n80_hub_read($root,'control.json');
+           if(($ctrl['stop']??false)!==true||($ctrl['paused']??false)!==true||n80_hub_read($root,'journal.json')!==[])throw new RuntimeException('maintenance_fence');
+           $stage='authorization';$token=n80_storage_access();$out['checks']['authorization']=true;
+           $stage='folder';n80_storage_folder($token);$out['checks']['folder']=true;
+           $stage='small_upload';
+           $id='@PROBEID@';$bytes=json_encode(['purpose'=>'n80-private-backup-diagnosis','id'=>$id],JSON_THROW_ON_ERROR);
+           $receipt=n80_storage_put_bytes('N80-backup-diagnostic-'.$id.'-small.json',$bytes,hash('sha256','diag-small:'.$id));
+           $out['checks']['smallUpload']=true;
+           $stage='small_readback';$r=n80_storage_http('https://www.googleapis.com/drive/v3/files/'.$receipt['fileId'].'?alt=media',$token);
+           if($r['code']!==200||!hash_equals($bytes,$r['body']))throw new RuntimeException('backup_probe_readback_mismatch');
+           $out['checks']['smallReadback']=true;
+           $stage='large_upload';
+           $bytes=str_repeat('N80-backup-diagnostic-'.$id,40000);
+           $receipt=n80_storage_put_bytes('N80-backup-diagnostic-'.$id.'-large.txt',$bytes,hash('sha256','diag-large:'.$id));
+           $out['checks']['largeUpload']=true;$out['largeBytes']=strlen($bytes);
+           $stage='large_readback';$r=n80_storage_http('https://www.googleapis.com/drive/v3/files/'.$receipt['fileId'].'?alt=media',$token);
+           if($r['code']!==200||!hash_equals($bytes,$r['body']))throw new RuntimeException('backup_probe_readback_mismatch');
+           $out['checks']['largeReadback']=true;$out['ok']=true;
+          }catch(Throwable $e){
+           $reason=($e instanceof NoaOAuthFailure)?$e->reason:$e->getMessage();
+           $out['stage']=$stage;$out['errorClass']=get_class($e);
+           $out['error']=is_string($reason)&&preg_match('/^(?:storage_drive_[a-z0-9_]+|drive_[a-z0-9_]+|oauth_[a-z0-9_]+|backup_probe_[a-z0-9_]+|maintenance_fence|invalid_grant|offline_authorization_required|accessNotConfigured|SERVICE_DISABLED)$/D',$reason)?$reason:'unclassified_error';
+          }
+          n80_hub_write($root,'backup-provider-diagnostic-20261128.json',$out);
+          echo 'N80_PROVIDER_DIAG='.json_encode($out,JSON_THROW_ON_ERROR)."\n";
           """
           t=s=None; folder=None; endpoint=None; phase='connect'
           try:
@@ -133,21 +94,16 @@ jobs:
               journal=json.loads(read_regular(s,ROOT+'/journal.json',16777216))
               if src.get('revision')!=1208 or journal: raise RuntimeError('source_or_journal_changed')
               old=read_regular(s,REMOTE,65536)
-              if digest(old)!=OLD or len(old)!=4844: raise RuntimeError('live_preimage_mismatch')
-              new=patch(old)
-              if len(new)!=6235 or digest(new)!=NEW: raise RuntimeError('candidate_hash_mismatch')
+              if digest(old)!=OLD or len(old)!=6235: raise RuntimeError('live_preimage_mismatch')
+              repair=repair.replace('@PROBEID@',secrets.token_hex(16))
               with tempfile.TemporaryDirectory() as tmp:
-                  local=Path(tmp)/'candidate.php'; local.write_bytes(new)
-                  subprocess.run(['php','-l',str(local)],check=True,capture_output=True)
-                  local.write_text(repair,encoding='utf-8')
+                  local=Path(tmp)/'diagnostic.php';local.write_text(repair,encoding='utf-8')
                   subprocess.run(['php','-l',str(local)],check=True,capture_output=True)
               phase='private_stage'
-              folder=ROOT+'/.n80-storage-repair-'+secrets.token_hex(12)
+              folder=ROOT+'/.n80-storage-probe-'+secrets.token_hex(12)
               s.mkdir(folder,0o700)
-              stage(s,folder+'/original.php',old)
-              stage(s,folder+'/candidate.php',new)
               stage(s,folder+'/repair.php',repair.encode())
-              phase='locked_repair'
+              phase='provider_diagnosis'
               # SFTP-only hosting: execute the fixed locked repair through web PHP.
               # A per-run 256-bit credential, POST-only, expiry and self-removal
               # are required. No arbitrary operation, path or public repair API.
@@ -174,32 +130,18 @@ jobs:
               class NoRedirect(urllib.request.HTTPRedirectHandler):
                   def redirect_request(self,*args,**kwargs): return None
               request=urllib.request.Request('https://noastudio.ai.kr/'+endpoint_name,data=b'',headers={'X-N80-Once':credential},method='POST')
-              out=b'';err=b'';code=1
+              out=b''
               try:
-                  with urllib.request.build_opener(NoRedirect()).open(request,timeout=35) as response:
+                  with urllib.request.build_opener(NoRedirect()).open(request,timeout=125) as response:
                       out=response.read(8192)
-                      code=0 if response.status==200 else 1
               except (urllib.error.URLError,TimeoutError,OSError):
-                  # Never repeat the request after an ambiguous HTTP outcome.
-                  code=1
-              if code!=0:
-                  try:
-                      saved=json.loads(read_regular(s,ROOT+'/emergency-backup-recovery-1208.json',65536))
-                      if saved.get('ok') is True and saved.get('afterSha256')==NEW and digest(read_regular(s,REMOTE,65536))==NEW:
-                          out=('N80_LOCKED_REPAIR='+json.dumps(saved)+'\n').encode();code=0
-                  except (OSError,ValueError,RuntimeError):pass
-              combined=(out+err).decode('utf-8','replace').lower()
-              reasons=['this service allows sftp connections only','command not found','could not open input file','permission denied','n80_locked_repair_failed=runtimeexception','n80_locked_repair_failed=domainexception','n80_locked_repair_failed=error','n80_locked_repair_failed=typeerror','syntax error','not permitted','access denied']
-              print('N80_PRIVATE_EXEC_CHECK='+json.dumps({'exitCode':code,'stdoutBytes':len(out),'stderrBytes':len(err),'recognized':next((x for x in reasons if x in combined),'unknown')}))
-              print('N80_CONTROL_CHECK='+json.dumps({k:json.loads(read_regular(s,ROOT+'/control.json',32768)).get(k) for k in ('stop','paused','revision')}))
+                  pass
               lines=out.decode('utf-8','replace').splitlines()
-              proof=next((json.loads(x.split('=',1)[1]) for x in lines if x.startswith('N80_LOCKED_REPAIR=')),None)
-              if code!=0 or not proof or proof.get('ok') is not True: raise RuntimeError('locked_repair_unconfirmed')
-              phase='readback'
-              if digest(read_regular(s,REMOTE,65536))!=NEW: raise RuntimeError('live_readback_mismatch')
-              saved=json.loads(read_regular(s,ROOT+'/emergency-backup-recovery-1208.json',65536))
-              if saved!=proof: raise RuntimeError('receipt_readback_mismatch')
-              print('N80_EMERGENCY_RECOVERY='+json.dumps({'ok':True,'filesChanged':1,'sourceRevision':1208,'beforeSha256':OLD,'afterSha256':NEW,'drivePreimageReadbackVerified':True,'lockVerified':True,'receiptReadbackVerified':True,'normalReleaseHistoryChanged':False,'workerStarts':0,'databaseWrites':0}))
+              proof=next((json.loads(x.split('=',1)[1]) for x in lines if x.startswith('N80_PROVIDER_DIAG=')),None)
+              if proof is None: raise RuntimeError('provider_diagnosis_unconfirmed')
+              saved=json.loads(read_regular(s,ROOT+'/backup-provider-diagnostic-20261128.json',65536))
+              if saved!=proof or digest(read_regular(s,REMOTE,65536))!=OLD: raise RuntimeError('diagnosis_readback_mismatch')
+              print('N80_PROVIDER_DIAG='+json.dumps(proof))
           except Exception as e:
               print('N80_EMERGENCY_RECOVERY_FAILED='+json.dumps({'phase':phase,'errorClass':type(e).__name__}))
               raise SystemExit(1)
