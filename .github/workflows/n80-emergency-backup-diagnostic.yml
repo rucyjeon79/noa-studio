@@ -48,12 +48,12 @@ jobs:
           declare(strict_types=1);
           $root='/hosting/noastudio/noa-hub';
           require_once '/hosting/noastudio/html/noa-app/engine/hub.php';
-          require_once '/hosting/noastudio/html/noa-app/engine/storage-drive.php';
-          $out=['ok'=>false,'mode'=>'one_time_provider_diagnosis','sourceWrites'=>0,'checks'=>[]];
+          $out=['ok'=>false,'probeId'=>'@PROBEID@','mode'=>'one_time_provider_diagnosis','sourceWrites'=>0,'checks'=>[]];
           $stage='maintenance_fence';
           try{
            $ctrl=n80_hub_read($root,'control.json');
            if(($ctrl['stop']??false)!==true||($ctrl['paused']??false)!==true||n80_hub_read($root,'journal.json')!==[])throw new RuntimeException('maintenance_fence');
+           $stage='bootstrap';require_once '/hosting/noastudio/html/common.php';if(session_status()===PHP_SESSION_ACTIVE)session_write_close();require_once '/hosting/noastudio/html/noa-app/engine/storage-drive.php';
            $stage='authorization';$token=n80_storage_access();$out['checks']['authorization']=true;
            $stage='folder';n80_storage_folder($token);$out['checks']['folder']=true;
            $stage='small_upload';
@@ -95,7 +95,8 @@ jobs:
               if src.get('revision')!=1208 or journal: raise RuntimeError('source_or_journal_changed')
               old=read_regular(s,REMOTE,65536)
               if digest(old)!=OLD or len(old)!=6235: raise RuntimeError('live_preimage_mismatch')
-              repair=repair.replace('@PROBEID@',secrets.token_hex(16))
+              probe_id=secrets.token_hex(16)
+              repair=repair.replace('@PROBEID@',probe_id)
               with tempfile.TemporaryDirectory() as tmp:
                   local=Path(tmp)/'diagnostic.php';local.write_text(repair,encoding='utf-8')
                   subprocess.run(['php','-l',str(local)],check=True,capture_output=True)
@@ -119,6 +120,7 @@ jobs:
           $auth=$_SERVER['HTTP_X_N80_ONCE']??'';
           if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>@EXPIRES@||!is_string($auth)||strlen($auth)!==64||!hash_equals('@DIGEST@',hash('sha256',$auth))){http_response_code(404);exit;}
           if(!unlink(__FILE__)){http_response_code(503);exit;}
+          ob_start();register_shutdown_function(static function(){ $e=error_get_last(); if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true)){while(ob_get_level())ob_end_clean();http_response_code(200);echo 'N80_PROVIDER_FATAL='.json_encode(['type'=>$e['type'],'file'=>basename($e['file']),'line'=>$e['line']]);}});
           require '@REPAIR@';
           """
               wrapper=wrapper.replace('@EXPIRES@',str(expires)).replace('@DIGEST@',digest(credential.encode())).replace('@REPAIR@',folder+'/repair.php').encode()
@@ -134,13 +136,19 @@ jobs:
               try:
                   with urllib.request.build_opener(NoRedirect()).open(request,timeout=125) as response:
                       out=response.read(8192)
-              except (urllib.error.URLError,TimeoutError,OSError):
-                  pass
+              except urllib.error.HTTPError as e:
+                  print('N80_DIAG_HTTP='+str(e.code));out=e.read(8192)
+              except (urllib.error.URLError,TimeoutError,OSError) as e:
+                  print('N80_DIAG_TRANSPORT='+type(e).__name__)
               lines=out.decode('utf-8','replace').splitlines()
               proof=next((json.loads(x.split('=',1)[1]) for x in lines if x.startswith('N80_PROVIDER_DIAG=')),None)
-              if proof is None: raise RuntimeError('provider_diagnosis_unconfirmed')
+              if proof is None:
+                  for line in lines:
+                      if line.startswith('N80_PROVIDER_FATAL='): print(line[:500])
+                  try: proof=json.loads(read_regular(s,ROOT+'/backup-provider-diagnostic-20261128.json',65536))
+                  except (OSError,ValueError,RuntimeError): raise RuntimeError('provider_diagnosis_unconfirmed')
               saved=json.loads(read_regular(s,ROOT+'/backup-provider-diagnostic-20261128.json',65536))
-              if saved!=proof or digest(read_regular(s,REMOTE,65536))!=OLD: raise RuntimeError('diagnosis_readback_mismatch')
+              if proof.get('probeId')!=probe_id or saved!=proof or digest(read_regular(s,REMOTE,65536))!=OLD: raise RuntimeError('diagnosis_readback_mismatch')
               print('N80_PROVIDER_DIAG='+json.dumps(proof))
           except Exception as e:
               print('N80_EMERGENCY_RECOVERY_FAILED='+json.dumps({'phase':phase,'errorClass':type(e).__name__}))
