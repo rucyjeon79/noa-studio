@@ -85,7 +85,7 @@ jobs:
               old="   $r=n80_storage_http('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',$token,'POST',$body,['Content-Type: multipart/related; boundary='.$b]);"
               if src.count(old)!=1: raise RuntimeError('patch_upload_anchor_mismatch')
               src=src.replace(old,"   if(strlen($bytes)>262144){$id=n80_storage_resumable($meta,$bytes,$token);}\n   else {\n"+old,1)
-              tail="   if(!is_string($id)||!preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$id))throw new RuntimeException('storage_drive_upload_failed');\n  }catch(RuntimeException $e){"
+              tail="   if(!is_string($id)||preg_match('/^[A-Za-z0-9_-]{10,200}$/D',$id)!==1)throw new RuntimeException('storage_drive_upload_failed');\n  }catch(RuntimeException $e){"
               if src.count(tail)!=1: raise RuntimeError('patch_tail_anchor_mismatch')
               src=src.replace(tail,tail.replace("\n  }catch","\n   }\n  }catch"),1)
               return src.encode('utf-8')
@@ -203,7 +203,7 @@ jobs:
               if proof is not None and saved!=proof: raise RuntimeError('receipt_mismatch')
               print('N80_RESUMABLE_REPAIR='+json.dumps(saved))
           except Exception as e:
-              print('N80_EMERGENCY_RECOVERY_FAILED='+json.dumps({'phase':phase,'errorClass':type(e).__name__}))
+              print('N80_EMERGENCY_RECOVERY_FAILED='+json.dumps({'phase':phase,'errorClass':type(e).__name__,'reason':str(e) if isinstance(e,RuntimeError) and str(e) in ('source_or_journal_changed','live_preimage_mismatch','patch_anchor_mismatch','patch_upload_anchor_mismatch','patch_tail_anchor_mismatch','repair_rejected','repair_readback_mismatch','receipt_mismatch','stage_mismatch') else 'unclassified'}))
               raise SystemExit(1)
           finally:
               if s is not None:
