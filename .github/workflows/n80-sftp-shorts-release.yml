@@ -1,0 +1,54 @@
+name: N80 SFTP one-file Shorts source release
+
+on:
+  push:
+    branches: [n80/sftp-recovery-20261116]
+    paths:
+      - '.github/workflows/n80-sftp-shorts-release.yml'
+      - 'scripts/qa/n80_sftp_shorts_safe_release.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: noa-production-sftp
+  cancel-in-progress: false
+
+jobs:
+  safe-shorts-source:
+    if: github.repository == 'rucyjeon79/noa-studio'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin previously tested candidate exactly
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/n80/shorts-source-guard-20261116
+          test "$(git rev-parse FETCH_HEAD)" = '89ad07be4593f6298d8489b22c98fde464dbb851'
+          git show FETCH_HEAD:bridge/session-shorts-prepare.php > "$RUNNER_TEMP/n80-shorts-candidate.php"
+          test "$(sha256sum "$RUNNER_TEMP/n80-shorts-candidate.php" | cut -d' ' -f1)" = '9e7ec422a608c37b4ccff8eb727d52001d28f34db7e21b8f1267395864d07596'
+          test "$(wc -c < "$RUNNER_TEMP/n80-shorts-candidate.php")" -eq 11393
+          php -l "$RUNNER_TEMP/n80-shorts-candidate.php"
+      - name: Install pinned SFTP client
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Deploy only completed-song Shorts guard with Google Drive rollback
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+          N80_SFTP_CANDIDATE: ${{ runner.temp }}/n80-shorts-candidate.php
+          N80_VERIFIED_DRIVE_FILE_ID: '13fIdULMeloXp-Gr46mnpgUHUg5Cm-yb6'
+        run: python scripts/qa/n80_sftp_shorts_safe_release.py

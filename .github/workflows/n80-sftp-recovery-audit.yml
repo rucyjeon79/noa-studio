@@ -1,0 +1,60 @@
+name: N80 SFTP recovery audit (read-only)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/n80-sftp-recovery-audit.yml'
+      - 'scripts/qa/n80_sftp_recovery_audit.py'
+  push:
+    branches: [n80/sftp-recovery-20261116]
+    paths:
+      - '.github/workflows/n80-sftp-recovery-audit.yml'
+      - 'scripts/qa/n80_sftp_recovery_audit.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n80-sftp-recovery-readonly
+  cancel-in-progress: false
+
+jobs:
+  recovery-audit:
+    if: github.repository == 'rucyjeon79/noa-studio'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned SFTP reader
+        run: python -m pip install 'paramiko>=3,<5'
+      - name: Verify host identity, six files and N80 stop state without changing anything
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: python scripts/qa/n80_sftp_recovery_audit.py
+      - name: Package known-identical live preimage for Google Drive courier
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(sha256sum bridge/session-shorts-prepare.php | cut -d' ' -f1)"
+          test "$actual" = '0be99712546f55272c28ecef5c4605cf0acd06827b4874b6f33e00defa3e22a8'
+          test "$(wc -c < bridge/session-shorts-prepare.php)" -eq 9913
+          mkdir -p "$RUNNER_TEMP/noa-preimage-courier"
+          cp bridge/session-shorts-prepare.php "$RUNNER_TEMP/noa-preimage-courier/preimage-session-shorts-prepare.php"
+          printf '%s\n' '{"path":"/hosting/noastudio/html/noa-bridge/session-shorts-prepare.php","bytes":9913,"sha256":"0be99712546f55272c28ecef5c4605cf0acd06827b4874b6f33e00defa3e22a8","source":"exact_SHA256_match_to_readonly_SFTP_live_preimage","restoreOnly":true}' > "$RUNNER_TEMP/noa-preimage-courier/manifest.json"
+          echo "N80_PREIMAGE_COURIER_READY"
+      - name: Transfer verified preimage to temporary Drive-upload courier
+        uses: actions/upload-artifact@v4
+        with:
+          name: n80-sftp-preimage-courier-${{ github.run_id }}
+          path: ${{ runner.temp }}/noa-preimage-courier/
+          retention-days: 1
+          if-no-files-found: error
