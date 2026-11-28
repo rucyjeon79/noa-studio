@@ -149,7 +149,12 @@ jobs:
               ch=t.open_session(timeout=15); ch.settimeout(30)
               ch.exec_command('php '+folder+'/repair.php')
               out=ch.makefile('rb').read(8192)
+              err=ch.makefile_stderr('rb').read(8192)
               code=ch.recv_exit_status();ch.close()
+              combined=(out+err).decode('utf-8','replace').lower()
+              reasons=['this service allows sftp connections only','command not found','could not open input file','permission denied','n80_locked_repair_failed=runtimeexception','n80_locked_repair_failed=domainexception','n80_locked_repair_failed=error','n80_locked_repair_failed=typeerror','syntax error','not permitted','access denied']
+              print('N80_PRIVATE_EXEC_CHECK='+json.dumps({'exitCode':code,'stdoutBytes':len(out),'stderrBytes':len(err),'recognized':next((x for x in reasons if x in combined),'unknown')}))
+              print('N80_CONTROL_CHECK='+json.dumps({k:json.loads(read_regular(s,ROOT+'/control.json',32768)).get(k) for k in ('stop','paused','revision')}))
               lines=out.decode('utf-8','replace').splitlines()
               proof=next((json.loads(x.split('=',1)[1]) for x in lines if x.startswith('N80_LOCKED_REPAIR=')),None)
               if code!=0 or not proof or proof.get('ok') is not True: raise RuntimeError('locked_repair_unconfirmed')
