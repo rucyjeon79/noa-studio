@@ -147,7 +147,11 @@ jobs:
               stage(s,folder+'/repair.php',repair.encode())
               phase='locked_repair'
               ch=t.open_session(timeout=15); ch.settimeout(30)
-              ch.exec_command('php '+folder+'/repair.php')
+              # Fixed PHP CLI discovery; never fall back to an unlocked file replacement.
+              command = "for p in php8.2 php82 php /usr/bin/php8.2 /usr/local/bin/php82 /usr/local/bin/php /usr/local/php82/bin/php /usr/local/php/bin/php /opt/alt/php82/usr/bin/php; do "
+              command += 'if command -v "$p" >/dev/null 2>&1 && "$p" -r \'exit(PHP_VERSION_ID >= 80200 && PHP_VERSION_ID < 80300 ? 0 : 1);\' >/dev/null 2>&1; then exec "$p" '
+              command += folder + '/repair.php; fi; done; exit 127'
+              ch.exec_command(command)
               out=ch.makefile('rb').read(8192)
               err=ch.makefile_stderr('rb').read(8192)
               code=ch.recv_exit_status();ch.close()
