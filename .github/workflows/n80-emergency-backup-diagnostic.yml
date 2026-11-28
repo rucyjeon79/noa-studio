@@ -42,9 +42,25 @@ jobs:
               t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD'])
               s=paramiko.SFTPClient.from_transport(t)
               s.get_channel().settimeout(25)
+              # Inspect the two fixed NOA roots independently; some SFTP
+              # accounts have a different visible root. Do not list directories.
               phase='verify_roots'
-              if s.normalize(ROOT)!=ROOT or s.normalize(WEB)!=WEB: raise RuntimeError('root_mismatch')
-              if not stat.S_ISDIR(s.lstat(ROOT).st_mode) or not stat.S_ISREG(s.lstat(WEB+'/common.php').st_mode): raise RuntimeError('root_type_mismatch')
+              candidates=[('/hosting/noastudio/noa-hub','/hosting/noastudio/html'),('/noa-hub','/html')]
+              selected=None
+              for index,(root,web) in enumerate(candidates):
+                  facts={}
+                  for label,p,kind in [('hub',root,'dir'),('web',web,'dir'),('gnuboard',web+'/common.php','file'),('hub_source',root+'/source.json','file')]:
+                      try:
+                          mode=s.lstat(p).st_mode
+                          facts[label]='present' if (stat.S_ISDIR(mode) if kind=='dir' else stat.S_ISREG(mode)) else 'unexpected_type'
+                      except FileNotFoundError: facts[label]='missing'
+                      except OSError: facts[label]='unavailable'
+                  print('N80_ROOT_CHECK='+json.dumps({'candidate':index,'checks':facts}))
+                  if all(value=='present' for value in facts.values()):
+                      if s.normalize(root)!=root or s.normalize(web)!=web: continue
+                      selected=(root,web);break
+              if selected is None: raise RuntimeError('verified_noa_root_unavailable')
+              ROOT,WEB=selected
               def read_state(name, maximum):
                   path=ROOT+'/'+name
                   try: info=s.lstat(path)
