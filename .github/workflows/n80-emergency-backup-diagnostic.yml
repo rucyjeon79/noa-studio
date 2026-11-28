@@ -1,0 +1,76 @@
+name: N80 emergency backup diagnostics (read-only)
+on:
+  push:
+    branches: [n80/emergency-backup-diagnostic-20261128]
+    paths: ['.github/workflows/n80-emergency-backup-diagnostic.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: n80-emergency-backup-diagnostic
+  cancel-in-progress: false
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/n80/emergency-backup-diagnostic-20261128'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 5
+    steps:
+      - name: Install pinned SFTP dependency
+        run: python -m pip install paramiko==3.5.1
+      - name: Inspect N80 backup state without mutations
+        env:
+          NOA_SSH_HOST: ${{ secrets.NOA_SSH_HOST }}
+          NOA_SSH_USER: ${{ secrets.NOA_SSH_USER }}
+          NOA_SSH_PASSWORD: ${{ secrets.NOA_SSH_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import base64, hashlib, json, os, stat
+          import paramiko
+          ROOT='/hosting/noastudio/noa-hub'
+          WEB='/hosting/noastudio/html'
+          PIN='SHA256:0LqxbpOziJ4XgOMNEkfVrVGle3kpjJessI+jKqZ4JCU'
+          phase='connect'
+          t=None
+          try:
+              t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
+              t.get_security_options().key_types=('ssh-ed25519',)
+              t.start_client(timeout=18)
+              actual='SHA256:'+base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
+              if actual!=PIN: raise RuntimeError('host_pin_mismatch')
+              phase='authenticate'
+              t.auth_password(os.environ['NOA_SSH_USER'],os.environ['NOA_SSH_PASSWORD'])
+              s=paramiko.SFTPClient.from_transport(t)
+              s.get_channel().settimeout(25)
+              phase='verify_roots'
+              if s.normalize(ROOT)!=ROOT or s.normalize(WEB)!=WEB: raise RuntimeError('root_mismatch')
+              if not stat.S_ISDIR(s.lstat(ROOT).st_mode) or not stat.S_ISREG(s.lstat(WEB+'/common.php').st_mode): raise RuntimeError('root_type_mismatch')
+              def read_state(name, maximum):
+                  path=ROOT+'/'+name
+                  try: info=s.lstat(path)
+                  except FileNotFoundError: return None,0
+                  if not stat.S_ISREG(info.st_mode) or info.st_size>maximum: raise RuntimeError('unsafe_state')
+                  with s.open(path,'rb') as handle: raw=handle.read(maximum+1)
+                  if len(raw)!=info.st_size: raise RuntimeError('state_changed')
+                  return json.loads(raw),len(raw)
+              phase='read_release_metadata'
+              source,source_size=read_state('source.json',16777216)
+              history,history_size=read_state('releases.json',16777216)
+              journal,journal_size=read_state('journal.json',16777216)
+              last,_=read_state('release-error.json',65536)
+              if not isinstance(source,dict) or not isinstance(history,list): raise RuntimeError('unexpected_state_schema')
+              allowed={'hub_backup_preimage_unavailable','hub_backup_release_unavailable','hub_release_unavailable','hub_source_revision_changed','hub_deploy_recovery_required'}
+              code=(last or {}).get('code') if isinstance(last,dict) else None
+              # Only safe aggregate facts; never print raw state, credentials, provider IDs, paths or content.
+              result={'revision':int(source.get('revision',0)), 'sourceMetadataBytes':source_size,
+                      'historyBytes':history_size,'historyCount':len(history),'journalBytes':journal_size,
+                      'recoveryRequired':bool(journal),'lastError':code if code in allowed else 'other_or_none',
+                      'preimageIncludesHistoryBytes':history_size,
+                      'hostWrites':0,'providerWrites':0,'workerStarts':0}
+              print('N80_BACKUP_DIAGNOSTIC='+json.dumps(result,separators=(',',':')))
+          except Exception as exc:
+              print('N80_BACKUP_DIAGNOSTIC_FAILED='+json.dumps({'phase':phase,'errorClass':type(exc).__name__,'hostWrites':0}))
+              raise SystemExit(1)
+          finally:
+              if t is not None: t.close()
+          PY
