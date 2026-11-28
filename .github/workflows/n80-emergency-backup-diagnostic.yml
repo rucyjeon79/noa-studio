@@ -26,7 +26,7 @@ jobs:
           python - <<'PY'
           import base64, hashlib, json, os, secrets, stat, subprocess, tempfile
           from pathlib import Path
-          import paramiko
+          import paramiko, urllib.request, urllib.error, time
           ROOT='/hosting/noastudio/noa-hub'
           WEB='/hosting/noastudio/html'
           REMOTE=WEB+'/noa-app/engine/storage-drive.php'
@@ -94,6 +94,8 @@ jobs:
            $result=n80_hub_locked($root,static function()use($root,$target,$before,$after):array{
             $src=n80_hub_read($root,'source.json');
             if(($src['revision']??null)!==1208||n80_hub_read($root,'journal.json')!==[])throw new RuntimeException('source_or_journal_changed');
+            $control=n80_hub_read($root,'control.json');
+            if(($control['stop']??false)!==true||($control['paused']??false)!==true)throw new RuntimeException('maintenance_not_paused');
             if(is_link($target)||!is_file($target)||hash_file('sha256',$target)!==$before)throw new RuntimeException('preimage_changed');
             $candidate=__DIR__.'/candidate.php';$original=__DIR__.'/original.php';
             if(is_link($candidate)||is_link($original)||hash_file('sha256',$candidate)!==$after||hash_file('sha256',$original)!==$before)throw new RuntimeException('stage_integrity');
@@ -115,7 +117,7 @@ jobs:
            echo "N80_LOCKED_REPAIR=".json_encode($result,JSON_THROW_ON_ERROR)."\n";
           }catch(Throwable $e){echo "N80_LOCKED_REPAIR_FAILED=".get_class($e)."\n";exit(1);}
           """
-          t=s=None; folder=None; phase='connect'
+          t=s=None; folder=None; endpoint=None; phase='connect'
           try:
               t=paramiko.Transport((os.environ['NOA_SSH_HOST'],2022))
               t.get_security_options().key_types=('ssh-ed25519',)
@@ -146,15 +148,46 @@ jobs:
               stage(s,folder+'/candidate.php',new)
               stage(s,folder+'/repair.php',repair.encode())
               phase='locked_repair'
-              ch=t.open_session(timeout=15); ch.settimeout(30)
-              # Fixed PHP CLI discovery; never fall back to an unlocked file replacement.
-              command = "for p in php8.2 php82 php /usr/bin/php8.2 /usr/local/bin/php82 /usr/local/bin/php /usr/local/php82/bin/php /usr/local/php/bin/php /opt/alt/php82/usr/bin/php; do "
-              command += 'if command -v "$p" >/dev/null 2>&1 && "$p" -r \'exit(PHP_VERSION_ID >= 80200 && PHP_VERSION_ID < 80300 ? 0 : 1);\' >/dev/null 2>&1; then exec "$p" '
-              command += folder + '/repair.php; fi; done; exit 127'
-              ch.exec_command(command)
-              out=ch.makefile('rb').read(8192)
-              err=ch.makefile_stderr('rb').read(8192)
-              code=ch.recv_exit_status();ch.close()
+              # SFTP-only hosting: execute the fixed locked repair through web PHP.
+              # A per-run 256-bit credential, POST-only, expiry and self-removal
+              # are required. No arbitrary operation, path or public repair API.
+              credential=secrets.token_hex(32)
+              endpoint_name='n80-once-'+secrets.token_hex(24)+'.php'
+              endpoint=WEB+'/'+endpoint_name
+              expires=int(time.time())+150
+              wrapper=r"""<?php
+          declare(strict_types=1);
+          header('Cache-Control: no-store');
+          header('Content-Type: text/plain; charset=UTF-8');
+          header('X-Content-Type-Options: nosniff');
+          $auth=$_SERVER['HTTP_X_N80_ONCE']??'';
+          if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||time()>@EXPIRES@||!is_string($auth)||strlen($auth)!==64||!hash_equals('@DIGEST@',hash('sha256',$auth))){http_response_code(404);exit;}
+          if(!unlink(__FILE__)){http_response_code(503);exit;}
+          require '@REPAIR@';
+          """
+              wrapper=wrapper.replace('@EXPIRES@',str(expires)).replace('@DIGEST@',digest(credential.encode())).replace('@REPAIR@',folder+'/repair.php').encode()
+              with tempfile.TemporaryDirectory() as tmp:
+                  local=Path(tmp)/'endpoint.php';local.write_bytes(wrapper)
+                  subprocess.run(['php','-l',str(local)],check=True,capture_output=True)
+              stage(s,endpoint,wrapper)
+              s.chmod(endpoint,0o644)
+              class NoRedirect(urllib.request.HTTPRedirectHandler):
+                  def redirect_request(self,*args,**kwargs): return None
+              request=urllib.request.Request('https://noastudio.ai.kr/'+endpoint_name,data=b'',headers={'X-N80-Once':credential},method='POST')
+              out=b'';err=b'';code=1
+              try:
+                  with urllib.request.build_opener(NoRedirect()).open(request,timeout=35) as response:
+                      out=response.read(8192)
+                      code=0 if response.status==200 else 1
+              except (urllib.error.URLError,TimeoutError,OSError):
+                  # Never repeat the request after an ambiguous HTTP outcome.
+                  code=1
+              if code!=0:
+                  try:
+                      saved=json.loads(read_regular(s,ROOT+'/emergency-backup-recovery-1208.json',65536))
+                      if saved.get('ok') is True and saved.get('afterSha256')==NEW and digest(read_regular(s,REMOTE,65536))==NEW:
+                          out=('N80_LOCKED_REPAIR='+json.dumps(saved)+'\n').encode();code=0
+                  except (OSError,ValueError,RuntimeError):pass
               combined=(out+err).decode('utf-8','replace').lower()
               reasons=['this service allows sftp connections only','command not found','could not open input file','permission denied','n80_locked_repair_failed=runtimeexception','n80_locked_repair_failed=domainexception','n80_locked_repair_failed=error','n80_locked_repair_failed=typeerror','syntax error','not permitted','access denied']
               print('N80_PRIVATE_EXEC_CHECK='+json.dumps({'exitCode':code,'stdoutBytes':len(out),'stderrBytes':len(err),'recognized':next((x for x in reasons if x in combined),'unknown')}))
@@ -172,6 +205,9 @@ jobs:
               raise SystemExit(1)
           finally:
               if s is not None:
+                  if endpoint:
+                      try:s.remove(endpoint)
+                      except OSError:pass
                   if folder:
                       for name in ('repair.php','candidate.php','original.php'):
                           try:s.remove(folder+'/'+name)
